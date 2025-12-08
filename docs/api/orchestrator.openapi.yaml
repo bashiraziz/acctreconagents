@@ -1,0 +1,192 @@
+openapi: 3.1.0
+info:
+  title: AcctReCon Orchestrator API
+  version: 0.1.0
+  description: >
+    Fastify service that coordinates OpenAI Agents, Claude Skills, and Gemini.
+servers:
+  - url: http://localhost:4100
+paths:
+  /agent/runs:
+    post:
+      summary: Trigger a multi-agent reconciliation run
+      operationId: createAgentRun
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+            examples:
+              sample:
+                value:
+                  userPrompt: Reconcile account 1000 inventory roll-forward for October close.
+                  payload:
+                    glBalances:
+                      - account: '1000'
+                        period: '2025-10'
+                        amount: 120000
+                    subledgerBalances:
+                      - account: '1000'
+                        period: '2025-10'
+                        amount: 119200
+                    transactions:
+                      - account: '1000'
+                        booked_at: '2025-10-15'
+                        amount: -800
+      responses:
+        '200':
+          description: Agentic run completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunResponse'
+        '400':
+          description: Schema validation failed
+        '502':
+          description: Upstream failure (LLM vendors / orchestrator)
+components:
+  schemas:
+    BalanceInput:
+      type: object
+      required: [account, amount]
+      properties:
+        account:
+          type: string
+        period:
+          type: string
+          description: YYYY-MM
+        amount:
+          type: number
+        currency:
+          type: string
+    TransactionInput:
+      type: object
+      required: [account, booked_at]
+      properties:
+        account:
+          type: string
+        booked_at:
+          type: string
+          format: date
+        debit:
+          type: number
+        credit:
+          type: number
+        amount:
+          type: number
+          description: Used when debit/credit are absent (interpreted as net)
+        description:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    RunPayload:
+      type: object
+      required: [glBalances, subledgerBalances]
+      properties:
+        glBalances:
+          type: array
+          items:
+            $ref: '#/components/schemas/BalanceInput'
+        subledgerBalances:
+          type: array
+          items:
+            $ref: '#/components/schemas/BalanceInput'
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionInput'
+        orderedPeriods:
+          type: array
+          items:
+            type: string
+        activityByPeriod:
+          type: object
+          additionalProperties:
+            type: number
+        adjustmentsByPeriod:
+          type: object
+          additionalProperties:
+            type: number
+    RunRequest:
+      type: object
+      required: [userPrompt, payload]
+      properties:
+        userPrompt:
+          type: string
+        payload:
+          $ref: '#/components/schemas/RunPayload'
+    RunTimelineEntry:
+      type: object
+      properties:
+        stage:
+          type: string
+        status:
+          type: string
+        detail:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    AgentMessages:
+      type: object
+      properties:
+        message:
+          type: string
+        messagesByRole:
+          type: object
+          additionalProperties:
+            type: string
+        toolOutput:
+          $ref: '#/components/schemas/ToolOutput'
+    ToolOutput:
+      type: object
+      properties:
+        reconciliations:
+          type: array
+          items:
+            type: object
+        rollForward:
+          type: array
+          items:
+            type: object
+        transactions:
+          type: array
+          items:
+            type: object
+    RunResponse:
+      type: object
+      properties:
+        runId:
+          type: string
+        spec:
+          type: object
+          properties:
+            name:
+              type: string
+            version:
+              type: string
+            summary:
+              type: string
+        timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunTimelineEntry'
+        openai:
+          $ref: '#/components/schemas/AgentMessages'
+        claudeSkills:
+          type: array
+          items:
+            type: object
+            properties:
+              skill:
+                type: string
+              response:
+                type: string
+        geminiInsight:
+          type: string
+          nullable: true
+        toolOutput:
+          $ref: '#/components/schemas/ToolOutput'

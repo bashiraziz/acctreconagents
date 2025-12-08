@@ -1,5 +1,30 @@
 {
+  "name": "y",
+  "version": "1.0.0",
+  "description": "These agents will reconcile GL agents and create roll forward statements",
+  "homepage": "https://github.com/bashiraziz/acctreconagents#readme",
+  "bugs": {
+    "url": "https://github.com/bashiraziz/acctreconagents/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bashiraziz/acctreconagents.git"
+  },
+  "license": "ISC",
+  "author": "Bashir Aziz",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "spec:check": "npx @letuscode/spec-kit check"
+  },
   "dependencies": {
     "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@letuscode/spec-kit": "^0.1.3"
   }
 }

@@ -1,0 +1,42 @@
+Receivable Invoice Summary,,,,,,,,,
+Demo Company (US),,,,,,,,,
+For the period 1 January 2025 to 31 October 2025,,,,,,,,,
+,,,,,,,,,
+Invoice Number,Contact,Invoice Date,Expected Date,Reference,Gross,Balance,Status,Source,Invoice Sent
+INV-0006,Ridgeway University,30 Jan 2025,09 Feb 2025,RPT400-1,500.00,0.00,Paid,Receivable Invoice,Not sent
+INV-0007,Ridgeway University,27 Feb 2025,09 Mar 2025,RPT400-1,"1,500.00",0.00,Paid,Receivable Invoice,Not sent
+INV-0008,Ridgeway University,30 Mar 2025,09 Apr 2025,RPT400-1,500.00,0.00,Paid,Receivable Invoice,Not sent
+INV-0009,Ridgeway University,29 Apr 2025,09 May 2025,RPT400-1,"1,200.00",0.00,Paid,Receivable Invoice,Not sent
+INV-0010,Ridgeway University,30 May 2025,09 Jun 2025,RPT400-1,500.00,0.00,Paid,Receivable Invoice,Not sent
+INV-0016,Hamilton Smith Ltd,26 Jun 2025,06 Jul 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0013,Young Bros Transport,27 Jun 2025,07 Jul 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0014,Port & Philip Freight,27 Jun 2025,07 Jul 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+CN-0025,Hamilton Smith Ltd,27 Jun 2025,27 Jun 2025,Monthly Support,(541.25),0.00,Paid,Receivable Credit Note,Not sent
+INV-0012,Hamilton Smith Ltd,27 Jun 2025,07 Jul 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0015,Rex Media Group,27 Jun 2025,07 Jul 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0017,City Limousines,28 Jun 2025,08 Jul 2025,P/O 9711,250.00,250.00,Approved,Receivable Invoice,Sent
+INV-0011,Ridgeway University,29 Jun 2025,09 Jul 2025,RPT400-1,"2,500.00",0.00,Paid,Receivable Invoice,Not sent
+INV-0019,Bank West,08 Jul 2025,18 Jul 2025,Training,"1,500.00",0.00,Paid,Receivable Invoice,Not sent
+INV-0018,City Agency,22 Jul 2025,01 Aug 2025,Workshop,329.80,0.00,Paid,Receivable Invoice,Not sent
+INV-0023,City Limousines,29 Jul 2025,08 Aug 2025,P/O 9711,250.00,250.00,Approved,Receivable Invoice,Sent
+INV-0032,Rex Media Group,07 Aug 2025,17 Aug 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0031,Port & Philip Freight,07 Aug 2025,17 Aug 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0030,Young Bros Transport,07 Aug 2025,17 Aug 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0029,Hamilton Smith Ltd,07 Aug 2025,17 Aug 2025,Monthly Support,541.25,0.00,Paid,Receivable Invoice,Not sent
+INV-0020,Ridgeway University,09 Aug 2025,19 Aug 2025,P/O CRM08-12,"6,187.50",0.00,Paid,Receivable Invoice,Not sent
+INV-0027,DIISR - Small Business Services,15 Aug 2025,29 Aug 2025,Yr Ref W08-143,850.00,270.63,Approved,Receivable Invoice,Sent
+INV-0028,City Limousines,19 Aug 2025,29 Aug 2025,Book,19.95,19.95,Approved,Receivable Invoice,Sent
+INV-0021,Boom FM,22 Aug 2025,01 Sep 2025,Training,500.00,0.00,Paid,Receivable Invoice,Not sent
+INV-0022,Petrie McLoud Watson & Associates,24 Aug 2025,03 Sep 2025,Portal Proj,"1,407.25",0.00,Paid,Receivable Invoice,Not sent
+INV-0024,Boom FM,25 Aug 2025,04 Sep 2025,Training,"1,000.00",0.00,Paid,Receivable Invoice,Not sent
+CN-0026,Boom FM,25 Aug 2025,25 Aug 2025,Training,(500.00),0.00,Paid,Receivable Credit Note,Not sent
+INV-0033,DIISR - Small Business Services,26 Aug 2025,15 Sep 2025,Yr Ref W08-143,269.95,0.00,Paid,Receivable Invoice,Not sent
+INV-0035,Ridgeway University,12 Sep 2025,22 Sep 2025,P/O CRM08-12,"6,187.50","6,187.50",Approved,Receivable Invoice,Sent
+CN-0034,DIISR - Small Business Services,14 Sep 2025,14 Sep 2025,Yr Ref W08-143,(19.95),0.00,Paid,Receivable Credit Note,Not sent
+INV-0034,City Limousines,19 Sep 2025,29 Sep 2025,P/O 9711,650.00,650.00,Approved,Receivable Invoice,Sent
+INV-0036,Basket Case,20 Sep 2025,30 Sep 2025,,914.55,914.55,Approved,Receivable Invoice,Sent
+INV-0037,Marine Systems,21 Sep 2025,01 Oct 2025,Ref MK815,396.00,396.00,Approved,Receivable Invoice,Sent
+INV-0039,Hamilton Smith Ltd,21 Sep 2025,06 Oct 2025,Monthly support,550.00,550.00,Draft,Receivable Invoice,Not sent
+INV-0040,Rex Media Group,21 Sep 2025,06 Oct 2025,Monthly support,550.00,550.00,Draft,Receivable Invoice,Not sent
+INV-0038,Bayside Club,22 Sep 2025,02 Oct 2025,GB1-White,234.00,234.00,Approved,Receivable Invoice,Sent
+Total,,,,,"32,556.55","10,272.63",,,

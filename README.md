@@ -1,127 +1,114 @@
-﻿# Recon Agent
+# AcctReCon Agentic Workspace
 
-Agentic toolkit for automating GL reconciliations and roll forward schedules.
+Modern reconciliation stack built from a clean slate: Next.js on Vercel for the UI, a Fastify orchestrator for OpenAI/Claude/Gemini coordination, and Spec-Kit contracts that keep the whole system spec-driven and agent-ready.
 
-## Features
-- Data models for GL balances, subledger activity, and roll forward output.
-- Modular reconciliation engine to flag material variances.
-- Roll forward builder to assemble period-over-period schedules.
-- Agent orchestrator for coordinating reconciliation, scheduling, and insights.
-- CSV export helpers and a Streamlit UI for downstream workflows.
-- Flexible column alias mapping to accommodate varied export headers.
-- OpenAI Agents SDK orchestration with Gemini-powered narrative commentary.
+## Repository structure
 
-## Setup (uv)
-1. Install uv: `pip install uv` (skip if already installed).
-2. Copy `.env.sample` to `.env` and populate your API keys.
-3. Sync dependencies and editable package: `uv sync`.
-4. Run the CLI demo: `uv run python main.py`.
-
-Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) to enable Gemini insights. Set `OPENAI_API_KEY` to use the OpenAI Agents SDK orchestrator.
-
-## Environment Variables
-You can manage secrets locally by copying the sample env file:
-```powershell
-Copy-Item .env.sample .env
 ```
-Fill in the following values:
-- `OPENAI_API_KEY` – required for the OpenAI Agents SDK.
-- `GEMINI_API_KEY` or `GOOGLE_API_KEY` – required for Gemini commentary.
+apps/
+  web/                 # Next.js 15 App Router app (ChatKit UI, uploads, mapping, console)
+services/
+  orchestrator/        # Fastify service coordinating OpenAI Agents, Claude Skills, Gemini
+specs/
+  reconciliation...    # Spec-Kit definition for canonical models + workflows
+spec-kit.config.json   # CLI hook for Spec-Kit tooling
+package.json           # Root scripts (Spec-Kit check)
+.env.sample            # Shared environment variable template
+```
 
-## Streamlit UI (MVP)
-1. Launch the app: `uv run streamlit run app.py`.
-2. Upload CSV or Excel files with the following headers:
-   - GL balances: `account`, `period` (YYYY-MM), `amount`.
-   - Subledger balances: `account`, `period`, `amount`.
-   - Transactions (optional): `account`, `posting_date` (date), plus `amount` or `debit`/`credit`, optional `period`.
-3. Adjust the materiality slider and click **Run reconciliation** to view results and export CSV outputs.
-4. Use the **Column aliases** expander to override headers with JSON or plain lines like `Balances account column = GL Account, Account Code` or `Transactions posting date = Posting Date`.
-5. Each upload supports CSV/XLSX files up to 20 MB (enforced via `.streamlit/config.toml`).
-6. Optional uploads:
-   - **Detailed transactions file** - single activity extract (GL or subledger) containing account, posting date, amount, and description so the app can build period activity automatically. See `data/demo/detailed_transactions.csv` for a template.
-   - **GL detail file** - full general-ledger journal detail with document numbers, sources, etc.; used to trace GL-side variances. Template: `data/demo/gl_detail.csv`.
-   - **Subledger detail file** - supporting subledger activity export (AP, AR, inventory, etc.) for variance drill-down. Template: `data/demo/subledger_detail.csv`.
+### Frontend (apps/web)
+* Next.js 15 App Router + Tailwind.
+* Upload workspace with structured/supporting file lanes (hits `/api/uploads`).  
+* Spec-guided column mapper and Spec blueprint card derived from `specs/reconciliation.speckit.json`.
+* Agent Console hitting `/api/agent/runs` to trigger multi-agent workflows and show OpenAI/Claude/Gemini output.
+* ChatKit control room scaffolding (currently hidden; ready to re-enable once a workflow is available).
+* Ready for Vercel deployment (just set environment variables and link to your project).
 
-## OpenAI Agents Orchestration
-This package exposes the reconciliation engine as a tool that OpenAI Agents can call. The helper in `src/recon_agent/openai_agent.py` stands up a small, multi-role agent team (supervisor + reviewer by default), feeds the reconciliation results back to OpenAI, and returns a structured response for you to consume.
+### Backend (services/orchestrator)
+* Fastify service that exposes:
+  * `POST /agent/runs` — validates payloads via Spec-Kit, runs OpenAI supervisor/reviewer agents, invokes Claude Skills subagents, and requests Gemini-driven commentary. Currently uses a placeholder reconciliation function that you can replace.
+* `POST /agent/runs` — multi-agent reconciliation / summary orchestration.
+* TypeScript project with scripts for dev, build, and start (`npm run dev|build|start`).
+* Integrations: `openai` (Agents SDK, `beta.assistants`), `@anthropic-ai/sdk` for Claude Skills, and `@google/generative-ai` for Gemini summarization.
 
-1. **Set credentials**  
-   ```powershell
-   Copy-Item .env.sample .env  # edit OPENAI_API_KEY, GEMINI_API_KEY / GOOGLE_API_KEY
-   . .\.venv\Scripts\Activate.ps1  # optional manual activation
-   $env:OPENAI_API_KEY = "sk-..."
-   $env:GEMINI_API_KEY = "..."      # or GOOGLE_API_KEY
+### Spec-Kit contracts
+* `specs/reconciliation.speckit.json` documents actors, canonical data models, agent tool contracts, and workflows.
+* `spec-kit.config.json` makes it easy to run `npm run spec:check` to ensure required tools are configured (git, agent CLIs, etc.).
+* The Next.js app imports the spec JSON directly to generate UI metadata, so schema updates propagate automatically.
+
+## Prerequisites
+* Node.js 20+ (needed for ChatKit + Spec-Kit CLI).
+* npm (repo uses npm workspaces manually; we haven’t declared workspace features yet).
+* Accounts and API keys for:
+  * OpenAI (Agents SDK + ChatKit).
+  * Anthropic Claude (subagents/skills).
+  * Gemini (Google Generative AI API).
+  * Optional: storage target for uploads if you don’t want them kept on disk.
+
+## Setup
+1. Clone this repo and install dependencies.
+   ```bash
+   git clone <repo>
+   cd acctreconagents
+   npm install          # installs root dev deps (Spec-Kit CLI) + ChatKit type helpers
+   cd apps/web && npm install
+   cd ../../services/orchestrator && npm install
    ```
+2. Copy `.env.sample` to `.env` (root) and fill in the keys you want shared.
+3. For local dev, create `apps/web/.env.local` and `services/orchestrator/.env` with the following variables as needed:
 
-2. **Instantiate the orchestrator**  
-   ```python
-   from recon_agent import (
-       AgentConfig,
-       GeminiConfig,
-       GeminiInsightGenerator,
-       GeminiLLM,
-       OpenAIAgentConfig,
-       OpenAIAgentOrchestrator,
-       ReconciliationAgent,
-   )
+| Variable | Purpose |
+| --- | --- |
+| `OPENAI_API_KEY` | Required for orchestrator (OpenAI Agents + ChatKit). |
+| `ANTHROPIC_API_KEY` or `CLAUDE_API_KEY` | Enables Claude Skills subagents. |
+| `GEMINI_API_KEY` or `GOOGLE_API_KEY` | Enables Gemini narrative commentary. |
+| `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` | Workflow ID from Agent Builder (`wf_...`) used by the ChatKit widget. |
+| `ORCHESTRATOR_URL` | Next.js uses this to reach the orchestrator service (default `http://localhost:4100`). |
+| `MATERIALITY_THRESHOLD` | Variance threshold (in account currency) used by the reconciler. |
 
-   reconciliation = ReconciliationAgent(
-       config=AgentConfig(materiality_threshold=10),
-       insight_generator=GeminiInsightGenerator(GeminiLLM(GeminiConfig())),
-   )
-
-   orchestrator = OpenAIAgentOrchestrator(reconciliation)  # default supervisor + reviewer roles
+## Development workflow
+1. **Run the orchestrator service**
+   ```bash
+   cd services/orchestrator
+   npm run dev
+   # Fastify listens on PORT (default 4100)
    ```
-
-   Pass a custom `OpenAIMultiAgentConfig` if you need to rename roles, change models, or reuse pre-created agent IDs.
-
-3. **Build the payload**  
-   Provide JSON that matches the tool schema. Required arrays use the fields:
-   - `gl_balances`: each item needs `account`, optional `period` (YYYY-MM), `amount`.
-   - `subledger_balances`: same shape as `gl_balances`.
-   - `transactions` (optional): `account`, `booked_at` (ISO date), plus either `amount` or the `debit`/`credit` pair. Additional metadata is passed through untouched.
-   - Optional roll-forward hints: `ordered_periods`, `activity_by_period`, `adjustments_by_period`.
-
-4. **Run the agents**  
-   ```python
-   reply = orchestrator.run(
-       "Reconcile account 1000 for Q4",
-       tool_payload={
-           "gl_balances": [{"account": "1000", "period": "2024-10", "amount": 120000}],
-           "subledger_balances": [{"account": "1000", "period": "2024-10", "amount": 118500}],
-           "transactions": [
-               {
-                   "account": "1000",
-                   "booked_at": "2024-10-15",
-                   "description": "Inventory adjustment",
-                   "amount": -1500,
-               }
-           ],
-       },
-   )
+2. **Run the Next.js app**
+   ```bash
+   cd apps/web
+   npm run dev
+   # Visit http://localhost:3100
    ```
-   The supervisor agent invokes the reconciliation tool with your payload; the reviewer sees the supervisor’s notes plus the JSON output and drafts an executive summary.
+3. Use the UI:
+   * Upload files via the workspace; they save to `.uploads/` locally.
+   * Configure column mappings; state persists in localStorage.
+   * Launch the agent run from the console (uses a sample payload today) and inspect the timeline + agent responses.
+  * (Optional) configure ChatKit later by setting `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` once you are ready to surface the assistant.
 
-5. **Consume the results**  
-   `reply` is an `AgentRunOutput` dataclass with three pieces of information:
-   - `message`: the supervisor’s final answer.
-   - `messages_by_role`: every agent’s message, keyed by role (e.g., `"reviewer"`).
-   - `tool_output`: raw reconciliation data—variance tables, roll-forward lines, unresolved transactions, and generated insights ready for downstream reporting.
+## Scripts
+* Root: `npm run spec:check` – ensures required tooling for Spec-Kit/agent workflows is available.
+* `apps/web`: `npm run dev`, `npm run build`, `npm run lint`.
+* `services/orchestrator`: `npm run dev`, `npm run build`, `npm run start`.
 
-Tips:
-- Call `OpenAIAgentConfig(api_key="...")` or `OpenAIMultiAgentConfig(api_key="...")` if you do not want to rely on environment variables.
-- Set `uses_reconciliation_tool=False` on a role if it should never trigger the reconciliation run (e.g., commentary-only agents).
-- Attach the returned `tool_output` to your audit records or feed it into `src/recon_agent/output.py` for exports.
-- Reference the full walkthrough in `docs/openai_agents.md` and the hands-on notebook at `notebooks/openai_agents_demo.ipynb`.
+## API schemas
+OpenAPI documents live in `docs/api`:
+* `orchestrator.openapi.yaml` – Fastify service (`POST /agent/runs`).
+* `web.openapi.yaml` – Next.js routes (`/api/uploads`, `/api/agent/runs`, `/api/chatkit/...` proxies).
 
-## Quickstart
-1. Swap the sample data in `main.py` with your GL and subledger extracts.
-2. Adapt or plug in data sources from `src/recon_agent/datasources.py` (use `DataSourceConfig.column_aliases` to map your header names).
-3. Export results with `src/recon_agent/output.py` or extend with your workflow tooling.
+Import them into your API gateway, generate clients, or extend them as additional endpoints arrive.
 
-## Next Steps
-- Integrate real data loaders (SQL, APIs, spreadsheets).
-- Add task queue or workflow scheduling for month-end automation.
-- Plug in an LLM-powered insight generator for narrative commentary.
-- Capture approvals and reconciliation status in a datastore.
+## Extending
+* Replace `runReconciliationLocally` (services/orchestrator/src/index.ts) with your production reconciliation engine or API call.
+* Extend the ChatKit UI (`src/components/chatkit-panel.tsx`) with additional prompts, client tools, or analytics hooks.
+* Hook uploads to a proper storage service (S3, Vercel Blob, etc.) rather than the local `.uploads` folder.
+* Wire database persistence for column mappings, run history, and documents as needed.
+* Expand Spec-Kit definitions to cover new workflows, then re-import or regenerate UI artifacts as necessary.
 
+## Status / TODO
+- ✅ Clean-slate Next.js UI (upload/mapping/chat/console) and orchestrator service scaffold.
+- ✅ Spec-Kit contract + CLI integration.
+- ☐ Replace placeholder reconciliation logic with your production engine.
+- ☐ Persist ChatKit conversation metadata or analytics as needed.
+- ☐ Harden upload storage and add authentication/authorization.
+
+Questions or improvements? Open an issue and include whether you’re working on the web app, orchestrator, or specification.*** End Patch**³**

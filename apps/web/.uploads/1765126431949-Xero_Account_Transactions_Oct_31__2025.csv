@@ -1,0 +1,74 @@
+Accounts Receivable Transactions,,,,,,,,
+Demo Company (US),,,,,,,,
+For the period 1 January 2025 to 31 October 2025,,,,,,,,
+,,,,,,,,
+Date,Contact,Description,Reference,Gross,Debit,Credit,Running Balance,Related account
+,,,,,,,,
+120 - Accounts Receivable,,,,,,,,
+Opening Balance,,,,0.00,500.00,0.00,500.00,
+09 Jan 2025,Ridgeway University,Payment: Ridgeway University,RPT400-1,(500.00),0.00,500.00,0.00,090 - Checking Account
+30 Jan 2025,Ridgeway University,Ridgeway University,RPT400-1,500.00,500.00,0.00,500.00,"400 - Sales, 220 - Sales Tax"
+09 Feb 2025,Ridgeway University,Payment: Ridgeway University,RPT400-1,(500.00),0.00,500.00,0.00,090 - Checking Account
+27 Feb 2025,Ridgeway University,Ridgeway University,RPT400-1,"1,500.00","1,500.00",0.00,"1,500.00","400 - Sales, 220 - Sales Tax"
+09 Mar 2025,Ridgeway University,Payment: Ridgeway University,RPT400-1,"(1,500.00)",0.00,"1,500.00",0.00,090 - Checking Account
+30 Mar 2025,Ridgeway University,Ridgeway University,RPT400-1,500.00,500.00,0.00,500.00,"400 - Sales, 220 - Sales Tax"
+09 Apr 2025,Ridgeway University,Payment: Ridgeway University,RPT400-1,(500.00),0.00,500.00,0.00,090 - Checking Account
+29 Apr 2025,Ridgeway University,Ridgeway University,RPT400-1,"1,200.00","1,200.00",0.00,"1,200.00","400 - Sales, 220 - Sales Tax"
+09 May 2025,Ridgeway University,Payment: Ridgeway University,RPT400-1,"(1,200.00)",0.00,"1,200.00",0.00,090 - Checking Account
+30 May 2025,Ridgeway University,Ridgeway University,RPT400-1,500.00,500.00,0.00,500.00,"400 - Sales, 220 - Sales Tax"
+09 Jun 2025,Ridgeway University,Payment: Ridgeway University,RPT400-1,(500.00),0.00,500.00,0.00,090 - Checking Account
+26 Jun 2025,Hamilton Smith Ltd,Hamilton Smith Ltd,Monthly Support,541.25,541.25,0.00,541.25,"400 - Sales, 220 - Sales Tax"
+27 Jun 2025,Rex Media Group,Rex Media Group,Monthly Support,541.25,541.25,0.00,"1,082.50","400 - Sales, 220 - Sales Tax"
+27 Jun 2025,Hamilton Smith Ltd,Hamilton Smith Ltd,Monthly Support,(541.25),0.00,541.25,541.25,"400 - Sales, 220 - Sales Tax"
+27 Jun 2025,Port & Philip Freight,Port & Philip Freight,Monthly Support,541.25,541.25,0.00,"1,082.50","400 - Sales, 220 - Sales Tax"
+27 Jun 2025,Young Bros Transport,Young Bros Transport,Monthly Support,541.25,541.25,0.00,"1,623.75","400 - Sales, 220 - Sales Tax"
+27 Jun 2025,Hamilton Smith Ltd,Hamilton Smith Ltd,Monthly Support,541.25,541.25,0.00,"2,165.00","400 - Sales, 220 - Sales Tax"
+27 Jun 2025,Hamilton Smith Ltd,Hamilton Smith Ltd,Monthly Support,(541.25),0.00,541.25,"1,623.75",265 - Tracking Transfers
+27 Jun 2025,Hamilton Smith Ltd,Hamilton Smith Ltd,Monthly Support,541.25,541.25,0.00,"2,165.00",265 - Tracking Transfers
+28 Jun 2025,City Limousines,City Limousines,P/O 9711,250.00,250.00,0.00,"2,415.00","400 - Sales, 220 - Sales Tax"
+29 Jun 2025,Ridgeway University,Ridgeway University,RPT400-1,"2,500.00","2,500.00",0.00,"4,915.00","400 - Sales, 220 - Sales Tax"
+07 Jul 2025,Young Bros Transport,Payment: Young Bros Transport,Monthly Support,(541.25),0.00,541.25,"4,373.75",090 - Checking Account
+07 Jul 2025,Hamilton Smith Ltd,Payment: Hamilton Smith Ltd,Monthly Support,(541.25),0.00,541.25,"3,832.50",090 - Checking Account
+07 Jul 2025,Port & Philip Freight,Payment: Port & Philip Freight,Monthly Support,(541.25),0.00,541.25,"3,291.25",090 - Checking Account
+07 Jul 2025,Rex Media Group,Payment: Rex Media Group,Monthly Support,(541.25),0.00,541.25,"2,750.00",090 - Checking Account
+08 Jul 2025,Bank West,Bank West,Training,"1,500.00","1,500.00",0.00,"4,250.00","400 - Sales, 220 - Sales Tax"
+12 Jul 2025,Bank West,Payment: Bank West,Training,"(1,500.00)",0.00,"1,500.00","2,750.00",090 - Checking Account
+21 Jul 2025,Ridgeway University,Payment: Ridgeway University,RPT400-1,"(2,500.00)",0.00,"2,500.00",250.00,090 - Checking Account
+22 Jul 2025,City Agency,City Agency,Workshop,329.80,329.80,0.00,579.80,"400 - Sales, 220 - Sales Tax"
+29 Jul 2025,City Limousines,City Limousines,P/O 9711,250.00,250.00,0.00,829.80,"400 - Sales, 220 - Sales Tax"
+01 Aug 2025,City Agency,Payment: City Agency,Workshop,(329.80),0.00,329.80,500.00,090 - Checking Account
+07 Aug 2025,Port & Philip Freight,Port & Philip Freight,Monthly Support,541.25,541.25,0.00,"1,041.25","400 - Sales, 220 - Sales Tax"
+07 Aug 2025,Hamilton Smith Ltd,Hamilton Smith Ltd,Monthly Support,541.25,541.25,0.00,"1,582.50","400 - Sales, 220 - Sales Tax"
+07 Aug 2025,Rex Media Group,Rex Media Group,Monthly Support,541.25,541.25,0.00,"2,123.75","400 - Sales, 220 - Sales Tax"
+07 Aug 2025,Young Bros Transport,Young Bros Transport,Monthly Support,541.25,541.25,0.00,"2,665.00","400 - Sales, 220 - Sales Tax"
+09 Aug 2025,Ridgeway University,Ridgeway University,P/O CRM08-12,"6,187.50","6,187.50",0.00,"8,852.50","400 - Sales, 220 - Sales Tax"
+15 Aug 2025,DIISR - Small Business Services,DIISR - Small Business Services,Yr Ref W08-143,850.00,850.00,0.00,"9,702.50","400 - Sales, 220 - Sales Tax"
+19 Aug 2025,City Limousines,City Limousines,Book,19.95,19.95,0.00,"9,722.45","400 - Sales, 220 - Sales Tax"
+20 Aug 2025,Ridgeway University,Payment: Ridgeway University,P/O CRM08-12,"(6,187.50)",0.00,"6,187.50","3,534.95",090 - Checking Account
+21 Aug 2025,Young Bros Transport,Payment: Young Bros Transport,Monthly Support,(541.25),0.00,541.25,"2,993.70",090 - Checking Account
+21 Aug 2025,Rex Media Group,Payment: Rex Media Group,Monthly Support,(541.25),0.00,541.25,"2,452.45",090 - Checking Account
+21 Aug 2025,Port & Philip Freight,Payment: Port & Philip Freight,Monthly Support,(541.25),0.00,541.25,"1,911.20",090 - Checking Account
+21 Aug 2025,Hamilton Smith Ltd,Payment: Hamilton Smith Ltd,Monthly Support,(541.25),0.00,541.25,"1,369.95",090 - Checking Account
+22 Aug 2025,Boom FM,Boom FM,Training,500.00,500.00,0.00,"1,869.95","400 - Sales, 220 - Sales Tax"
+24 Aug 2025,Petrie McLoud Watson & Associates,Petrie McLoud Watson & Associates,Portal Proj,"1,407.25","1,407.25",0.00,"3,277.20","400 - Sales, 220 - Sales Tax"
+25 Aug 2025,Boom FM,Boom FM,Training,(500.00),0.00,500.00,"2,777.20","400 - Sales, 220 - Sales Tax"
+25 Aug 2025,Boom FM,Boom FM,Training,(500.00),0.00,500.00,"2,277.20",265 - Tracking Transfers
+25 Aug 2025,Boom FM,Boom FM,Training,500.00,500.00,0.00,"2,777.20",265 - Tracking Transfers
+25 Aug 2025,Boom FM,Boom FM,Training,"1,000.00","1,000.00",0.00,"3,777.20","400 - Sales, 220 - Sales Tax"
+26 Aug 2025,DIISR - Small Business Services,DIISR - Small Business Services,Yr Ref W08-143,269.95,269.95,0.00,"4,047.15","400 - Sales, 220 - Sales Tax"
+29 Aug 2025,DIISR - Small Business Services,Payment: DIISR - Small Business Services,Yr Ref W08-143,(579.37),0.00,579.37,"3,467.78",090 - Checking Account
+03 Sep 2025,Petrie McLoud Watson & Associates,Payment: Petrie McLoud Watson & Associates,Portal Proj,"(1,407.25)",0.00,"1,407.25","2,060.53",090 - Checking Account
+04 Sep 2025,Boom FM,Payment: Boom FM,Training,"(1,000.00)",0.00,"1,000.00","1,060.53",090 - Checking Account
+04 Sep 2025,DIISR - Small Business Services,Payment: DIISR - Small Business Services,Yr Ref W08-143,(250.00),0.00,250.00,810.53,090 - Checking Account
+12 Sep 2025,Ridgeway University,Ridgeway University,P/O CRM08-12,"6,187.50","6,187.50",0.00,"6,998.03","400 - Sales, 220 - Sales Tax"
+14 Sep 2025,DIISR - Small Business Services,DIISR - Small Business Services,Yr Ref W08-143,(19.95),0.00,19.95,"6,978.08","400 - Sales, 220 - Sales Tax"
+14 Sep 2025,DIISR - Small Business Services,DIISR - Small Business Services,Yr Ref W08-143,(19.95),0.00,19.95,"6,958.13",265 - Tracking Transfers
+14 Sep 2025,DIISR - Small Business Services,DIISR - Small Business Services,Yr Ref W08-143,19.95,19.95,0.00,"6,978.08",265 - Tracking Transfers
+19 Sep 2025,City Limousines,City Limousines,P/O 9711,650.00,650.00,0.00,"7,628.08","400 - Sales, 220 - Sales Tax"
+20 Sep 2025,Basket Case,Basket Case,INV-0036,914.55,914.55,0.00,"8,542.63","400 - Sales, 220 - Sales Tax"
+21 Sep 2025,Marine Systems,Marine Systems,Ref MK815,396.00,396.00,0.00,"8,938.63","400 - Sales, 220 - Sales Tax"
+22 Sep 2025,Bayside Club,Bayside Club,GB1-White,234.00,234.00,0.00,"9,172.63","400 - Sales, 220 - Sales Tax"
+Total 120 - Accounts Receivable,,,,"8,672.63","33,578.95","24,906.32","9,172.63",
+Closing Balance,,,,0.00,"9,172.63",0.00,"9,172.63",
+,,,,,,,,
+Total,,,,"8,672.63","33,578.95","24,906.32","8,672.63",

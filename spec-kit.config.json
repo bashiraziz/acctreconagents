@@ -1,0 +1,35 @@
+{
+  
+  "workspace": "acctreconagents",
+  "specs": [
+    {
+      "id": "reconciliation",
+      "path": "./specs/reconciliation.speckit.json",
+      "description": "Source of truth for canonical data models + agent workflows."
+    }
+  ],
+  "plugins": [
+    {
+      "name": "spec-kit-docs",
+      "description": "Plan, implementation notes, and live task board derived from the reconciliation Spec-Kit contract.",
+      "artifacts": [
+        "./docs/spec-kit/plan.md",
+        "./docs/spec-kit/implementation.md",
+        "./docs/spec-kit/tasks.md",
+        "./docs/spec-kit/todo.md"
+      ]
+    },
+    {
+      "name": "constitution-memory",
+      "description": "Governance memory consumed by Spec-Kit agents and CLI workflows.",
+      "artifacts": [
+        "./memory/constitution.md"
+      ]
+    }
+  ],
+  "tasks": {
+    "validate": {
+      "command": "npx @letuscode/spec-kit check"
+    }
+  }
+}

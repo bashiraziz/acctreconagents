@@ -1,0 +1,169 @@
+Receivable Invoice Detail,,,,,,,,,,,
+Demo Company (US),,,,,,,,,,,
+For the period 1 January 2025 to 12 October 2025,,,,,,,,,,,
+,,,,,,,,,,,
+Invoice Date,Source,Reference,Item Code,Description,Quantity,Unit Price (ex),Discount (ex),Tax,Gross,Invoice Total,Status
+,,,,,,,,,,,
+CN-0025,,,,,,,,,,,
+27 Jun 2025,Receivable Credit Note,Monthly Support,,FULL CREDIT of INV-0016 due to duplication of invoice INV-0012. Please accept our apologies.,0.0000,0.0000,0.00,0.00,0.00,(541.25),Paid
+27 Jun 2025,Receivable Credit Note,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,(1.0000),495.4200,0.00,(45.83),(541.25),(541.25),Paid
+Total CN-0025,,,,,(1.0000),,0.00,(45.83),(541.25),,
+,,,,,,,,,,,
+CN-0026,,,,,,,,,,,
+25 Aug 2025,Receivable Credit Note,Training,Train-MS,CREDIT Half day training - Microsoft Office and include in suite of training INV0021,(1.0000),457.6700,0.00,(42.33),(500.00),(500.00),Paid
+Total CN-0026,,,,,(1.0000),,0.00,(42.33),(500.00),,
+,,,,,,,,,,,
+CN-0034,,,,,,,,,,,
+14 Sep 2025,Receivable Credit Note,Yr Ref W08-143,BOOK,Fish out of Water: Finding Your Brand' - credit - charged in error - should be included overall project,(1.0000),18.2600,0.00,(1.69),(19.95),(19.95),Paid
+Total CN-0034,,,,,(1.0000),,0.00,(1.69),(19.95),,
+,,,,,,,,,,,
+INV-0006,,,,,,,,,,,
+30 Jan 2025,Receivable Invoice,RPT400-1,,Retainer for consulting work,1.0000,457.6700,0.00,42.33,500.00,500.00,Paid
+Total INV-0006,,,,,1.0000,,0.00,42.33,500.00,,
+,,,,,,,,,,,
+INV-0007,,,,,,,,,,,
+27 Feb 2025,Receivable Invoice,RPT400-1,,Retainer for consulting work,1.0000,457.6700,0.00,42.33,500.00,"1,500.00",Paid
+27 Feb 2025,Receivable Invoice,RPT400-1,,Onsite project management p/hr,10.0000,91.5300,0.00,84.67,"1,000.00","1,500.00",Paid
+Total INV-0007,,,,,11.0000,,0.00,127.00,"1,500.00",,
+,,,,,,,,,,,
+INV-0008,,,,,,,,,,,
+30 Mar 2025,Receivable Invoice,RPT400-1,,Retainer for consulting work,1.0000,457.6700,0.00,42.33,500.00,500.00,Paid
+Total INV-0008,,,,,1.0000,,0.00,42.33,500.00,,
+,,,,,,,,,,,
+INV-0009,,,,,,,,,,,
+29 Apr 2025,Receivable Invoice,RPT400-1,,Retainer for consulting work,1.0000,457.6700,0.00,42.33,500.00,"1,200.00",Paid
+29 Apr 2025,Receivable Invoice,RPT400-1,,Onsite project management p/hr,7.0000,91.5300,0.00,59.27,700.00,"1,200.00",Paid
+Total INV-0009,,,,,8.0000,,0.00,101.60,"1,200.00",,
+,,,,,,,,,,,
+INV-0010,,,,,,,,,,,
+30 May 2025,Receivable Invoice,RPT400-1,,Retainer for consulting work,1.0000,457.6700,0.00,42.33,500.00,500.00,Paid
+Total INV-0010,,,,,1.0000,,0.00,42.33,500.00,,
+,,,,,,,,,,,
+INV-0011,,,,,,,,,,,
+29 Jun 2025,Receivable Invoice,RPT400-1,,Retainer for consulting work,1.0000,457.6700,0.00,42.33,500.00,"2,500.00",Paid
+29 Jun 2025,Receivable Invoice,RPT400-1,,Onsite project management p/hr,20.0000,91.5300,0.00,169.34,"2,000.00","2,500.00",Paid
+Total INV-0011,,,,,21.0000,,0.00,211.67,"2,500.00",,
+,,,,,,,,,,,
+INV-0012,,,,,,,,,,,
+27 Jun 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0012,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0013,,,,,,,,,,,
+27 Jun 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0013,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0014,,,,,,,,,,,
+27 Jun 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0014,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0015,,,,,,,,,,,
+27 Jun 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0015,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0016,,,,,,,,,,,
+26 Jun 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0016,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0017,,,,,,,,,,,
+28 Jun 2025,Receivable Invoice,P/O 9711,PM-BR,Project management & implementation - branding workshop with your team,1.0000,228.8300,0.00,21.17,250.00,250.00,Approved
+Total INV-0017,,,,,1.0000,,0.00,21.17,250.00,,
+,,,,,,,,,,,
+INV-0018,,,,,,,,,,,
+22 Jul 2025,Receivable Invoice,Workshop,PM-BR,"Project management & implementation - branding workshop with your team
+
+========================
+
+- 'Buzz Words' session with your Steering Group
+- Analysis of current marketing materials
+- Workshop on re-brand outcomes and stakeholder identification
+- Analysis and presentation of findings to your Steering Group & Board",1.0000,228.8300,0.00,21.17,250.00,329.80,Paid
+22 Jul 2025,Receivable Invoice,Workshop,BOOK,Fish out of Water: Finding Your Brand',4.0000,18.2600,0.00,6.76,79.80,329.80,Paid
+Total INV-0018,,,,,5.0000,,0.00,27.93,329.80,,
+,,,,,,,,,,,
+INV-0019,,,,,,,,,,,
+08 Jul 2025,Receivable Invoice,Training,Train-MS,Half day training - Microsoft Office - for your Priority Mortgage Services Team (Session 3),1.0000,457.6700,0.00,42.33,500.00,"1,500.00",Paid
+08 Jul 2025,Receivable Invoice,Training,Train-MS,Half day training - Microsoft Office - for your Customer Support Team (Session 1),1.0000,457.6700,0.00,42.33,500.00,"1,500.00",Paid
+08 Jul 2025,Receivable Invoice,Training,Train-MS,Half day training - Microsoft Office - for your Lending Services Team (Session 2),1.0000,457.6700,0.00,42.33,500.00,"1,500.00",Paid
+Total INV-0019,,,,,3.0000,,0.00,126.99,"1,500.00",,
+,,,,,,,,,,,
+INV-0020,,,,,,,,,,,
+09 Aug 2025,Receivable Invoice,P/O CRM08-12,,Onsite project management for CRM Project 3 days/week,1.0000,"5,663.6200",0.00,523.88,"6,187.50","6,187.50",Paid
+Total INV-0020,,,,,1.0000,,0.00,523.88,"6,187.50",,
+,,,,,,,,,,,
+INV-0021,,,,,,,,,,,
+22 Aug 2025,Receivable Invoice,Training,Train-MS,Half day training - Microsoft Office,1.0000,457.6700,0.00,42.33,500.00,500.00,Paid
+Total INV-0021,,,,,1.0000,,0.00,42.33,500.00,,
+,,,,,,,,,,,
+INV-0022,,,,,,,,,,,
+24 Aug 2025,Receivable Invoice,Portal Proj,,Development work - developer onsite,1.0000,"1,288.1000",0.00,119.15,"1,407.25","1,407.25",Paid
+Total INV-0022,,,,,1.0000,,0.00,119.15,"1,407.25",,
+,,,,,,,,,,,
+INV-0023,,,,,,,,,,,
+29 Jul 2025,Receivable Invoice,P/O 9711,PM-BR,Project management & implementation - branding workshop with your team - follow up session,1.0000,228.8300,0.00,21.17,250.00,250.00,Approved
+Total INV-0023,,,,,1.0000,,0.00,21.17,250.00,,
+,,,,,,,,,,,
+INV-0024,,,,,,,,,,,
+25 Aug 2025,Receivable Invoice,Training,Train-MS,Half day training - Microsoft Office (Session 2),1.0000,457.6700,0.00,42.33,500.00,"1,000.00",Paid
+25 Aug 2025,Receivable Invoice,Training,Train-MS,Half day training - Microsoft Office (Session 1),1.0000,457.6700,0.00,42.33,500.00,"1,000.00",Paid
+Total INV-0024,,,,,2.0000,,0.00,84.66,"1,000.00",,
+,,,,,,,,,,,
+INV-0027,,,,,,,,,,,
+15 Aug 2025,Receivable Invoice,Yr Ref W08-143,,Project management & implementation - 'due diligence' stocktake of your project scope/schedule/implementation plan/outcome measures (hourly rate as agreed),5.0000,109.8400,0.00,50.80,600.00,850.00,Approved
+15 Aug 2025,Receivable Invoice,Yr Ref W08-143,PM-BR,Project management & implementation - branding workshop with your team,1.0000,228.8300,0.00,21.17,250.00,850.00,Approved
+Total INV-0027,,,,,6.0000,,0.00,71.97,850.00,,
+,,,,,,,,,,,
+INV-0028,,,,,,,,,,,
+19 Aug 2025,Receivable Invoice,Book,BOOK,Fish out of Water: Finding Your Brand',1.0000,18.2600,0.00,1.69,19.95,19.95,Approved
+Total INV-0028,,,,,1.0000,,0.00,1.69,19.95,,
+,,,,,,,,,,,
+INV-0029,,,,,,,,,,,
+07 Aug 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0029,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0030,,,,,,,,,,,
+07 Aug 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0030,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0031,,,,,,,,,,,
+07 Aug 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0031,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0032,,,,,,,,,,,
+07 Aug 2025,Receivable Invoice,Monthly Support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,495.4200,0.00,45.83,541.25,541.25,Paid
+Total INV-0032,,,,,1.0000,,0.00,45.83,541.25,,
+,,,,,,,,,,,
+INV-0033,,,,,,,,,,,
+26 Aug 2025,Receivable Invoice,Yr Ref W08-143,BOOK,Fish out of Water: Finding Your Brand',1.0000,18.2600,0.00,1.69,19.95,269.95,Paid
+26 Aug 2025,Receivable Invoice,Yr Ref W08-143,PM-BR,Project management & implementation - branding workshop with your team,1.0000,228.8300,0.00,21.17,250.00,269.95,Paid
+Total INV-0033,,,,,2.0000,,0.00,22.86,269.95,,
+,,,,,,,,,,,
+INV-0034,,,,,,,,,,,
+19 Sep 2025,Receivable Invoice,P/O 9711,,Development work - develper onsite,1.0000,594.9700,0.00,55.03,650.00,650.00,Approved
+Total INV-0034,,,,,1.0000,,0.00,55.03,650.00,,
+,,,,,,,,,,,
+INV-0035,,,,,,,,,,,
+12 Sep 2025,Receivable Invoice,P/O CRM08-12,,Onsite project management for CRM Project 3 days/week,1.0000,"5,663.6200",0.00,523.88,"6,187.50","6,187.50",Approved
+Total INV-0035,,,,,1.0000,,0.00,523.88,"6,187.50",,
+,,,,,,,,,,,
+INV-0036,,,,,,,,,,,
+20 Sep 2025,Receivable Invoice,,,Development work - per hour rate,5.0000,82.3800,0.00,38.10,450.00,914.55,Approved
+20 Sep 2025,Receivable Invoice,,,Project team meeting to discuss dev changes required to your online gift basket ordering system,1.0000,425.2200,0.00,39.33,464.55,914.55,Approved
+Total INV-0036,,,,,6.0000,,0.00,77.43,914.55,,
+,,,,,,,,,,,
+INV-0037,,,,,,,,,,,
+21 Sep 2025,Receivable Invoice,Ref MK815,,Marketing guides,4.0000,90.6200,0.00,33.53,396.00,396.00,Approved
+Total INV-0037,,,,,4.0000,,0.00,33.53,396.00,,
+,,,,,,,,,,,
+INV-0038,,,,,,,,,,,
+22 Sep 2025,Receivable Invoice,GB1-White,GB1-White,Golf balls - white single,40.0000,5.1300,0.00,18.97,224.00,234.00,Approved
+22 Sep 2025,Receivable Invoice,GB1-White,,Courier charge,1.0000,9.1500,0.00,0.85,10.00,234.00,Approved
+Total INV-0038,,,,,41.0000,,0.00,19.82,234.00,,
+,,,,,,,,,,,
+INV-0039,,,,,,,,,,,
+21 Sep 2025,Receivable Invoice,Monthly support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,503.4300,0.00,46.57,550.00,550.00,Draft
+Total INV-0039,,,,,1.0000,,0.00,46.57,550.00,,
+,,,,,,,,,,,
+INV-0040,,,,,,,,,,,
+21 Sep 2025,Receivable Invoice,Monthly support,Support-M,Desktop/network support via email & phone.Per month fixed fee for minimum 20 hours/month.,1.0000,503.4300,0.00,46.57,550.00,550.00,Draft
+Total INV-0040,,,,,1.0000,,0.00,46.57,550.00,,
+Total,,,,,128.0000,0.0000,0.00,"2,756.51","32,556.55",0.00,

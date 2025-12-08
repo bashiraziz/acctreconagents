@@ -13,3 +13,7 @@ wheels/
 .env
 .env.*
 *.env
+
+#temp files
+tmp/
+temp/

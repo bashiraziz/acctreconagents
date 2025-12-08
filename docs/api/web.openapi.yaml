@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: AcctReCon Next.js API Routes
+  version: 0.1.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/uploads:
+    post:
+      summary: Upload structured or supporting files
+      description: Stores files temporarily under `.uploads/` (replace with cloud storage in production).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                kind:
+                  type: string
+                  enum: [structured, supporting]
+                  default: supporting
+      responses:
+        '200':
+          description: Upload stored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  fileName:
+                    type: string
+                  kind:
+                    type: string
+                  size:
+                    type: number
+                  path:
+                    type: string
+        '400':
+          description: Missing file
+  /api/agent/runs:
+    post:
+      summary: Proxy to orchestrator `/agent/runs`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './orchestrator.openapi.yaml#/components/schemas/RunRequest'
+      responses:
+        '200':
+          description: Forwarded response from orchestrator
+          content:
+            application/json:
+              schema:
+                $ref: './orchestrator.openapi.yaml#/components/schemas/RunResponse'
+        '502':
+          description: Orchestrator unreachable
+  /api/create-session:
+    post:
+      summary: Create a ChatKit session via OpenAI Hosted API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workflow:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                chatkit_configuration:
+                  type: object
+      responses:
+        '200':
+          description: Session created
+        '400':
+          description: Missing workflow id
+        '500':
+          description: OpenAI error
+      responses:
+        '200':
+          description: Forwarded ChatKit response
+        '502':
+          description: ChatKit proxy unreachable

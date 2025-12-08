@@ -1,0 +1,34 @@
+Trial Balance,,,,,
+Demo Company (US),,,,,
+As at 31 October 2025,,,,,
+,,,,,
+Account Code,Account,Account Type,Debit - Year to date,Credit - Year to date,31 Dec 2024
+400,Sales,Revenue,,"28,793.18","(2,746.02)"
+500,Cost of Goods Sold,Direct Costs,"2,340.00",,0.00
+600,Advertising,Expense,"10,453.75",,0.00
+604,Bank Service Charges,Expense,30.00,,0.00
+608,Janitorial Expenses,Expense,119.08,,0.00
+612,Consulting & Accounting,Expense,87.00,,0.00
+620,Entertainment,Expense,53.60,,0.00
+624,Postage & Delivery,Expense,125.03,,0.00
+628,General Expenses,Expense,234.19,,0.00
+644,Utilities,Expense,952.63,,374.50
+648,Automobile Expenses,Expense,708.35,,0.00
+652,Office Expenses,Expense,212.72,,0.00
+656,Printing & Stationery,Expense,100.41,,0.00
+660,Rent,Expense,"3,543.75",,0.00
+664,Repairs and Maintenance,Expense,"1,133.06",,0.00
+668,Wages and Salaries,Expense,"17,885.00",,0.00
+672,Payroll Tax Expense,Expense,"1,337.44",,0.00
+676,Dues & Subscriptions,Expense,"1,478.78",,0.00
+680,Telephone & Internet,Expense,145.87,,0.00
+684,Travel,Expense,276.90,,0.00
+090,Checking Account,Bank,,"5,092.83","6,109.98"
+120,Accounts Receivable,Current Asset,"9,172.63",,500.00
+150,Office Equipment,Fixed Asset,"4,252.20",,623.29
+160,Computer Equipment,Fixed Asset,,829.87,0.00
+200,Accounts Payable,Current Liability,,"10,768.63",(476.79)
+220,Sales Tax,Current Liability,,"2,655.38",(253.98)
+255,Historical Adjustment,Current Liability,,"4,130.98","(4,130.98)"
+320,Retained Earnings,Equity,,"2,371.52",0.00
+Total,,,"54,642.39","54,642.39",0.00
