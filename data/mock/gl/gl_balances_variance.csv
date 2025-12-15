@@ -1,0 +1,8 @@
+account_code,period,currency,amount,description
+11000-AR Control,2025-10,USD,990000,Receivables overstated due to unapplied cash
+12050-Unbilled Revenue,2025-10,USD,178000,Includes stale milestone
+20100-AP Control,2025-10,USD,-1140000,Missing Orion accrual
+22010-Accrued Expenses,2025-10,USD,-215000,
+40000-Software Revenue,2025-10,USD,-223000,Contract R-204 not posted
+61000-Depreciation Expense,2025-10,USD,45000,
+15900-Accumulated Depreciation,2025-10,USD,-510000,

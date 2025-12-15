@@ -77,7 +77,7 @@ package.json           # Root scripts (Spec-Kit check)
    ```bash
    cd apps/web
    npm run dev
-   # Visit http://localhost:3100
+   # Script prefers http://localhost:3000, then 3100, then 3200 and prints the recommended port.
    ```
 3. Use the UI:
    * Upload files via the workspace; they save to `.uploads/` locally.

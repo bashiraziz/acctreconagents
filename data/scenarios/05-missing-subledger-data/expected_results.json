@@ -1,0 +1,110 @@
+{
+  "scenario": "05-missing-subledger-data",
+  "description": "Missing subledger detail due to manual journal entry",
+  "materiality_threshold": 50,
+  "severity": "CRITICAL",
+  "error_description": "GL has balance of -$1,185k but subledger only shows -$800k. Missing $385k due to manual journal entry JE-2025-1045 not reflected in AP system",
+  "reconciliations": [
+    {
+      "account": "20100",
+      "period": "2025-10",
+      "glBalance": -1185000,
+      "subledgerBalance": -800000,
+      "variance": -385000,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Variance of -385000.00 detected between GL and subledger.",
+        "Variance exceeds materiality threshold (50.00).",
+        "GL balance significantly higher than subledger - missing detail"
+      ]
+    },
+    {
+      "account": "22010",
+      "period": "2025-10",
+      "glBalance": -185000,
+      "subledgerBalance": -185000,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": ["In balance."]
+    }
+  ],
+  "gemini_agent_expectations": {
+    "validation": {
+      "isValid": true,
+      "confidence": "0.5 - 0.6",
+      "warnings": [
+        "GL balance not fully supported by subledger detail",
+        "Possible data extraction issue",
+        "Data completeness concern"
+      ],
+      "notes": "Structure valid but content has major gaps"
+    },
+    "analysis": {
+      "riskLevel": "high",
+      "materialVariances": [
+        {
+          "account": "20100",
+          "variance": -385000,
+          "percentage": "~32%",
+          "severity": "critical"
+        }
+      ],
+      "patterns": [
+        "Significant subledger shortfall",
+        "Manual GL entries detected",
+        "Data completeness issue",
+        "Missing supporting documentation"
+      ],
+      "overallHealth": "30-50",
+      "notes": "Major data integrity concern - month-end blocker"
+    },
+    "investigation": {
+      "investigations": [
+        {
+          "account": "20100",
+          "variance": -385000,
+          "possibleCauses": [
+            "Manual journal entries bypassing AP system",
+            "Missing invoice data in subledger extract",
+            "Accrual posted to GL but not entered as invoice in AP",
+            "Data export failure from AP system",
+            "Prior period adjustments not reflected",
+            "GL and AP system integration issue",
+            "Journal entry JE-2025-1045 without subledger support"
+          ],
+          "suggestedActions": [
+            "URGENT: Review journal entry JE-2025-1045 for $385k",
+            "Verify if this is a legitimate accrual requiring AP invoice entry",
+            "Confirm AP system export is complete and accurate",
+            "Reconcile all manual GL entries to subledger support",
+            "Consider moving accrual to Account 22010 if appropriate",
+            "Implement controls requiring subledger support for AP entries",
+            "Conduct full review of GL to AP integration",
+            "Cannot close month until this variance is resolved"
+          ],
+          "confidenceLevel": "high",
+          "needsManualReview": true,
+          "severity": "critical",
+          "blocksMonthEnd": true
+        }
+      ]
+    },
+    "report": {
+      "should_contain": [
+        "CRITICAL",
+        "385000",
+        "missing",
+        "manual journal entry",
+        "JE-2025-1045",
+        "immediate action required",
+        "cannot close",
+        "subledger incomplete",
+        "integration issue"
+      ],
+      "should_emphasize_urgency": true,
+      "should_flag_as_blocker": true
+    }
+  }
+}

@@ -2,48 +2,14 @@
 
 import { useState } from "react";
 import { specMetadata } from "@/lib/spec";
+import { useReconciliationStore } from "@/store/reconciliationStore";
+import type { OrchestratorResponse } from "@/types/reconciliation";
 
-const demoPayload = {
-  glBalances: [
-    { account: "1000", period: "2025-10", amount: 120000 },
-    { account: "1000", period: "2025-11", amount: 118500 },
-  ],
-  subledgerBalances: [
-    { account: "1000", period: "2025-10", amount: 119200 },
-    { account: "1000", period: "2025-11", amount: 118500 },
-  ],
-  transactions: [
-    {
-      account: "1000",
-      booked_at: "2025-10-15",
-      amount: -800,
-      metadata: { period: "2025-10", source: "Inventory" },
-    },
-    {
-      account: "1000",
-      booked_at: "2025-10-31",
-      amount: -500,
-      metadata: { period: "2025-10", source: "Cost adjustments" },
-    },
-  ],
-  orderedPeriods: ["2025-10", "2025-11"],
-};
-
-type RunResult = {
-  runId: string;
-  timeline: Array<{
-    stage: string;
-    status: string;
-    detail: string;
-    timestamp: string;
-  }>;
-  openai?: {
-    message: string;
-    messagesByRole: Record<string, string>;
-  };
-  claudeSkills?: Array<{ skill: string; response: string }>;
-  geminiInsight?: string | null;
-  toolOutput?: unknown;
+type AgentError = {
+  message: string;
+  detail?: string;
+  help?: string[];
+  technical?: string;
 };
 
 export function OrchestratorConsole() {
@@ -51,37 +17,119 @@ export function OrchestratorConsole() {
     "Reconcile account 1000 inventory roll-forward for October close.",
   );
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<RunResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<OrchestratorResponse | null>(null);
+  const [error, setError] = useState<AgentError | null>(null);
+
+  // Get data from Zustand store
+  const reconciliationData = useReconciliationStore(
+    (state) => state.reconciliationData,
+  );
+  const isRunning = useReconciliationStore((state) => state.isRunning);
+  const startRun = useReconciliationStore((state) => state.startRun);
+  const stopRun = useReconciliationStore((state) => state.stopRun);
+  const completeRun = useReconciliationStore((state) => state.completeRun);
 
   const runAgents = async () => {
+    // Validate data exists
+    if (!reconciliationData) {
+      setError({
+        message: "No data to reconcile",
+        detail: "You need to upload and map your files first.",
+        help: [
+          "Upload GL and Subledger balance files",
+          "Map the columns to canonical fields",
+          "Click 'Apply Mappings' to transform the data",
+        ],
+      });
+      return;
+    }
+
+    // Create abort controller for stop functionality
+    const abortController = new AbortController();
+    const runId = `run_${Date.now()}`;
+
+    startRun(runId, abortController);
     setLoading(true);
     setError(null);
+    setResult(null);
+
     try {
       const response = await fetch("/api/agent/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userPrompt: prompt,
-          payload: demoPayload,
+          payload: reconciliationData, // ✅ Using real data from Zustand!
         }),
+        signal: abortController.signal,
       });
+
       const data = await response.json();
+
+      // Debug: Log the full response
+      console.log("🔍 API Response:", JSON.stringify(data, null, 2));
+
       if (!response.ok) {
-        const details =
-          extractValidationDetails(data?.issues) ??
-          (data?.detail as string | undefined);
-        const message = [data?.message ?? "Agent run failed", details]
-          .filter(Boolean)
-          .join(": ");
-        throw new Error(message);
+        // Extract error details - handle both old and new formats
+        let details: string | undefined;
+        if (Array.isArray(data?.errors)) {
+          // New format: array of user-friendly errors
+          details = data.errors.join("\n\n");
+        } else if (data?.issues) {
+          // Old format: Zod validation issues
+          details = extractValidationDetails(data.issues);
+        } else if (data?.detail) {
+          details = data.detail as string;
+        }
+
+        const message =
+          (data?.message as string | undefined) ??
+          (data?.error as string | undefined) ??
+          "Agent run failed";
+
+        const help = Array.isArray(data?.help)
+          ? (data.help.filter(Boolean) as string[])
+          : undefined;
+
+        setError({
+          message,
+          detail: details,
+          help,
+          technical: data?.technical as string | undefined,
+        });
+        completeRun();
+        return;
       }
+
       setResult(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      completeRun();
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        setError({
+          message: "Reconciliation stopped by user",
+          detail: "The agent run was cancelled.",
+        });
+      } else {
+        const technical = err instanceof Error ? err.message : String(err);
+        setError({
+          message: "Agent run failed",
+          detail: "We couldn't complete the agent run from the web app.",
+          help: [
+            "Try again in a few seconds.",
+            "If this continues, confirm the agent service is running.",
+          ],
+          technical,
+        });
+      }
+      completeRun();
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStop = () => {
+    stopRun();
+    setLoading(false);
   };
 
   return (
@@ -95,19 +143,32 @@ export function OrchestratorConsole() {
             Multi-agent console
           </h2>
           <p className="mt-1 text-sm text-slate-400">
-            Launch OpenAI Agents, Claude Skills, and Gemini commentary from a
-            single command, bound by Spec-Kit schema v{specMetadata.version}.
+            Launch Gemini AI agents for reconciliation analysis, bound by Spec-Kit
+            schema v{specMetadata.version}.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={runAgents}
-          disabled={loading}
-          className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
-        >
-          {loading ? "Running..." : "Run agents"}
-        </button>
+        <div className="flex gap-2">
+          {isRunning ? (
+            <button
+              type="button"
+              onClick={handleStop}
+              className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-400"
+            >
+              🛑 Stop Agents
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={runAgents}
+              disabled={!reconciliationData || loading}
+              className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+            >
+              {loading ? "Running..." : "🤖 Run Agents"}
+            </button>
+          )}
+        </div>
       </header>
+
       <div className="mt-4">
         <label className="text-xs uppercase tracking-[0.3em] text-slate-500">
           User prompt
@@ -119,11 +180,57 @@ export function OrchestratorConsole() {
           />
         </label>
       </div>
-      {error && (
-        <p className="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-100">
-          {error}
-        </p>
+
+      {/* Data Status */}
+      {!reconciliationData && (
+        <div className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+          <p className="font-semibold">⚠️ No data ready</p>
+          <p className="mt-1 text-amber-100/90">
+            Upload files and apply column mappings before running agents.
+          </p>
+        </div>
       )}
+
+      {reconciliationData && !result && !error && (
+        <div className="mt-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+          <p className="font-semibold">✓ Data ready to reconcile</p>
+          <p className="mt-1 text-emerald-100/90">
+            {reconciliationData.glBalances.length} GL balances,{" "}
+            {reconciliationData.subledgerBalances.length} subledger balances
+            {reconciliationData.transactions &&
+              `, ${reconciliationData.transactions.length} transactions`}
+          </p>
+        </div>
+      )}
+
+      {/* Error Display */}
+      {error && (
+        <div className="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-100">
+          <p className="font-semibold">{error.message}</p>
+          {error.detail ? (
+            <p className="mt-1 text-sm text-rose-100/90">{error.detail}</p>
+          ) : null}
+          {error.help && error.help.length > 0 ? (
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-rose-100/90">
+              {error.help.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : null}
+          {error.technical ? (
+            <details className="mt-3 text-xs text-rose-100/80">
+              <summary className="cursor-pointer select-none font-semibold uppercase tracking-[0.3em] text-rose-100/70 hover:text-rose-100">
+                Show details
+              </summary>
+              <pre className="mt-2 whitespace-pre-wrap rounded-xl border border-rose-500/20 bg-black/30 p-3 text-[11px] text-rose-50/90">
+                {error.technical}
+              </pre>
+            </details>
+          ) : null}
+        </div>
+      )}
+
+      {/* Results Display */}
       {result && <RunResultPanel result={result} />}
     </section>
   );
@@ -170,7 +277,7 @@ function humanizeIssue(path: string, message: string) {
   const fieldKey = parts[parts.length - 1];
   const fieldLabel =
     fieldKey && fieldKey !== categoryKey
-      ? `“${fieldKey.replace(/_/g, " ")}”`
+      ? `"${fieldKey.replace(/_/g, " ")}"`
       : "";
 
   const readableMessage = message
@@ -184,22 +291,36 @@ function humanizeIssue(path: string, message: string) {
     .trim();
 }
 
-function RunResultPanel({ result }: { result: RunResult }) {
+function RunResultPanel({ result }: { result: OrchestratorResponse }) {
   return (
-    <div className="mt-6 grid gap-4 lg:grid-cols-2">
-      <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
-        <h3 className="text-sm font-semibold text-white">
-          Timeline · {result.runId}
-        </h3>
-        <ol className="mt-3 space-y-3 text-sm text-slate-200">
-          {result.timeline.map((entry) => (
+    <div className="mt-6 space-y-4">
+      {/* Timeline */}
+      {result.timeline && result.timeline.length > 0 && (
+        <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
+          <h3 className="text-sm font-semibold text-white">
+            Timeline · {result.runId}
+          </h3>
+          <ol className="mt-3 space-y-2 text-sm text-slate-200">
+            {result.timeline.map((entry) => (
             <li
-              key={entry.stage}
+              key={entry.stage + entry.timestamp}
               className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-3"
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold capitalize">{entry.stage.replace(/_/g, " ")}</span>
-                <span className="text-xs uppercase text-slate-400">
+                <span className="font-semibold capitalize">
+                  {entry.stage.replace(/_/g, " ")}
+                </span>
+                <span
+                  className={`text-xs font-medium uppercase ${
+                    entry.status === "completed"
+                      ? "text-emerald-400"
+                      : entry.status === "failed"
+                        ? "text-rose-400"
+                        : entry.status === "in_progress"
+                          ? "text-sky-400"
+                          : "text-slate-400"
+                  }`}
+                >
                   {entry.status}
                 </span>
               </div>
@@ -211,40 +332,164 @@ function RunResultPanel({ result }: { result: RunResult }) {
           ))}
         </ol>
       </div>
-      <div className="space-y-4">
-        {result.openai?.messagesByRole && (
-          <div className="rounded-2xl border border-indigo-800/50 bg-indigo-950/20 p-4 text-sm text-indigo-50">
-            <h4 className="font-semibold">OpenAI agents</h4>
-            {Object.entries(result.openai.messagesByRole).map(
-              ([role, message]) => (
-                <div key={role} className="mt-2">
-                  <p className="text-xs uppercase text-indigo-300">{role}</p>
-                  <p className="text-sm">{message}</p>
+      )}
+
+      {/* Gemini Agent Results */}
+      {result.geminiAgents && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-white">
+            🤖 Gemini AI Agent Results (FREE)
+          </h3>
+
+          {/* Debug info */}
+          {console.log("🔍 Gemini Agents Data:", {
+            hasValidation: !!result.geminiAgents.validation,
+            hasAnalysis: !!result.geminiAgents.analysis,
+            hasInvestigation: !!result.geminiAgents.investigation,
+            hasReport: !!result.geminiAgents.report,
+            reportType: typeof result.geminiAgents.report,
+          })}
+
+          {/* Validation */}
+          {result.geminiAgents.validation && (
+            <div className="rounded-2xl border border-blue-800/40 bg-blue-950/30 p-4">
+              <h4 className="font-semibold text-blue-100">
+                1️⃣ Data Validation Agent
+              </h4>
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-200">Confidence Score:</span>
+                  <span className="font-semibold text-blue-100">
+                    {result.geminiAgents.validation.confidence
+                      ? Math.round(result.geminiAgents.validation.confidence * 100)
+                      : "N/A"}/100
+                  </span>
                 </div>
-              ),
-            )}
-          </div>
-        )}
-        {result.claudeSkills && (
-          <div className="rounded-2xl border border-emerald-800/40 bg-emerald-950/30 p-4 text-sm text-emerald-50">
-            <h4 className="font-semibold">Claude skills</h4>
-            {result.claudeSkills.map((skill) => (
-              <div key={skill.skill} className="mt-2">
-                <p className="text-xs uppercase text-emerald-300">
-                  {skill.skill}
-                </p>
-                <p>{skill.response}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-200">Validation Status:</span>
+                  <span className="font-semibold text-blue-100">
+                    {result.geminiAgents.validation.isValid ? "✓ Valid" : "⚠️ Issues Found"}
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-        {result.geminiInsight && (
-          <div className="rounded-2xl border border-yellow-700/50 bg-yellow-500/10 p-4 text-sm text-yellow-50">
-            <h4 className="font-semibold">Gemini insight</h4>
-            <p>{result.geminiInsight}</p>
-          </div>
-        )}
-      </div>
+              {result.geminiAgents.validation.warnings && result.geminiAgents.validation.warnings.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold uppercase text-blue-300">Warnings</p>
+                  <ul className="mt-1 list-disc pl-5 text-sm text-blue-200/80">
+                    {result.geminiAgents.validation.warnings.map((w: string, i: number) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Analysis */}
+          {result.geminiAgents.analysis && (
+            <div className="rounded-2xl border border-purple-800/40 bg-purple-950/30 p-4">
+              <h4 className="font-semibold text-purple-100">
+                2️⃣ Reconciliation Analyst Agent
+              </h4>
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-purple-200">Risk Level:</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
+                      result.geminiAgents.analysis.riskLevel === "high"
+                        ? "bg-rose-500/20 text-rose-300"
+                        : result.geminiAgents.analysis.riskLevel === "medium"
+                          ? "bg-amber-500/20 text-amber-300"
+                          : "bg-emerald-500/20 text-emerald-300"
+                    }`}
+                  >
+                    {result.geminiAgents.analysis.riskLevel}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-purple-200">Material Variances:</span>
+                  <span className="font-semibold text-purple-100">
+                    {result.geminiAgents.analysis.materialVariances?.length || 0}
+                  </span>
+                </div>
+              </div>
+              {result.geminiAgents.analysis.patterns && result.geminiAgents.analysis.patterns.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold uppercase text-purple-300">
+                    Patterns Detected
+                  </p>
+                  <ul className="mt-1 list-disc pl-5 text-sm text-purple-200/80">
+                    {result.geminiAgents.analysis.patterns.map((p: string, i: number) => (
+                      <li key={i}>{p}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Investigation */}
+          {(result.geminiAgents.investigation?.investigations?.length ?? 0) > 0 && (
+            <div className="rounded-2xl border border-orange-800/40 bg-orange-950/30 p-4">
+              <h4 className="font-semibold text-orange-100">
+                3️⃣ Variance Investigator Agent
+              </h4>
+              <div className="mt-3 space-y-3">
+                {result.geminiAgents.investigation?.investigations?.map(
+                  (inv: any, i: number) => (
+                    <div key={i} className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
+                      <p className="font-semibold text-sm text-orange-100">
+                        Account: {inv.account} (Variance: ${inv.variance?.toFixed(2)})
+                      </p>
+                      {inv.possibleCauses && inv.possibleCauses.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-semibold uppercase text-orange-300">
+                            Possible Causes
+                          </p>
+                          <ul className="mt-1 list-disc pl-5 text-sm text-orange-200/80">
+                            {inv.possibleCauses.map((cause: string, j: number) => (
+                              <li key={j}>{cause}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {inv.suggestedActions && inv.suggestedActions.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-semibold uppercase text-orange-300">
+                            Suggested Actions
+                          </p>
+                          <ul className="mt-1 list-disc pl-5 text-sm text-orange-200/80">
+                            {inv.suggestedActions.map((action: string, j: number) => (
+                              <li key={j}>{action}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Report */}
+          {result.geminiAgents.report && (
+            <div className="rounded-2xl border border-emerald-800/40 bg-emerald-950/30 p-4">
+              <h4 className="font-semibold text-emerald-100">
+                4️⃣ Report Generator Agent
+              </h4>
+              <div className="mt-3 prose prose-invert prose-sm max-w-none">
+                <div className="whitespace-pre-wrap text-sm text-emerald-100/90">
+                  {typeof result.geminiAgents.report === 'string'
+                    ? result.geminiAgents.report
+                    : JSON.stringify(result.geminiAgents.report, null, 2)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }

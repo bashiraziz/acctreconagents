@@ -1,8 +1,30 @@
-import spec from "../../../../specs/reconciliation.speckit.json";
+import spec from "./specs/reconciliation.speckit.json";
 
-type SpeckitSpec = typeof spec;
+type SpeckitField = {
+  name: string;
+  description?: string;
+  required?: boolean;
+};
 
-const reconciliationSpec: SpeckitSpec = spec;
+type SpeckitDataModel = {
+  name: string;
+  fields: SpeckitField[];
+};
+
+type SpeckitInterface = {
+  name: string;
+  input?: unknown;
+};
+
+type SpeckitSpec = {
+  name: string;
+  version: string;
+  summary?: string;
+  dataModels: SpeckitDataModel[];
+  interfaces: SpeckitInterface[];
+};
+
+const reconciliationSpec = spec as unknown as SpeckitSpec;
 
 export const specMetadata = {
   name: reconciliationSpec.name,

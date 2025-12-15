@@ -1,0 +1,85 @@
+{
+  "scenario": "02-material-variance",
+  "description": "Duplicate invoice causing material variance",
+  "materiality_threshold": 50,
+  "error_description": "Invoice INV-99302 entered twice in subledger, GL correct",
+  "reconciliations": [
+    {
+      "account": "20100",
+      "period": "2025-10",
+      "glBalance": -1185000,
+      "subledgerBalance": -1460000,
+      "variance": 275000,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Variance of 275000.00 detected between GL and subledger.",
+        "Variance exceeds materiality threshold (50.00)."
+      ]
+    },
+    {
+      "account": "22010",
+      "period": "2025-10",
+      "glBalance": -215000,
+      "subledgerBalance": -215000,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": ["In balance."]
+    }
+  ],
+  "gemini_agent_expectations": {
+    "validation": {
+      "isValid": true,
+      "confidence": "0.7 - 0.8",
+      "warnings": ["Potential duplicate entries detected"],
+      "notes": "Data structure valid but content has anomalies"
+    },
+    "analysis": {
+      "riskLevel": "medium or high",
+      "materialVariances": [
+        {
+          "account": "20100",
+          "variance": 275000,
+          "percentage": "~23%"
+        }
+      ],
+      "patterns": ["Duplicate entry pattern detected"],
+      "overallHealth": "50-70"
+    },
+    "investigation": {
+      "investigations": [
+        {
+          "account": "20100",
+          "variance": 275000,
+          "possibleCauses": [
+            "Duplicate invoice entry in AP system",
+            "Same vendor, invoice number, and amount detected",
+            "Invoice INV-99302 appears multiple times"
+          ],
+          "suggestedActions": [
+            "Review AP subledger for duplicate invoice INV-99302",
+            "Verify with vendor Radius Labs if invoice was received twice",
+            "Reverse duplicate entry if confirmed",
+            "Update GL if invoice legitimately recorded twice"
+          ],
+          "confidenceLevel": "high",
+          "needsManualReview": true
+        }
+      ]
+    },
+    "report": {
+      "should_contain": [
+        "material variance",
+        "275000",
+        "duplicate",
+        "corrective action required",
+        "Account 20100"
+      ],
+      "should_not_contain": [
+        "in balance",
+        "no issues"
+      ]
+    }
+  }
+}

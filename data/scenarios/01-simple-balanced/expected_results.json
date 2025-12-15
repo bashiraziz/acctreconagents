@@ -1,0 +1,51 @@
+{
+  "scenario": "01-simple-balanced",
+  "description": "Perfect reconciliation with no variances",
+  "materiality_threshold": 50,
+  "reconciliations": [
+    {
+      "account": "20100",
+      "period": "2025-10",
+      "glBalance": -1185000,
+      "subledgerBalance": -1185000,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": ["In balance."]
+    },
+    {
+      "account": "22010",
+      "period": "2025-10",
+      "glBalance": -215000,
+      "subledgerBalance": -215000,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": ["In balance."]
+    }
+  ],
+  "gemini_agent_expectations": {
+    "validation": {
+      "isValid": true,
+      "confidence": ">= 0.9",
+      "warnings": [],
+      "errors": []
+    },
+    "analysis": {
+      "riskLevel": "low",
+      "materialVariances": [],
+      "overallHealth": ">= 95"
+    },
+    "investigation": {
+      "investigations": [],
+      "message": "No material variances to investigate"
+    },
+    "report": {
+      "should_contain": [
+        "in balance",
+        "no material variances",
+        "no corrective actions required"
+      ]
+    }
+  }
+}

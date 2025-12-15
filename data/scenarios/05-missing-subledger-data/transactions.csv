@@ -1,0 +1,10 @@
+account_code,booked_at,debit,credit,amount,narrative,source_period
+20100,2025-10-01,0,0,0,Opening balance October 2025,2025-10
+20100,2025-10-05,0,335000,-335000,Invoice INV-55490 - Global Staffing contract labor,2025-10
+20100,2025-10-10,150000,0,150000,Payment CHK-9001 - Prior period vendor,2025-10
+20100,2025-10-15,0,420000,-420000,Invoice INV-45021 - Northwind Components raw materials,2025-10
+20100,2025-10-20,200000,0,200000,Payment CHK-9002 - Prior period vendor,2025-10
+20100,2025-10-25,0,385000,-385000,JE-2025-1045 - Manual accrual for construction project (NO AP INVOICE!),2025-10
+20100,2025-10-28,145000,0,145000,Payment CHK-9003 - Prior period vendor,2025-10
+22010,2025-10-01,0,0,0,Opening balance October 2025,2025-10
+22010,2025-10-31,0,35000,-35000,Accrual ACCR-PR-2025-10 - October payroll,2025-10

@@ -1,0 +1,6 @@
+account_code,booked_at,debit,credit,amount,narrative,source_period
+20100,2025-10-05,0,335000,-335000,Invoice INV-55490 - Global Staffing contract labor,2025-10
+20100,2025-10-10,155000,0,155000,Payment CHK-8901 to TruVista Logistics,2025-10
+20100,2025-10-15,0,420000,-420000,Invoice INV-45021 - Northwind Components raw materials,2025-10
+20100,2025-10-20,275000,0,275000,Payment CHK-8902 to Radius Labs,2025-10
+22010,2025-10-31,0,35000,-35000,October payroll accrual,2025-10

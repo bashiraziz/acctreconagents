@@ -1,0 +1,88 @@
+{
+  "scenario": "03-timing-differences",
+  "description": "Period cutoff error - invoice dated in wrong period",
+  "materiality_threshold": 50,
+  "error_description": "Invoice INV-77845 recorded in subledger as Oct but GL entry posted in Nov",
+  "reconciliations": [
+    {
+      "account": "20100",
+      "period": "2025-10",
+      "glBalance": -1005000,
+      "subledgerBalance": -1185000,
+      "variance": 180000,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Variance of 180000.00 detected between GL and subledger.",
+        "Variance exceeds materiality threshold (50.00)."
+      ]
+    },
+    {
+      "account": "22010",
+      "period": "2025-10",
+      "glBalance": -185000,
+      "subledgerBalance": -185000,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": ["In balance."]
+    }
+  ],
+  "gemini_agent_expectations": {
+    "validation": {
+      "isValid": true,
+      "confidence": "0.7 - 0.8",
+      "warnings": ["Period cutoff issue detected"],
+      "notes": "Data valid but timing anomaly present"
+    },
+    "analysis": {
+      "riskLevel": "medium",
+      "materialVariances": [
+        {
+          "account": "20100",
+          "variance": 180000,
+          "percentage": "~18%"
+        }
+      ],
+      "patterns": ["Timing difference detected", "Period-end cutoff issue"],
+      "overallHealth": "60-75"
+    },
+    "investigation": {
+      "investigations": [
+        {
+          "account": "20100",
+          "variance": 180000,
+          "possibleCauses": [
+            "Timing difference - transaction recorded in wrong period",
+            "Invoice INV-77845 recorded in subledger Oct but GL Nov",
+            "Period cutoff error at month-end",
+            "Accrual may be required if invoice received before Oct 31"
+          ],
+          "suggestedActions": [
+            "Review GL transaction dates for INV-77845",
+            "Verify invoice received date vs GL posting date",
+            "If received in October, reclassify GL entry from Nov to Oct",
+            "Alternative: Accrue $180k in October, reverse in November",
+            "Implement period cutoff controls"
+          ],
+          "confidenceLevel": "high",
+          "needsManualReview": true
+        }
+      ]
+    },
+    "report": {
+      "should_contain": [
+        "timing difference",
+        "period cutoff",
+        "180000",
+        "INV-77845",
+        "reclassify",
+        "corrective action"
+      ],
+      "should_not_contain": [
+        "in balance",
+        "no issues"
+      ]
+    }
+  }
+}

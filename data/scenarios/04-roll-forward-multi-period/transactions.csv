@@ -1,0 +1,28 @@
+account_code,booked_at,debit,credit,amount,narrative,source_period
+20100,2025-08-01,0,0,0,Opening balance August 2025,2025-08
+20100,2025-08-05,0,200000,-200000,Invoice INV-8001 - Acme Corp office supplies,2025-08
+20100,2025-08-12,0,150000,-150000,Invoice INV-8002 - Tech Industries equipment,2025-08
+20100,2025-08-15,100000,0,100000,Payment CHK-8101 - Prior period vendor,2025-08
+20100,2025-08-20,0,100000,-100000,Invoice INV-8003 - Global Supply materials,2025-08
+20100,2025-08-22,120000,0,120000,Payment CHK-8102 - Prior period vendor,2025-08
+20100,2025-08-25,0,200000,-200000,Invoice INV-8004 - Bolt Manufacturing parts,2025-08
+20100,2025-08-28,80000,0,80000,Payment CHK-8103 - Prior period vendor,2025-08
+22010,2025-08-01,0,0,0,Opening balance August 2025,2025-08
+22010,2025-08-31,0,15000,-15000,Accrual ACCR-08 - August payroll,2025-08
+20100,2025-09-01,0,0,0,Opening balance September 2025 (equals Aug closing),2025-09
+20100,2025-09-03,0,180000,-180000,Invoice INV-9001 - Tech Industries software licenses,2025-09
+20100,2025-09-05,90000,0,90000,Payment CHK-9101 - Prior period invoice,2025-09
+20100,2025-09-10,0,140000,-140000,Invoice INV-9002 - Radius Labs consulting,2025-09
+20100,2025-09-12,150000,0,150000,Payment CHK-9102 to Tech Industries (INV-8002),2025-09
+20100,2025-09-18,0,200000,-200000,Invoice INV-9003 - Northwind Components raw materials,2025-09
+20100,2025-09-20,110000,0,110000,Payment CHK-9103 - Prior period vendor,2025-09
+22010,2025-09-01,0,0,0,Opening balance September 2025,2025-09
+22010,2025-09-30,0,15000,-15000,Accrual ACCR-09 - September payroll,2025-09
+20100,2025-10-01,0,0,0,Opening balance October 2025 (equals Sep closing),2025-10
+20100,2025-10-05,0,335000,-335000,Invoice INV-10001 - Global Staffing contract labor,2025-10
+20100,2025-10-08,100000,0,100000,Payment CHK-10101 to Global Supply (INV-8003),2025-10
+20100,2025-10-10,180000,0,180000,Payment CHK-10102 to Tech Industries (INV-9001),2025-10
+20100,2025-10-15,0,420000,-420000,Invoice INV-10002 - Northwind Components materials,2025-10
+20100,2025-10-18,110000,0,110000,Payment CHK-10103 - Prior period vendor,2025-10
+22010,2025-10-01,0,0,0,Opening balance October 2025,2025-10
+22010,2025-10-31,0,35000,-35000,Accrual ACCR-10 - October payroll,2025-10

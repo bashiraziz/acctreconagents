@@ -1,0 +1,6 @@
+employee_id,name,department,period,gross_pay,bonus_accrual,account_code,notes
+E-1021,Jordan Lee,Engineering,2025-10,145000,45000,22300-Bonus Accrual,
+E-1044,Sasha Ortiz,Product,2025-10,98000,0,22100-Salaries Payable,
+E-1082,Marcus Givens,Sales,2025-10,87000,0,22100-Salaries Payable,
+E-1120,Taylor Chen,Engineering,2025-10,130000,15000,22300-Bonus Accrual,
+E-1201,Avery Ross,Go-To-Market,2025-10,60000,0,22100-Salaries Payable,Bonus accrual omitted (should be $15k)

@@ -1,0 +1,6 @@
+sku,description,account_code,quantity,on_hand_value,status,notes
+FG-100,Alpha Control Unit,13000-Finished Goods,420,252000,Available,
+FG-200,Beta Sensor Pack,13000-Finished Goods,310,186000,Available,
+FG-310,Legacy Module,13000-Finished Goods,90,54000,Scrapped,Scrap not booked ($45k)
+RM-500,Steel Sheets,13100-Raw Materials,150,90000,Available,
+RM-720,Processors,13100-Raw Materials,220,290000,Available,

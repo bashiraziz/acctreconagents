@@ -1,0 +1,3 @@
+account_code,period,currency,amount,description
+22100-Salaries Payable,2025-10,USD,-420000,Final October payroll
+22300-Bonus Accrual,2025-10,USD,-90000,Q4 accrual (missing $60k)

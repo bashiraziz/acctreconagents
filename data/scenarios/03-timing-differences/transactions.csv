@@ -1,0 +1,9 @@
+account_code,booked_at,debit,credit,amount,narrative,source_period,gl_period
+20100,2025-10-01,0,0,0,Beginning balance for October,2025-10,2025-10
+20100,2025-10-05,0,335000,-335000,Invoice INV-55490 - Global Staffing contract labor,2025-10,2025-10
+20100,2025-10-10,150000,0,150000,Payment CHK-9001 to Acme Corp for Sep invoice,2025-10,2025-10
+20100,2025-10-15,0,420000,-420000,Invoice INV-45021 - Northwind Components raw materials,2025-10,2025-10
+20100,2025-10-20,200000,0,200000,Payment CHK-9002 to Bolt Industries for Sep invoice,2025-10,2025-10
+20100,2025-11-02,0,180000,-180000,Invoice INV-77845 - Tech Solutions (POSTED IN NOV - SHOULD BE OCT),2025-10,2025-11
+22010,2025-10-01,0,0,0,Beginning balance for October,2025-10,2025-10
+22010,2025-10-31,0,35000,-35000,October payroll accrual,2025-10,2025-10

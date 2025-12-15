@@ -1,0 +1,6 @@
+contract_id,customer,start_date,end_date,mrr,status,notes
+SUB-3001,Apex Retail,2024-04-01,2026-03-31,120000,Active,
+SUB-3015,Blue Harbor,2024-09-01,2025-08-31,90000,Active,
+SUB-3020,Celsius Cloud,2023-07-01,2025-06-30,70000,Active,
+SUB-2905,Delta Health,2022-05-01,2024-04-30,60000,Churned,Should reduce ARR by $30k MRR
+SUB-3100,Evergreen Labs,2025-10-01,2027-09-30,150000,New,

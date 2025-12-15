@@ -1,0 +1,7 @@
+account_code,account_name,period,currency,amount
+20100,Accounts Payable Control,2025-08,USD,-650000.00
+20100,Accounts Payable Control,2025-09,USD,-820000.00
+20100,Accounts Payable Control,2025-10,USD,-1185000.00
+22010,Accrued Expenses,2025-08,USD,-135000.00
+22010,Accrued Expenses,2025-09,USD,-150000.00
+22010,Accrued Expenses,2025-10,USD,-185000.00

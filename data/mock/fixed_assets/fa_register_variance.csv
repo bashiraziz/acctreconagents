@@ -1,0 +1,5 @@
+asset_id,description,category,account_code,cost,accum_depr,nbv,notes
+FA-1001,Manufacturing Line B,Equipment,15000-Fixed Assets,450000,270000,180000,
+FA-1007,Corporate HQ Leasehold,Leasehold Improvements,15000-Fixed Assets,280000,112000,168000,
+FA-1020,Cloud Infrastructure Pods,Equipment,15000-Fixed Assets,320000,128000,192000,
+FA-0905,Legacy CRM Servers,Equipment,15000-Fixed Assets,55000,55000,0,Disposed in September but still on books

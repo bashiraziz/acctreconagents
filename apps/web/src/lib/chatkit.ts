@@ -14,7 +14,7 @@ export const STARTER_PROMPTS: StartScreenPrompt[] = [
   {
     label: "Explain account variance",
     prompt: "Explain why account 1000 is out of balance.",
-    icon: "sparkles",
+    icon: "sparkle",
   },
 ];
 

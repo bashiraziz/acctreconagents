@@ -3,35 +3,40 @@ import { OpenAI } from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import spec from "../../../specs/reconciliation.speckit.json" with { type: "json" };
+import { runGeminiAgentPipeline } from "./agents/gemini-agents.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({
-  path: path.join(__dirname, "../..", ".env"),
-});
+const envCandidates = [
+  path.join(process.cwd(), ".env"),
+  path.join(process.cwd(), "..", "..", ".env"),
+];
+const envPath = envCandidates.find((candidate) => fs.existsSync(candidate));
+dotenv.config(envPath ? { path: envPath } : undefined);
 
 const fastify = Fastify({ logger: true });
 
 const balanceSchema = z.object({
-  account: z.string(),
+  account_code: z.string(),
   period: z.string().optional().default(""),
   amount: z.number(),
   currency: z.string().optional(),
 });
 
 const transactionSchema = z.object({
-  account: z.string(),
+  account_code: z.string(),
   booked_at: z.union([z.string(), z.date()]),
   debit: z.number().optional(),
   credit: z.number().optional(),
   amount: z.number().optional(),
-  description: z.string().optional(),
-  metadata: z.record(z.string(), z.string()).optional(),
+  narrative: z.string().optional(),
+  source_period: z.string().optional(),
 });
 
 const payloadSchema = z.object({
@@ -63,10 +68,16 @@ const anthropicClient = anthropicKey
 const geminiClient =
   geminiKey !== "" ? new GoogleGenerativeAI(geminiKey) : null;
 
+const llmMode = (process.env.ORCHESTRATOR_LLM_MODE ?? "auto").toLowerCase();
+const normalizedLlmMode =
+  llmMode === "auto" || llmMode === "openai" || llmMode === "gemini" || llmMode === "none"
+    ? llmMode
+    : "auto";
+
 const supervisorModel =
-  process.env.OPENAI_SUPERVISOR_MODEL ?? "gpt-4.1-mini";
+  process.env.OPENAI_SUPERVISOR_MODEL ?? "gpt-4o-mini";
 const reviewerModel =
-  process.env.OPENAI_REVIEWER_MODEL ?? "gpt-4.1-mini";
+  process.env.OPENAI_REVIEWER_MODEL ?? "gpt-4o-mini";
 
 const claudeModel =
   process.env.CLAUDE_SKILL_MODEL ?? "claude-3-5-sonnet-20241022";
@@ -81,11 +92,12 @@ const reconciliationToolParameters = {
       items: {
         type: "object",
         properties: {
-          account: { type: "string" },
+          account_code: { type: "string" },
           period: { type: "string" },
           amount: { type: "number" },
+          currency: { type: "string" },
         },
-        required: ["account", "amount"],
+        required: ["account_code", "amount"],
       },
     },
     subledger_balances: {
@@ -93,11 +105,12 @@ const reconciliationToolParameters = {
       items: {
         type: "object",
         properties: {
-          account: { type: "string" },
+          account_code: { type: "string" },
           period: { type: "string" },
           amount: { type: "number" },
+          currency: { type: "string" },
         },
-        required: ["account", "amount"],
+        required: ["account_code", "amount"],
       },
     },
     transactions: {
@@ -105,15 +118,15 @@ const reconciliationToolParameters = {
       items: {
         type: "object",
         properties: {
-          account: { type: "string" },
+          account_code: { type: "string" },
           booked_at: { type: "string" },
           debit: { type: "number" },
           credit: { type: "number" },
           amount: { type: "number" },
-          description: { type: "string" },
-          metadata: { type: "object" },
+          narrative: { type: "string" },
+          source_period: { type: "string" },
         },
-        required: ["account", "booked_at"],
+        required: ["account_code", "booked_at"],
       },
     },
     ordered_periods: {
@@ -137,9 +150,32 @@ type ToolOutput = ReturnType<typeof runReconciliationLocally>;
 fastify.post("/agent/runs", async (request, reply) => {
   const parsed = runSchema.safeParse(request.body);
   if (!parsed.success) {
+    // Create user-friendly error messages
+    const errors = parsed.error.issues.map((err) => {
+      const path = err.path.join(".");
+      if (err.code === "invalid_type") {
+        if (err.expected === "string" && err.received === "undefined") {
+          return `Missing required field: ${path}. Please check your column mappings.`;
+        }
+        if (err.expected === "number" && err.received === "string") {
+          return `Field "${path}" must be a number, but received text. Check your data format.`;
+        }
+        return `Field "${path}" has wrong data type. Expected ${err.expected}, got ${err.received}.`;
+      }
+      if (err.code === "invalid_union") {
+        return `Field "${path}" does not match expected format.`;
+      }
+      return `Field "${path}": ${err.message}`;
+    });
+
     return reply.status(400).send({
-      message: "Invalid payload",
-      issues: parsed.error.flatten(),
+      message: "Unable to process your data. Please check the errors below:",
+      errors: errors,
+      help: [
+        "Make sure all required columns are mapped correctly",
+        "Check that numeric fields (like 'amount') contain numbers",
+        "Verify that account codes are text (not formulas or blank)",
+      ],
     });
   }
 
@@ -160,38 +196,154 @@ async function orchestrateRun(input: RunInput) {
     },
   ];
 
-  const openAiResult = await runOpenAiTeam(
-    input.userPrompt,
-    input.payload,
-    localToolOutput,
-  );
-  timeline.push({
-    stage: "openai_supervisor",
-    status: "completed",
-    detail: "Supervisor agent evaluated payload + tool output.",
-    timestamp: new Date().toISOString(),
-  });
+  const shouldRunOpenAi =
+    (normalizedLlmMode === "auto" || normalizedLlmMode === "openai") &&
+    Boolean(openaiClient);
+  const shouldRunClaude =
+    (normalizedLlmMode === "auto" || normalizedLlmMode === "openai") &&
+    Boolean(anthropicClient);
+  const shouldRunGemini =
+    (normalizedLlmMode === "auto" || normalizedLlmMode === "gemini") &&
+    Boolean(geminiClient);
 
-  const claudeResponses = await runClaudeSkills(input);
-  timeline.push({
-    stage: "claude_skills",
-    status: "completed",
-    detail: "Triggered Claude subagents for column-mapping + variance review.",
-    timestamp: new Date().toISOString(),
-  });
+  let openAiResult: Awaited<ReturnType<typeof runOpenAiTeam>> | null = null;
+  if (shouldRunOpenAi) {
+    try {
+      openAiResult = await runOpenAiTeam(
+        input.userPrompt,
+        input.payload,
+        localToolOutput,
+      );
+      timeline.push({
+        stage: "openai_supervisor",
+        status: "completed",
+        detail: "OpenAI agents completed.",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      timeline.push({
+        stage: "openai_supervisor",
+        status: "failed",
+        detail: `OpenAI agents failed: ${formatError(error)}`,
+        timestamp: new Date().toISOString(),
+      });
+      openAiResult = {
+        message:
+          "OpenAI agents failed to run. Configure a valid OpenAI model (or switch to Gemini-only mode).",
+        messagesByRole: {},
+        toolOutput: localToolOutput,
+      };
+    }
+  } else {
+    timeline.push({
+      stage: "openai_supervisor",
+      status: "skipped",
+      detail:
+        normalizedLlmMode === "gemini" || normalizedLlmMode === "none"
+          ? "Skipped OpenAI agents (Gemini-only / none mode)."
+          : "OPENAI_API_KEY not configured; skipped OpenAI agents.",
+      timestamp: new Date().toISOString(),
+    });
+    openAiResult = {
+      message:
+        "OpenAI agents were skipped. Set ORCHESTRATOR_LLM_MODE=openai to enable, or provide an OpenAI API key.",
+      messagesByRole: {},
+      toolOutput: localToolOutput,
+    };
+  }
 
-  const geminiInsight = await summarizeWithGemini(
-    input,
-    localToolOutput,
-  );
+  let claudeResponses: Awaited<ReturnType<typeof runClaudeSkills>> | null = null;
+  if (shouldRunClaude) {
+    try {
+      claudeResponses = await runClaudeSkills(input);
+      timeline.push({
+        stage: "claude_skills",
+        status: "completed",
+        detail: "Claude skills completed.",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      timeline.push({
+        stage: "claude_skills",
+        status: "failed",
+        detail: `Claude skills failed: ${formatError(error)}`,
+        timestamp: new Date().toISOString(),
+      });
+      claudeResponses = [
+        {
+          skill: "column_mapper",
+          response: "Claude skills failed to run.",
+        },
+        {
+          skill: "variance_investigator",
+          response: "Claude skills failed to run.",
+        },
+      ];
+    }
+  } else {
+    timeline.push({
+      stage: "claude_skills",
+      status: "skipped",
+      detail:
+        normalizedLlmMode === "gemini" || normalizedLlmMode === "none"
+          ? "Skipped Claude skills (Gemini-only / none mode)."
+          : "Claude API key missing; skipped skills.",
+      timestamp: new Date().toISOString(),
+    });
+    claudeResponses = [
+      {
+        skill: "column_mapper",
+        response: "Claude API key not configured; skipped.",
+      },
+      {
+        skill: "variance_investigator",
+        response: "Claude API key not configured; skipped.",
+      },
+    ];
+  }
+
+  const geminiInsight = shouldRunGemini
+    ? await summarizeWithGemini(input, localToolOutput)
+    : null;
   timeline.push({
     stage: "gemini_commentary",
     status: geminiInsight ? "completed" : "skipped",
     detail: geminiInsight
       ? "Gemini produced narrative commentary."
-      : "Gemini API key missing; skipped commentary.",
+      : normalizedLlmMode === "none" || normalizedLlmMode === "openai"
+        ? "Skipped Gemini commentary."
+        : "Gemini API key missing; skipped commentary.",
     timestamp: new Date().toISOString(),
   });
+
+  // NEW: Run Gemini Multi-Agent Pipeline (default for free tier)
+  let geminiAgentResults = null;
+  if (shouldRunGemini) {
+    try {
+      timeline.push({
+        stage: "gemini_agents_start",
+        status: "in_progress",
+        detail: "Starting Gemini multi-agent pipeline (4 agents)...",
+        timestamp: new Date().toISOString(),
+      });
+
+      geminiAgentResults = await runGeminiAgentPipeline(input, localToolOutput);
+
+      timeline.push({
+        stage: "gemini_agents_complete",
+        status: "completed",
+        detail: "Gemini agents completed: Validation → Analysis → Investigation → Report",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      timeline.push({
+        stage: "gemini_agents_error",
+        status: "failed",
+        detail: `Gemini agents failed: ${formatError(error)}`,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
 
   return {
     runId,
@@ -201,11 +353,22 @@ async function orchestrateRun(input: RunInput) {
       summary: spec.summary,
     },
     timeline,
-    openai: openAiResult,
-    claudeSkills: claudeResponses,
+    openai: openAiResult ?? undefined,
+    claudeSkills: claudeResponses ?? undefined,
     geminiInsight,
+    geminiAgents: geminiAgentResults ?? undefined, // NEW: Include Gemini agent results
     toolOutput: localToolOutput,
   };
+}
+
+function formatError(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (error) {
+    return String(error);
+  }
+  return "unknown error";
 }
 
 
@@ -460,11 +623,11 @@ function runReconciliationLocally(payload: PayloadInput) {
   const detectedPeriods = new Set<string>();
 
   for (const balance of payload.glBalances) {
-    accounts.add(balance.account);
+    accounts.add(balance.account_code);
     if (balance.period) detectedPeriods.add(balance.period);
   }
   for (const balance of payload.subledgerBalances) {
-    accounts.add(balance.account);
+    accounts.add(balance.account_code);
     if (balance.period) detectedPeriods.add(balance.period);
   }
 
@@ -614,7 +777,7 @@ function runReconciliationLocally(payload: PayloadInput) {
 
 function aggregateBalances(balances: z.infer<typeof balanceSchema>[]) {
   return balances.reduce<Map<string, number>>((acc, balance) => {
-    const key = makeKey(balance.account, balance.period ?? "");
+    const key = makeKey(balance.account_code, balance.period ?? "");
     acc.set(key, (acc.get(key) ?? 0) + balance.amount);
     return acc;
   }, new Map());
@@ -653,15 +816,16 @@ function normalizeTransactions(
       ...(transaction.metadata ?? {}),
     };
     const period =
+      transaction.source_period ??
       metadata.period ??
       metadata.source_period ??
       booked_at.slice(0, 7) ??
       "";
     return {
-      account: transaction.account,
+      account: transaction.account_code,
       period,
       booked_at,
-      description: transaction.description ?? "",
+      description: transaction.narrative ?? "",
       debit,
       credit,
       net,
