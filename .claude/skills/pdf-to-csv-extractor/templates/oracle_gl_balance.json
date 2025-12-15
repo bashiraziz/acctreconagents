@@ -1,0 +1,38 @@
+{
+  "system": "Oracle E-Business Suite",
+  "report_type": "GL Balance",
+  "report_name": "General Ledger Trial Balance",
+  "extraction_method": "pdfplumber",
+  "description": "Oracle EBS trial balance report",
+  "column_mappings": {
+    "Account": "account_code",
+    "Description": "account_name",
+    "Debit": "debit",
+    "Credit": "credit",
+    "Balance": "amount",
+    "Currency": "currency"
+  },
+  "sign_indicators": {
+    "negative_format": "minus",
+    "credit_indicator": null
+  },
+  "date_format": "%d-%b-%Y",
+  "amount_format": {
+    "thousands_separator": ",",
+    "decimal_separator": ".",
+    "decimal_places": 2
+  },
+  "skip_patterns": [
+    "^Total",
+    "^Running Total",
+    "^Page \\d+",
+    "^.*Report.*"
+  ],
+  "extraction_hints": {
+    "table_detection": "auto",
+    "header_row": 0,
+    "data_start_row": 1,
+    "account_structure": "segment-based"
+  },
+  "notes": "Oracle accounts may use segment separators like 01-2100-000"
+}

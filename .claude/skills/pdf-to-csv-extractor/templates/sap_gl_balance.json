@@ -1,0 +1,34 @@
+{
+  "system": "SAP",
+  "report_type": "GL Balance",
+  "report_name": "S_ALR_87012284 - G/L Account Balances",
+  "extraction_method": "pdfplumber",
+  "description": "SAP standard GL account balance report",
+  "column_mappings": {
+    "G/L Account": "account_code",
+    "G/L Account Description": "account_name",
+    "Amount in LC": "amount",
+    "Local Currency": "currency"
+  },
+  "sign_indicators": {
+    "negative_format": "parentheses",
+    "credit_indicator": null
+  },
+  "date_format": "%m/%d/%Y",
+  "amount_format": {
+    "thousands_separator": ",",
+    "decimal_separator": ".",
+    "decimal_places": 2
+  },
+  "skip_patterns": [
+    "^TOTAL",
+    "^Subtotal",
+    "^Grand Total",
+    "^Page \\d+"
+  ],
+  "extraction_hints": {
+    "table_detection": "auto",
+    "header_row": 0,
+    "data_start_row": 1
+  }
+}

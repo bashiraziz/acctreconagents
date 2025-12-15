@@ -1,0 +1,18 @@
+# PDF to CSV Extractor - Python Dependencies
+
+# Core PDF extraction libraries
+pdfplumber>=0.10.0
+pypdf>=3.0.0
+pandas>=2.0.0
+
+# Optional: For complex table extraction
+# Requires Java Runtime Environment (JRE) 8+
+# tabula-py>=2.8.0
+
+# Optional: For OCR support on scanned PDFs
+# Requires Tesseract OCR engine installed on system
+# pytesseract>=0.3.10
+# Pillow>=10.0.0
+
+# Optional: For better OCR accuracy
+# pdf2image>=1.16.0

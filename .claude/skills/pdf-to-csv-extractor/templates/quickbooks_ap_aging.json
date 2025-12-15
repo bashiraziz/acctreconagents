@@ -1,0 +1,49 @@
+{
+  "system": "QuickBooks",
+  "report_type": "AP Aging",
+  "report_name": "A/P Aging Detail",
+  "extraction_method": "pdfplumber",
+  "description": "QuickBooks accounts payable aging detail report",
+  "column_mappings": {
+    "Vendor": "vendor",
+    "Num": "invoice_number",
+    "Date": "invoice_date",
+    "Due Date": "due_date",
+    "Current": "current_amount",
+    "1-30": "days_30",
+    "31-60": "days_60",
+    "61-90": "days_90",
+    "Over 90": "days_over_90",
+    "Amount": "amount"
+  },
+  "aging_buckets": {
+    "Current": "Current",
+    "1-30": "30 Days",
+    "31-60": "60 Days",
+    "61-90": "90 Days",
+    "Over 90": "90+ Days"
+  },
+  "sign_indicators": {
+    "negative_format": "parentheses",
+    "credit_indicator": null
+  },
+  "date_format": "%m/%d/%Y",
+  "amount_format": {
+    "thousands_separator": ",",
+    "decimal_separator": ".",
+    "decimal_places": 2
+  },
+  "skip_patterns": [
+    "^Total",
+    "^TOTAL",
+    "^Page \\d+",
+    "^A/P Aging"
+  ],
+  "extraction_hints": {
+    "table_detection": "auto",
+    "header_row": 0,
+    "data_start_row": 1,
+    "grouped_by_vendor": true
+  },
+  "notes": "QuickBooks aging reports group by vendor with subtotals"
+}

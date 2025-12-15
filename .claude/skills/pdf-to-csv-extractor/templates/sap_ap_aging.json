@@ -1,0 +1,45 @@
+{
+  "system": "SAP",
+  "report_type": "AP Aging",
+  "report_name": "S_ALR_87012104 - Vendor Balances in Local Currency",
+  "extraction_method": "pdfplumber",
+  "description": "SAP standard accounts payable aging report",
+  "column_mappings": {
+    "Vendor": "vendor",
+    "Name": "vendor_name",
+    "Document Number": "invoice_number",
+    "Document Date": "invoice_date",
+    "Due Date": "due_date",
+    "Amount": "amount",
+    "Currency": "currency"
+  },
+  "aging_buckets": {
+    "not_due": "Current",
+    "1-30": "30 Days",
+    "31-60": "60 Days",
+    "61-90": "90 Days",
+    "over_90": "90+ Days"
+  },
+  "sign_indicators": {
+    "negative_format": "parentheses",
+    "credit_indicator": "CR"
+  },
+  "date_format": "%m/%d/%Y",
+  "amount_format": {
+    "thousands_separator": ",",
+    "decimal_separator": ".",
+    "decimal_places": 2
+  },
+  "skip_patterns": [
+    "^TOTAL",
+    "^Subtotal",
+    "^Grand Total",
+    "^Vendor Total"
+  ],
+  "extraction_hints": {
+    "table_detection": "auto",
+    "header_row": 0,
+    "data_start_row": 1,
+    "multi_page": true
+  }
+}
