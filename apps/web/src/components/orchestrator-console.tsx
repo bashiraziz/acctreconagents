@@ -77,7 +77,7 @@ export function OrchestratorConsole() {
           details = data.errors.join("\n\n");
         } else if (data?.issues) {
           // Old format: Zod validation issues
-          details = extractValidationDetails(data.issues);
+          details = extractValidationDetails(data.issues) ?? undefined;
         } else if (data?.detail) {
           details = data.detail as string;
         }
@@ -340,15 +340,6 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
           <h3 className="text-lg font-semibold text-white">
             🤖 Gemini AI Agent Results (FREE)
           </h3>
-
-          {/* Debug info */}
-          {console.log("🔍 Gemini Agents Data:", {
-            hasValidation: !!result.geminiAgents.validation,
-            hasAnalysis: !!result.geminiAgents.analysis,
-            hasInvestigation: !!result.geminiAgents.investigation,
-            hasReport: !!result.geminiAgents.report,
-            reportType: typeof result.geminiAgents.report,
-          })}
 
           {/* Validation */}
           {result.geminiAgents.validation && (
