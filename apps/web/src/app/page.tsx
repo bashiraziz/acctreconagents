@@ -12,22 +12,17 @@ import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/s
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 lg:px-10">
+    <div className="min-h-screen bg-gray-50">
+      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 lg:px-10">
         {/* Header with User Menu */}
-        <header className="rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-8 shadow-2xl shadow-black/40">
+        <header className="border-b border-gray-200 bg-white p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-sky-300">
-                AcctReCon · Agentic AI reconciliation workspace
-              </p>
-              <h1 className="mt-3 text-4xl font-semibold leading-tight text-white">
-                Upload, map, and reconcile faster with agentic AI.
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Account Reconciliation
               </h1>
-              <p className="mt-4 max-w-3xl text-base text-slate-300">
-                Bring your trial balance, aging, bank, or subledger exports. The workspace helps you
-                tie-out balances, explain variances, and produce clear reconciliation notes your team
-                can review. Powered by FREE Gemini AI agents.
+              <p className="mt-2 max-w-3xl text-sm text-gray-600">
+                Upload your GL and subledger data, map columns, and run AI-powered reconciliation analysis.
               </p>
             </div>
             <UserMenu />
@@ -63,82 +58,80 @@ export default function Home() {
 
 function SpecPill({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-slate-700/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">
-      {label}: <span className="text-sky-300">{value}</span>
+    <span className="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-50 px-3 py-1 text-xs text-gray-700">
+      <span className="font-medium">{label}:</span> {value}
     </span>
   );
 }
 
 function AboutPanel() {
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
-      <h3 className="text-lg font-semibold text-white">About</h3>
-      <p className="mt-2 text-sm text-slate-400">
-        An agentic AI workspace for reconciliation teams. Upload source reports, map columns once,
-        and run guided checks that help explain differences clearly.
+    <section className="border border-gray-200 bg-white p-6">
+      <h3 className="text-base font-semibold text-gray-900">About</h3>
+      <p className="mt-2 text-sm text-gray-600">
+        AI-powered reconciliation workspace. Upload source reports, map columns, and run automated analysis.
       </p>
 
-      <details className="mt-5 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-100">
-          Tech stack (optional)
+      <details className="mt-4 border-t border-gray-200 pt-4">
+        <summary className="cursor-pointer text-sm font-medium text-gray-700">
+          Tech Stack
         </summary>
-        <div className="mt-3 space-y-3 text-sm text-slate-300">
-          <div className="flex flex-wrap gap-2 text-sm text-slate-200">
-            <SpecPill label="Agentic workflow" value="4 AI agents" />
-            <SpecPill label="Spec version" value={specMetadata.version} />
+        <div className="mt-3 space-y-3 text-sm text-gray-600">
+          <div className="flex flex-wrap gap-2">
+            <SpecPill label="AI Agents" value="4" />
+            <SpecPill label="Version" value={specMetadata.version} />
             <SpecPill
-              label="Canonical fields"
+              label="Fields"
               value={`${canonicalBalanceFields.length + transactionFields.length}`}
             />
           </div>
           <ul className="list-disc space-y-1 pl-5">
-            <li>Next.js 16 web app (UI + upload/mapping workflows)</li>
-            <li>Fastify orchestrator service (agent coordination and API)</li>
-            <li>Spec-Kit contracts for canonical models + validations</li>
-            <li>Gemini 2.0 Flash (FREE tier) - 4 AI agents for reconciliation</li>
-            <li>Better Auth for user management + Vercel Postgres for data storage</li>
+            <li>Next.js 16 web application</li>
+            <li>Fastify orchestrator service</li>
+            <li>Spec-Kit contracts for data validation</li>
+            <li>Gemini 2.0 Flash (free tier) for AI agents</li>
+            <li>Better Auth + Vercel Postgres</li>
           </ul>
-          <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3">
-            <p className="text-sm font-semibold text-emerald-100">
-              🎉 FREE AI Agents
+          <div className="rounded border border-gray-300 bg-gray-50 p-3">
+            <p className="text-sm font-medium text-gray-900">
+              Free AI Agents
             </p>
-            <p className="mt-1 text-xs text-emerald-200/80">
-              This app uses Gemini 2.0 Flash free tier (1500 runs/day) instead of paid OpenAI/Claude models.
-              Cost: $0 per reconciliation run!
+            <p className="mt-1 text-xs text-gray-600">
+              Uses Gemini 2.0 Flash free tier (1500 runs/day). Cost: $0 per reconciliation.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/master/README.md"
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-sky-400 hover:text-sky-200"
+              className="text-xs font-medium text-gray-700 underline hover:text-gray-900"
               target="_blank"
             >
-              View full README &rarr;
+              View README →
             </Link>
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/master/specs/reconciliation.speckit.json"
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-sky-400 hover:text-sky-200"
+              className="text-xs font-medium text-gray-700 underline hover:text-gray-900"
               target="_blank"
             >
-              View spec contract &rarr;
+              View Spec →
             </Link>
           </div>
         </div>
       </details>
 
-      <details className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-100">
-          Data model (optional)
+      <details className="mt-4 border-t border-gray-200 pt-4">
+        <summary className="cursor-pointer text-sm font-medium text-gray-700">
+          Data Model
         </summary>
-        <p className="mt-2 text-sm text-slate-400">{specMetadata.summary}</p>
+        <p className="mt-2 text-sm text-gray-600">{specMetadata.summary}</p>
         <div className="mt-4 space-y-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Balances fields</p>
-            <ul className="mt-2 space-y-1 text-sm text-slate-200">
+            <p className="text-xs font-medium uppercase text-gray-500">Balance Fields</p>
+            <ul className="mt-2 space-y-1 text-sm text-gray-700">
               {canonicalBalanceFields.map((field) => (
                 <li key={field.key} className="flex items-center justify-between">
                   <span>{field.label}</span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-gray-500">
                     {field.required ? "required" : "optional"}
                   </span>
                 </li>
@@ -146,12 +139,12 @@ function AboutPanel() {
             </ul>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Transactions fields</p>
-            <ul className="mt-2 space-y-1 text-sm text-slate-200">
+            <p className="text-xs font-medium uppercase text-gray-500">Transaction Fields</p>
+            <ul className="mt-2 space-y-1 text-sm text-gray-700">
               {transactionFields.map((field) => (
                 <li key={field.key} className="flex items-center justify-between">
                   <span>{field.label}</span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-gray-500">
                     {field.required ? "required" : "optional"}
                   </span>
                 </li>
@@ -161,33 +154,33 @@ function AboutPanel() {
         </div>
       </details>
 
-      <details className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-100">
-          4-Agent AI Pipeline (optional)
+      <details className="mt-4 border-t border-gray-200 pt-4">
+        <summary className="cursor-pointer text-sm font-medium text-gray-700">
+          AI Agent Pipeline
         </summary>
-        <div className="mt-3 space-y-3 text-sm">
-          <div className="rounded-xl border border-blue-700/40 bg-blue-900/20 p-3">
-            <p className="font-semibold text-blue-100">1️⃣ Data Validation Agent</p>
-            <p className="mt-1 text-xs text-blue-200/80">
-              Validates data quality, detects issues, suggests improvements
+        <div className="mt-3 space-y-2 text-sm">
+          <div className="border-l-2 border-gray-400 pl-3">
+            <p className="font-medium text-gray-900">1. Data Validation Agent</p>
+            <p className="text-xs text-gray-600">
+              Validates data quality and detects issues
             </p>
           </div>
-          <div className="rounded-xl border border-purple-700/40 bg-purple-900/20 p-3">
-            <p className="font-semibold text-purple-100">2️⃣ Reconciliation Analyst</p>
-            <p className="mt-1 text-xs text-purple-200/80">
-              Analyzes variances, flags risks, identifies patterns
+          <div className="border-l-2 border-gray-400 pl-3">
+            <p className="font-medium text-gray-900">2. Reconciliation Analyst</p>
+            <p className="text-xs text-gray-600">
+              Analyzes variances and identifies patterns
             </p>
           </div>
-          <div className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
-            <p className="font-semibold text-orange-100">3️⃣ Variance Investigator</p>
-            <p className="mt-1 text-xs text-orange-200/80">
-              Deep-dives material variances, proposes root causes
+          <div className="border-l-2 border-gray-400 pl-3">
+            <p className="font-medium text-gray-900">3. Variance Investigator</p>
+            <p className="text-xs text-gray-600">
+              Investigates material variances and root causes
             </p>
           </div>
-          <div className="rounded-xl border border-emerald-700/40 bg-emerald-900/20 p-3">
-            <p className="font-semibold text-emerald-100">4️⃣ Report Generator</p>
-            <p className="mt-1 text-xs text-emerald-200/80">
-              Creates audit-ready documentation and executive summaries
+          <div className="border-l-2 border-gray-400 pl-3">
+            <p className="font-medium text-gray-900">4. Report Generator</p>
+            <p className="text-xs text-gray-600">
+              Creates audit-ready documentation
             </p>
           </div>
         </div>

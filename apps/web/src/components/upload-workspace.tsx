@@ -141,30 +141,26 @@ export function UploadWorkspace() {
   );
 
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-950/60 p-6 shadow-xl shadow-black/30">
+    <section className="border border-gray-200 bg-white p-6">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-sky-300">
-            Intake
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            Upload workspace
+          <h2 className="text-lg font-semibold text-gray-900">
+            Upload Files
           </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            Drag reports and supporting packages directly into these dropzones.
-            Structured files are parsed immediately and stored in memory.
+          <p className="mt-1 text-sm text-gray-600">
+            Upload your GL balance, subledger balance, and transaction files.
           </p>
         </div>
-        <div className="rounded-full border border-slate-800 px-3 py-1 text-xs text-slate-300">
-          Max 20MB / file
+        <div className="rounded border border-gray-300 bg-gray-50 px-3 py-1 text-xs text-gray-600">
+          Max 20MB
         </div>
       </header>
 
       {/* Currently Uploaded Files */}
       {(uploadedFiles.glBalance || uploadedFiles.subledgerBalance || uploadedFiles.transactions) && (
-        <div className="mt-6 rounded-2xl border border-emerald-800/40 bg-emerald-950/20 p-4">
+        <div className="mt-6 rounded border border-gray-300 bg-gray-50 p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-emerald-100">Active Files</h3>
+            <h3 className="text-sm font-medium text-gray-900">Uploaded Files</h3>
             <button
               onClick={() => {
                 if (confirm("Clear all uploaded files? This will reset your workflow.")) {
@@ -172,61 +168,61 @@ export function UploadWorkspace() {
                   setUploads([]);
                 }
               }}
-              className="rounded-lg bg-red-900/50 px-3 py-1 text-xs font-medium text-red-100 transition hover:bg-red-900/80"
+              className="rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Clear All
             </button>
           </div>
           <div className="mt-3 space-y-2">
             {uploadedFiles.glBalance && (
-              <div className="flex items-center justify-between rounded-lg border border-emerald-700/30 bg-emerald-900/20 p-3">
+              <div className="flex items-center justify-between rounded border border-gray-300 bg-white p-3">
                 <div>
-                  <p className="text-sm font-medium text-emerald-100">
-                    📊 GL Balance: {uploadedFiles.glBalance.name}
+                  <p className="text-sm font-medium text-gray-900">
+                    GL Balance: {uploadedFiles.glBalance.name}
                   </p>
-                  <p className="text-xs text-emerald-200/70">
+                  <p className="text-xs text-gray-600">
                     {uploadedFiles.glBalance.rowCount} rows, {uploadedFiles.glBalance.columnCount} columns
                   </p>
                 </div>
                 <button
                   onClick={() => clearUploadedFile("gl_balance")}
-                  className="rounded-lg bg-red-900/50 px-3 py-1 text-xs font-medium text-red-100 transition hover:bg-red-900/80"
+                  className="rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
                 >
                   Remove
                 </button>
               </div>
             )}
             {uploadedFiles.subledgerBalance && (
-              <div className="flex items-center justify-between rounded-lg border border-emerald-700/30 bg-emerald-900/20 p-3">
+              <div className="flex items-center justify-between rounded border border-gray-300 bg-white p-3">
                 <div>
-                  <p className="text-sm font-medium text-emerald-100">
-                    📋 Subledger Balance: {uploadedFiles.subledgerBalance.name}
+                  <p className="text-sm font-medium text-gray-900">
+                    Subledger Balance: {uploadedFiles.subledgerBalance.name}
                   </p>
-                  <p className="text-xs text-emerald-200/70">
+                  <p className="text-xs text-gray-600">
                     {uploadedFiles.subledgerBalance.rowCount} rows, {uploadedFiles.subledgerBalance.columnCount} columns
                   </p>
                 </div>
                 <button
                   onClick={() => clearUploadedFile("subledger_balance")}
-                  className="rounded-lg bg-red-900/50 px-3 py-1 text-xs font-medium text-red-100 transition hover:bg-red-900/80"
+                  className="rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
                 >
                   Remove
                 </button>
               </div>
             )}
             {uploadedFiles.transactions && (
-              <div className="flex items-center justify-between rounded-lg border border-emerald-700/30 bg-emerald-900/20 p-3">
+              <div className="flex items-center justify-between rounded border border-gray-300 bg-white p-3">
                 <div>
-                  <p className="text-sm font-medium text-emerald-100">
-                    💳 Transactions: {uploadedFiles.transactions.name}
+                  <p className="text-sm font-medium text-gray-900">
+                    Transactions: {uploadedFiles.transactions.name}
                   </p>
-                  <p className="text-xs text-emerald-200/70">
+                  <p className="text-xs text-gray-600">
                     {uploadedFiles.transactions.rowCount} rows, {uploadedFiles.transactions.columnCount} columns
                   </p>
                 </div>
                 <button
                   onClick={() => clearUploadedFile("transactions")}
-                  className="rounded-lg bg-red-900/50 px-3 py-1 text-xs font-medium text-red-100 transition hover:bg-red-900/80"
+                  className="rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
                 >
                   Remove
                 </button>
@@ -237,13 +233,13 @@ export function UploadWorkspace() {
       )}
 
       {/* File Type Selector for Structured Data */}
-      <div className="mt-6 rounded-2xl border border-sky-800/40 bg-sky-500/10 p-4">
-        <label className="block text-sm font-medium text-sky-100">
-          File Type (for structured data)
+      <div className="mt-6 rounded border border-gray-300 bg-gray-50 p-4">
+        <label className="block text-sm font-medium text-gray-900">
+          Select File Type
           <select
             value={selectedFileType}
             onChange={(e) => setSelectedFileType(e.target.value as FileType)}
-            className="mt-2 w-full rounded-xl border border-sky-700 bg-sky-900/50 p-3 text-white focus:border-sky-400 focus:outline-none"
+            className="mt-2 w-full rounded border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-gray-400 focus:outline-none"
           >
             <option value="gl_balance">
               {uploadedFiles.glBalance ? "✓ " : ""}GL Trial Balance
@@ -296,11 +292,11 @@ function UploadDropzone({
   onFiles: (files: FileList | null) => void;
 }) {
   return (
-    <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-center transition hover:border-sky-500/70 hover:bg-slate-900/80">
-      <span className="text-base font-semibold text-white">{label}</span>
-      <span className="mt-1 text-sm text-slate-400">{description}</span>
-      <span className="mt-4 rounded-full bg-slate-800/70 px-3 py-1 text-xs text-slate-300">
-        Click to pick files
+    <label className="flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-gray-300 bg-white p-6 text-center transition hover:border-gray-400 hover:bg-gray-50">
+      <span className="text-sm font-medium text-gray-900">{label}</span>
+      <span className="mt-1 text-sm text-gray-600">{description}</span>
+      <span className="mt-4 rounded border border-gray-300 bg-gray-50 px-3 py-1.5 text-xs text-gray-700">
+        Click to select files
       </span>
       <input
         type="file"
@@ -321,22 +317,22 @@ function UploadList({
   uploads: UploadRecord[];
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800/70 bg-slate-900/40 p-4">
-      <div className="text-xs uppercase tracking-[0.3em] text-slate-400">
+    <div className="rounded border border-gray-300 bg-white p-4">
+      <div className="text-xs font-medium uppercase text-gray-700">
         {label}
       </div>
       <div className="mt-2 space-y-2">
         {uploads.length === 0 ? (
-          <p className="text-sm text-slate-500">Awaiting files...</p>
+          <p className="text-sm text-gray-500">No files uploaded</p>
         ) : (
           uploads.map((upload) => (
             <div
               key={upload.id}
-              className="flex items-center justify-between rounded-xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm"
+              className="flex items-center justify-between rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm"
             >
               <div className="flex-1">
-                <p className="font-medium text-white">{upload.name}</p>
-                <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-400">
+                <p className="font-medium text-gray-900">{upload.name}</p>
+                <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-600">
                   <span>{(upload.size / 1024).toFixed(1)} KB</span>
                   {upload.fileType && (
                     <>
@@ -352,18 +348,18 @@ function UploadList({
                   )}
                 </div>
                 {upload.message && (
-                  <p className="mt-1 text-xs text-slate-500">{upload.message}</p>
+                  <p className="mt-1 text-xs text-gray-500">{upload.message}</p>
                 )}
               </div>
               <span
                 className={
                   upload.status === "ready"
-                    ? "rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300"
+                    ? "rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-900"
                     : upload.status === "error"
-                      ? "rounded-full bg-rose-500/20 px-3 py-1 text-xs font-semibold text-rose-300"
+                      ? "rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-900"
                       : upload.status === "uploading"
-                        ? "rounded-full bg-sky-500/20 px-3 py-1 text-xs font-semibold text-sky-300"
-                        : "rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-200"
+                        ? "rounded border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700"
+                        : "rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600"
                 }
               >
                 {upload.status}
