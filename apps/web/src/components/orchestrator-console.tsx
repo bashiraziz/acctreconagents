@@ -133,16 +133,16 @@ export function OrchestratorConsole() {
   };
 
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6">
+    <section className="border border-gray-200 bg-white p-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-gray-700">
             Orchestrator
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
+          <h2 className="mt-2 text-2xl font-semibold text-gray-900">
             Multi-agent console
           </h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-gray-600">
             Launch Gemini AI agents for reconciliation analysis, bound by Spec-Kit
             schema v{specMetadata.version}.
           </p>
@@ -152,28 +152,28 @@ export function OrchestratorConsole() {
             <button
               type="button"
               onClick={handleStop}
-              className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-400"
+              className="rounded bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
             >
-              🛑 Stop Agents
+              Stop Agents
             </button>
           ) : (
             <button
               type="button"
               onClick={runAgents}
               disabled={!reconciliationData || loading}
-              className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+              className="rounded bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
-              {loading ? "Running..." : "🤖 Run Agents"}
+              {loading ? "Running..." : "Run Agents"}
             </button>
           )}
         </div>
       </header>
 
       <div className="mt-4">
-        <label className="text-xs uppercase tracking-[0.3em] text-slate-500">
-          User prompt
+        <label className="text-xs font-medium uppercase text-gray-700">
+          Analysis Prompt
           <textarea
-            className="mt-2 w-full rounded-2xl border border-slate-700 bg-black/40 p-3 text-sm text-slate-100 focus:border-sky-400 focus:outline-none"
+            className="mt-2 w-full rounded border border-gray-300 bg-white p-3 text-sm text-gray-900 focus:border-gray-400 focus:outline-none"
             rows={3}
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
@@ -192,9 +192,9 @@ export function OrchestratorConsole() {
       )}
 
       {reconciliationData && !result && !error && (
-        <div className="mt-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+        <div className="mt-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-gray-900">
           <p className="font-semibold">✓ Data ready to reconcile</p>
-          <p className="mt-1 text-emerald-100/90">
+          <p className="mt-1 text-gray-900/90">
             {reconciliationData.glBalances.length} GL balances,{" "}
             {reconciliationData.subledgerBalances.length} subledger balances
             {reconciliationData.transactions &&
@@ -205,7 +205,7 @@ export function OrchestratorConsole() {
 
       {/* Error Display */}
       {error && (
-        <div className="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-100">
+        <div className="mt-4 rounded-2xl border border-rose-500/40 bg-gray-900/10 p-4 text-sm text-rose-100">
           <p className="font-semibold">{error.message}</p>
           {error.detail ? (
             <p className="mt-1 text-sm text-rose-100/90">{error.detail}</p>
@@ -297,10 +297,10 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
       {/* Timeline */}
       {result.timeline && result.timeline.length > 0 && (
         <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
-          <h3 className="text-sm font-semibold text-white">
+          <h3 className="text-sm font-semibold text-gray-900">
             Timeline · {result.runId}
           </h3>
-          <ol className="mt-3 space-y-2 text-sm text-slate-200">
+          <ol className="mt-3 space-y-2 text-sm text-gray-700">
             {result.timeline.map((entry) => (
             <li
               key={entry.stage + entry.timestamp}
@@ -318,13 +318,13 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                         ? "text-rose-400"
                         : entry.status === "in_progress"
                           ? "text-sky-400"
-                          : "text-slate-400"
+                          : "text-gray-600"
                   }`}
                 >
                   {entry.status}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-slate-400">{entry.detail}</p>
+              <p className="mt-1 text-xs text-gray-600">{entry.detail}</p>
               <p className="text-[10px] text-slate-500">
                 {new Date(entry.timestamp).toLocaleTimeString()}
               </p>
@@ -337,28 +337,28 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
       {/* Gemini Agent Results */}
       {result.geminiAgents && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-gray-900">
             🤖 Gemini AI Agent Results (FREE)
           </h3>
 
           {/* Validation */}
           {result.geminiAgents.validation && (
-            <div className="rounded-2xl border border-blue-800/40 bg-blue-950/30 p-4">
-              <h4 className="font-semibold text-blue-100">
+            <div className="rounded-2xl border border-gray-300 bg-white p-4">
+              <h4 className="font-semibold text-gray-900">
                 1️⃣ Data Validation Agent
               </h4>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-blue-200">Confidence Score:</span>
-                  <span className="font-semibold text-blue-100">
+                  <span className="text-gray-700">Confidence Score:</span>
+                  <span className="font-semibold text-gray-900">
                     {result.geminiAgents.validation.confidence
                       ? Math.round(result.geminiAgents.validation.confidence * 100)
                       : "N/A"}/100
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-blue-200">Validation Status:</span>
-                  <span className="font-semibold text-blue-100">
+                  <span className="text-gray-700">Validation Status:</span>
+                  <span className="font-semibold text-gray-900">
                     {result.geminiAgents.validation.isValid ? "✓ Valid" : "⚠️ Issues Found"}
                   </span>
                 </div>
@@ -366,7 +366,7 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
               {result.geminiAgents.validation.warnings && result.geminiAgents.validation.warnings.length > 0 && (
                 <div className="mt-3">
                   <p className="text-xs font-semibold uppercase text-blue-300">Warnings</p>
-                  <ul className="mt-1 list-disc pl-5 text-sm text-blue-200/80">
+                  <ul className="mt-1 list-disc pl-5 text-sm text-gray-700/80">
                     {result.geminiAgents.validation.warnings.map((w: string, i: number) => (
                       <li key={i}>{w}</li>
                     ))}
@@ -378,17 +378,17 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
 
           {/* Analysis */}
           {result.geminiAgents.analysis && (
-            <div className="rounded-2xl border border-purple-800/40 bg-purple-950/30 p-4">
-              <h4 className="font-semibold text-purple-100">
+            <div className="rounded-2xl border border-gray-300 bg-white p-4">
+              <h4 className="font-semibold text-gray-900">
                 2️⃣ Reconciliation Analyst Agent
               </h4>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-purple-200">Risk Level:</span>
+                  <span className="text-gray-700">Risk Level:</span>
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
                       result.geminiAgents.analysis.riskLevel === "high"
-                        ? "bg-rose-500/20 text-rose-300"
+                        ? "bg-gray-900/20 text-rose-300"
                         : result.geminiAgents.analysis.riskLevel === "medium"
                           ? "bg-amber-500/20 text-amber-300"
                           : "bg-emerald-500/20 text-emerald-300"
@@ -398,8 +398,8 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-purple-200">Material Variances:</span>
-                  <span className="font-semibold text-purple-100">
+                  <span className="text-gray-700">Material Variances:</span>
+                  <span className="font-semibold text-gray-900">
                     {result.geminiAgents.analysis.materialVariances?.length || 0}
                   </span>
                 </div>
@@ -409,7 +409,7 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                   <p className="text-xs font-semibold uppercase text-purple-300">
                     Patterns Detected
                   </p>
-                  <ul className="mt-1 list-disc pl-5 text-sm text-purple-200/80">
+                  <ul className="mt-1 list-disc pl-5 text-sm text-gray-700/80">
                     {result.geminiAgents.analysis.patterns.map((p: string, i: number) => (
                       <li key={i}>{p}</li>
                     ))}
@@ -421,15 +421,15 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
 
           {/* Investigation */}
           {(result.geminiAgents.investigation?.investigations?.length ?? 0) > 0 && (
-            <div className="rounded-2xl border border-orange-800/40 bg-orange-950/30 p-4">
-              <h4 className="font-semibold text-orange-100">
+            <div className="rounded-2xl border border-gray-300 bg-white p-4">
+              <h4 className="font-semibold text-gray-900">
                 3️⃣ Variance Investigator Agent
               </h4>
               <div className="mt-3 space-y-3">
                 {result.geminiAgents.investigation?.investigations?.map(
                   (inv: any, i: number) => (
                     <div key={i} className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
-                      <p className="font-semibold text-sm text-orange-100">
+                      <p className="font-semibold text-sm text-gray-900">
                         Account: {inv.account} (Variance: ${inv.variance?.toFixed(2)})
                       </p>
                       {inv.possibleCauses && inv.possibleCauses.length > 0 && (
@@ -437,7 +437,7 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                           <p className="text-xs font-semibold uppercase text-orange-300">
                             Possible Causes
                           </p>
-                          <ul className="mt-1 list-disc pl-5 text-sm text-orange-200/80">
+                          <ul className="mt-1 list-disc pl-5 text-sm text-gray-700/80">
                             {inv.possibleCauses.map((cause: string, j: number) => (
                               <li key={j}>{cause}</li>
                             ))}
@@ -449,7 +449,7 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                           <p className="text-xs font-semibold uppercase text-orange-300">
                             Suggested Actions
                           </p>
-                          <ul className="mt-1 list-disc pl-5 text-sm text-orange-200/80">
+                          <ul className="mt-1 list-disc pl-5 text-sm text-gray-700/80">
                             {inv.suggestedActions.map((action: string, j: number) => (
                               <li key={j}>{action}</li>
                             ))}
@@ -465,12 +465,12 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
 
           {/* Report */}
           {result.geminiAgents.report && (
-            <div className="rounded-2xl border border-emerald-800/40 bg-emerald-950/30 p-4">
-              <h4 className="font-semibold text-emerald-100">
+            <div className="rounded-2xl border border-gray-300 bg-white p-4">
+              <h4 className="font-semibold text-gray-900">
                 4️⃣ Report Generator Agent
               </h4>
               <div className="mt-3 prose prose-invert prose-sm max-w-none">
-                <div className="whitespace-pre-wrap text-sm text-emerald-100/90">
+                <div className="whitespace-pre-wrap text-sm text-gray-900/90">
                   {typeof result.geminiAgents.report === 'string'
                     ? result.geminiAgents.report
                     : JSON.stringify(result.geminiAgents.report, null, 2)}
