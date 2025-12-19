@@ -10,18 +10,30 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    // Load theme from localStorage
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme && ["light", "medium-dark", "dark"].includes(savedTheme)) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute("data-theme", savedTheme);
+    // Load theme from localStorage (only in browser)
+    if (typeof window !== "undefined") {
+      try {
+        const savedTheme = localStorage.getItem("theme") as Theme;
+        if (savedTheme && ["light", "medium-dark", "dark"].includes(savedTheme)) {
+          setTheme(savedTheme);
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      } catch (error) {
+        console.warn("Could not access localStorage:", error);
+      }
     }
   }, []);
 
   const changeTheme = (newTheme: Theme) => {
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("theme", newTheme);
+        document.documentElement.setAttribute("data-theme", newTheme);
+      } catch (error) {
+        console.warn("Could not save theme to localStorage:", error);
+      }
+    }
   };
 
   if (!mounted) {
