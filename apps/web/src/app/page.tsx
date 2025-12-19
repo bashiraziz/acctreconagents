@@ -8,24 +8,28 @@ import { AuthBanner } from "@/components/auth/auth-banner";
 import { UserMenu } from "@/components/auth/user-menu";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { DataPreview } from "@/components/data-preview";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/spec";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen theme-bg">
       <main className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 lg:px-10">
         {/* Header with User Menu */}
-        <header className="border-b border-gray-200 bg-white p-6">
+        <header className="theme-card theme-border border-b p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
+              <h1 className="text-2xl font-semibold theme-text">
                 Account Reconciliation
               </h1>
-              <p className="mt-2 max-w-3xl text-sm text-gray-600">
+              <p className="mt-2 max-w-3xl text-sm theme-text-muted">
                 Upload your GL and subledger data, map columns, and run AI-powered reconciliation analysis.
               </p>
             </div>
-            <UserMenu />
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <UserMenu />
+            </div>
           </div>
         </header>
 
@@ -58,7 +62,7 @@ export default function Home() {
 
 function SpecPill({ label, value }: { label: string; value: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-gray-300 bg-gray-50 px-3 py-1 text-xs text-gray-700">
+    <span className="inline-flex items-center gap-1 rounded border theme-border theme-muted px-3 py-1 text-xs theme-text">
       <span className="font-medium">{label}:</span> {value}
     </span>
   );
@@ -66,17 +70,17 @@ function SpecPill({ label, value }: { label: string; value: string }) {
 
 function AboutPanel() {
   return (
-    <section className="border border-gray-200 bg-white p-6">
-      <h3 className="text-base font-semibold text-gray-900">About</h3>
-      <p className="mt-2 text-sm text-gray-600">
+    <section className="theme-card theme-border border p-6">
+      <h3 className="text-base font-semibold theme-text">About</h3>
+      <p className="mt-2 text-sm theme-text-muted">
         AI-powered reconciliation workspace. Upload source reports, map columns, and run automated analysis.
       </p>
 
-      <details className="mt-4 border-t border-gray-200 pt-4">
-        <summary className="cursor-pointer text-sm font-medium text-gray-700">
+      <details className="mt-4 border-t theme-border pt-4">
+        <summary className="cursor-pointer text-sm font-medium theme-text">
           Tech Stack
         </summary>
-        <div className="mt-3 space-y-3 text-sm text-gray-600">
+        <div className="mt-3 space-y-3 text-sm theme-text-muted">
           <div className="flex flex-wrap gap-2">
             <SpecPill label="AI Agents" value="4" />
             <SpecPill label="Version" value={specMetadata.version} />

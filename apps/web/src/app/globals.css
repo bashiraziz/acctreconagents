@@ -1,8 +1,37 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Light Theme (default) */
+:root,
+[data-theme="light"] {
+  --background: #f9fafb;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-border: #e5e7eb;
+  --muted: #f3f4f6;
+  --muted-text: #6b7280;
+  --accent: #1f2937;
+}
+
+/* Medium Dark Theme */
+[data-theme="medium-dark"] {
+  --background: #1e293b;
+  --foreground: #f1f5f9;
+  --card: #334155;
+  --card-border: #475569;
+  --muted: #475569;
+  --muted-text: #cbd5e1;
+  --accent: #f1f5f9;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-border: #334155;
+  --muted: #1e293b;
+  --muted-text: #94a3b8;
+  --accent: #f8fafc;
 }
 
 @theme inline {
@@ -12,16 +41,46 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #0f172a 0%, #020617 55%, #01040f 100%);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Theme utility classes */
+.theme-bg {
+  background-color: var(--background);
+  transition: background-color 0.3s ease;
+}
+
+.theme-text {
+  color: var(--foreground);
+  transition: color 0.3s ease;
+}
+
+.theme-text-muted {
+  color: var(--muted-text);
+  transition: color 0.3s ease;
+}
+
+.theme-card {
+  background-color: var(--card);
+  transition: background-color 0.3s ease;
+}
+
+.theme-border {
+  border-color: var(--card-border);
+  transition: border-color 0.3s ease;
+}
+
+.theme-muted {
+  background-color: var(--muted);
+  transition: background-color 0.3s ease;
+}
+
+.theme-accent {
+  color: var(--accent);
+  transition: color 0.3s ease;
 }
