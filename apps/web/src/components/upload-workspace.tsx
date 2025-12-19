@@ -252,7 +252,7 @@ export function UploadWorkspace() {
             </option>
           </select>
         </label>
-        <p className="mt-2 text-xs text-sky-200/80">
+        <p className="mt-2 text-xs text-gray-700">
           Select the type before uploading. Uploading a new file will replace the existing one.
         </p>
       </div>
@@ -323,7 +323,7 @@ function UploadList({
       </div>
       <div className="mt-2 space-y-2">
         {uploads.length === 0 ? (
-          <p className="text-sm text-gray-500">No files uploaded</p>
+          <p className="text-sm text-gray-700">No files uploaded</p>
         ) : (
           uploads.map((upload) => (
             <div

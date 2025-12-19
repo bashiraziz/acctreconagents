@@ -175,8 +175,8 @@ export function ColumnMapper() {
           onClick={() => setActiveTab("gl")}
           className={`px-4 py-2 text-sm font-medium transition ${
             activeTab === "gl"
-              ? "border-b-2 border-sky-400 text-sky-400"
-              : "text-slate-400 hover:text-slate-200"
+              ? "border-b-2 border-gray-900 text-gray-900"
+              : "text-gray-700 hover:text-gray-900"
           }`}
         >
           GL Balance ({glCompletion}%)
@@ -185,8 +185,8 @@ export function ColumnMapper() {
           onClick={() => setActiveTab("subledger")}
           className={`px-4 py-2 text-sm font-medium transition ${
             activeTab === "subledger"
-              ? "border-b-2 border-sky-400 text-sky-400"
-              : "text-slate-400 hover:text-slate-200"
+              ? "border-b-2 border-gray-900 text-gray-900"
+              : "text-gray-700 hover:text-gray-900"
           }`}
         >
           Subledger ({subledgerCompletion}%)
@@ -195,8 +195,8 @@ export function ColumnMapper() {
           onClick={() => setActiveTab("transactions")}
           className={`px-4 py-2 text-sm font-medium transition ${
             activeTab === "transactions"
-              ? "border-b-2 border-sky-400 text-sky-400"
-              : "text-slate-400 hover:text-slate-200"
+              ? "border-b-2 border-gray-900 text-gray-900"
+              : "text-gray-700 hover:text-gray-900"
           }`}
         >
           Transactions ({transactionsCompletion}%)

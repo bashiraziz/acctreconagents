@@ -183,18 +183,18 @@ export function OrchestratorConsole() {
 
       {/* Data Status */}
       {!reconciliationData && (
-        <div className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
-          <p className="font-semibold">⚠️ No data ready</p>
-          <p className="mt-1 text-amber-100/90">
+        <div className="mt-4 rounded border border-gray-400 bg-gray-100 p-4 text-sm text-gray-900">
+          <p className="font-semibold">No data ready</p>
+          <p className="mt-1 text-gray-800">
             Upload files and apply column mappings before running agents.
           </p>
         </div>
       )}
 
       {reconciliationData && !result && !error && (
-        <div className="mt-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-gray-900">
-          <p className="font-semibold">✓ Data ready to reconcile</p>
-          <p className="mt-1 text-gray-900/90">
+        <div className="mt-4 rounded border border-gray-400 bg-white p-4 text-sm text-gray-900">
+          <p className="font-semibold">Data ready to reconcile</p>
+          <p className="mt-1 text-gray-800">
             {reconciliationData.glBalances.length} GL balances,{" "}
             {reconciliationData.subledgerBalances.length} subledger balances
             {reconciliationData.transactions &&
@@ -205,24 +205,24 @@ export function OrchestratorConsole() {
 
       {/* Error Display */}
       {error && (
-        <div className="mt-4 rounded-2xl border border-rose-500/40 bg-gray-900/10 p-4 text-sm text-rose-100">
-          <p className="font-semibold">{error.message}</p>
+        <div className="mt-4 rounded border border-gray-400 bg-gray-100 p-4 text-sm text-gray-900">
+          <p className="font-semibold">Error: {error.message}</p>
           {error.detail ? (
-            <p className="mt-1 text-sm text-rose-100/90">{error.detail}</p>
+            <p className="mt-1 text-sm text-gray-800">{error.detail}</p>
           ) : null}
           {error.help && error.help.length > 0 ? (
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-rose-100/90">
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-gray-800">
               {error.help.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
           ) : null}
           {error.technical ? (
-            <details className="mt-3 text-xs text-rose-100/80">
-              <summary className="cursor-pointer select-none font-semibold uppercase tracking-[0.3em] text-rose-100/70 hover:text-rose-100">
-                Show details
+            <details className="mt-3 text-xs text-gray-900">
+              <summary className="cursor-pointer select-none font-medium uppercase text-gray-800 hover:text-gray-900">
+                Show Details
               </summary>
-              <pre className="mt-2 whitespace-pre-wrap rounded-xl border border-rose-500/20 bg-black/30 p-3 text-[11px] text-rose-50/90">
+              <pre className="mt-2 whitespace-pre-wrap rounded border border-gray-300 bg-gray-50 p-3 text-[11px] text-gray-800">
                 {error.technical}
               </pre>
             </details>

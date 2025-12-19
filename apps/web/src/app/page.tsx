@@ -126,12 +126,12 @@ function AboutPanel() {
         <p className="mt-2 text-sm text-gray-600">{specMetadata.summary}</p>
         <div className="mt-4 space-y-4">
           <div>
-            <p className="text-xs font-medium uppercase text-gray-500">Balance Fields</p>
-            <ul className="mt-2 space-y-1 text-sm text-gray-700">
+            <p className="text-xs font-medium uppercase text-gray-700">Balance Fields</p>
+            <ul className="mt-2 space-y-1 text-sm text-gray-900">
               {canonicalBalanceFields.map((field) => (
                 <li key={field.key} className="flex items-center justify-between">
                   <span>{field.label}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-700">
                     {field.required ? "required" : "optional"}
                   </span>
                 </li>
@@ -139,12 +139,12 @@ function AboutPanel() {
             </ul>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase text-gray-500">Transaction Fields</p>
-            <ul className="mt-2 space-y-1 text-sm text-gray-700">
+            <p className="text-xs font-medium uppercase text-gray-700">Transaction Fields</p>
+            <ul className="mt-2 space-y-1 text-sm text-gray-900">
               {transactionFields.map((field) => (
                 <li key={field.key} className="flex items-center justify-between">
                   <span>{field.label}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-700">
                     {field.required ? "required" : "optional"}
                   </span>
                 </li>
