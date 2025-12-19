@@ -15,11 +15,11 @@ export function DataPreview() {
 
   if (!reconciliationData) {
     return (
-      <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-6">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-300">
+      <div className="border border-gray-200 bg-white p-6">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-700">
           Data Preview
         </h3>
-        <p className="mt-4 text-center text-sm text-slate-500">
+        <p className="mt-4 text-center text-sm text-gray-700">
           Upload and map your files to see a preview
         </p>
       </div>
@@ -27,8 +27,8 @@ export function DataPreview() {
   }
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-6">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-300">
+    <div className="border border-gray-200 bg-white p-6">
+      <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-700">
         Data Preview
       </h3>
 
@@ -63,9 +63,9 @@ export function DataPreview() {
           )}
 
         {/* Summary */}
-        <div className="rounded-2xl border border-sky-800/40 bg-sky-500/10 p-4">
-          <p className="text-sm font-semibold text-sky-100">Ready to reconcile</p>
-          <div className="mt-2 flex flex-wrap gap-4 text-xs text-sky-200/80">
+        <div className="rounded border border-gray-300 bg-gray-50 p-4">
+          <p className="text-sm font-semibold text-gray-900">Ready to reconcile</p>
+          <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-700">
             <span>
               {reconciliationData.glBalances.length} GL balance{reconciliationData.glBalances.length !== 1 ? "s" : ""}
             </span>
@@ -114,20 +114,20 @@ function PreviewTable({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-white">{title}</h4>
-        <span className="text-xs text-slate-400">
+        <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
+        <span className="text-xs text-gray-700">
           Showing {data.length} of {totalRows} rows
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="overflow-x-auto rounded border border-gray-300">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-900/60">
+            <tr className="border-b border-gray-300 bg-gray-50">
               {columns.map((col) => (
                 <th
                   key={col}
-                  className="px-4 py-2 text-left font-semibold text-slate-300"
+                  className="px-4 py-2 text-left font-semibold text-gray-900"
                 >
                   {col}
                 </th>
@@ -138,10 +138,10 @@ function PreviewTable({
             {data.map((row, index) => (
               <tr
                 key={index}
-                className="border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30"
+                className="border-b border-gray-200 last:border-0 hover:bg-gray-50"
               >
                 {columns.map((col) => (
-                  <td key={col} className="px-4 py-2 text-slate-200">
+                  <td key={col} className="px-4 py-2 text-gray-900">
                     {formatCellValue(row[col])}
                   </td>
                 ))}
