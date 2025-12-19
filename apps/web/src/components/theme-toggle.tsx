@@ -41,13 +41,13 @@ export function ThemeToggle() {
   }
 
   return (
-    <div className="flex items-center gap-1 rounded border border-gray-300 bg-white p-1">
+    <div className="flex items-center gap-1 rounded border theme-border theme-card p-1">
       <button
         onClick={() => changeTheme("light")}
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "light"
             ? "bg-gray-900 text-white"
-            : "text-gray-700 hover:bg-gray-100"
+            : "theme-text-muted hover:theme-muted"
         }`}
         title="Light theme"
       >
@@ -58,7 +58,7 @@ export function ThemeToggle() {
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "medium-dark"
             ? "bg-gray-900 text-white"
-            : "text-gray-700 hover:bg-gray-100"
+            : "theme-text-muted hover:theme-muted"
         }`}
         title="Medium dark theme"
       >
@@ -69,7 +69,7 @@ export function ThemeToggle() {
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "dark"
             ? "bg-gray-900 text-white"
-            : "text-gray-700 hover:bg-gray-100"
+            : "theme-text-muted hover:theme-muted"
         }`}
         title="Dark theme"
       >
