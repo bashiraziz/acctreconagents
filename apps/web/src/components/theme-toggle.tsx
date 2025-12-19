@@ -47,7 +47,7 @@ export function ThemeToggle() {
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "light"
             ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:theme-muted"
+            : "theme-text-muted hover:opacity-70"
         }`}
         title="Light theme"
       >
@@ -58,7 +58,7 @@ export function ThemeToggle() {
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "medium-dark"
             ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:theme-muted"
+            : "theme-text-muted hover:opacity-70"
         }`}
         title="Medium dark theme"
       >
@@ -69,7 +69,7 @@ export function ThemeToggle() {
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "dark"
             ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:theme-muted"
+            : "theme-text-muted hover:opacity-70"
         }`}
         title="Dark theme"
       >
