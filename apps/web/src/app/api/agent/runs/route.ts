@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       userId = session?.user?.id;
     } catch (authError) {
       // If auth fails (e.g., no database), treat as anonymous user
-      console.warn("Auth check failed, treating as anonymous:", authError);
+      // This is expected behavior when POSTGRES_URL is not configured
       isAuthenticated = false;
     }
 
