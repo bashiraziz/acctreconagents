@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import { useSession, signIn, signUp } from "@/lib/auth-client";
+import { RateLimitStatus } from "@/components/rate-limit-status";
 
 export function AuthBanner() {
   const { data: session } = useSession();
@@ -19,28 +20,32 @@ export function AuthBanner() {
 
   return (
     <>
-      <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
-              ⚠️
+      <div className="space-y-3">
+        <RateLimitStatus />
+
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+                ⚠️
+              </div>
+              <div>
+                <p className="font-semibold text-amber-100">
+                  Sign in to save your work
+                </p>
+                <p className="mt-1 text-sm text-amber-200/80">
+                  Your column mappings and reconciliation history will be lost when you close
+                  this tab. Sign in to sync across devices, save your preferences, and remove rate limits.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-amber-100">
-                Sign in to save your work
-              </p>
-              <p className="mt-1 text-sm text-amber-200/80">
-                Your column mappings and reconciliation history will be lost when you close
-                this tab. Sign in to sync across devices and save your preferences.
-              </p>
-            </div>
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-400"
+            >
+              Sign In
+            </button>
           </div>
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-400"
-          >
-            Sign In
-          </button>
         </div>
       </div>
 

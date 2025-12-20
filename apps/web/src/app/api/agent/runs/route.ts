@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/get-client-ip";
 
 const DEFAULT_ORCHESTRATOR_URL = "http://127.0.0.1:4100";
 const orchestratorUrl =
@@ -60,13 +63,71 @@ function safeParseUrl(value: string) {
 
 export async function POST(request: Request) {
   try {
+    // Check authentication status (with error handling for missing DB)
+    let isAuthenticated = false;
+    let userId: string | undefined;
+
+    try {
+      const session = await auth.api.getSession({ headers: request.headers });
+      isAuthenticated = !!session?.user;
+      userId = session?.user?.id;
+    } catch (authError) {
+      // If auth fails (e.g., no database), treat as anonymous user
+      console.warn("Auth check failed, treating as anonymous:", authError);
+      isAuthenticated = false;
+    }
+
+    // Get client identifier (IP address for anonymous users, user ID for authenticated)
+    const clientIp = getClientIp(request);
+    const identifier = isAuthenticated && userId ? `user:${userId}` : `ip:${clientIp}`;
+
+    // Check rate limit
+    const rateLimit = checkRateLimit(identifier, isAuthenticated);
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: `You've exceeded the limit of ${rateLimit.limit} reconciliations per ${rateLimit.window}. Please try again in ${Math.ceil((rateLimit.retryAfter || 0) / 60)} minutes.`,
+          details: {
+            limit: rateLimit.limit,
+            window: rateLimit.window,
+            retryAfter: rateLimit.retryAfter,
+            reset: new Date(rateLimit.reset).toISOString(),
+          },
+          help: [
+            "Sign in to remove rate limits and save your reconciliation history",
+            "Rate limits reset automatically after the time window expires",
+          ],
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimit.limit.toString(),
+            "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+            "X-RateLimit-Reset": rateLimit.reset.toString(),
+            "Retry-After": (rateLimit.retryAfter || 0).toString(),
+          },
+        }
+      );
+    }
+
+    // Process the request
     const payload = await request.json();
     const response = await forwardToOrchestrator(payload);
     const data = await response.json();
+
+    // Add rate limit headers to successful responses
+    const headers = {
+      "X-RateLimit-Limit": rateLimit.limit.toString(),
+      "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+      "X-RateLimit-Reset": rateLimit.reset.toString(),
+    };
+
     if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
+      return NextResponse.json(data, { status: response.status, headers });
     }
-    return NextResponse.json(data);
+    return NextResponse.json(data, { headers });
   } catch (error) {
     const unreachable = buildUnreachableError(error);
     return NextResponse.json(

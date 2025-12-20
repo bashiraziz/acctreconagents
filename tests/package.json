@@ -1,0 +1,17 @@
+{
+  "name": "acctrecon-tests",
+  "version": "1.0.0",
+  "description": "Automated testing framework for reconciliation scenarios",
+  "type": "module",
+  "scripts": {
+    "test": "tsx scenario-runner.ts",
+    "test:verbose": "tsx scenario-runner.ts --verbose",
+    "test:watch": "tsx watch scenario-runner.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

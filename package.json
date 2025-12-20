@@ -18,7 +18,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cd tests && npm test",
+    "test:scenarios": "cd tests && npm test",
+    "test:verbose": "cd tests && npm run test:verbose",
+    "test:watch": "cd tests && npm run test:watch",
     "spec:check": "npx @letuscode/spec-kit check"
   },
   "dependencies": {
