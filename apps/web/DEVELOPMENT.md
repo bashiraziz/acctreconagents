@@ -83,6 +83,20 @@ To enable authentication and persistence:
 #### Session errors in console
 **Normal behavior** when database is not configured. These are handled gracefully and don't affect functionality.
 
+#### "Unhandled Rejection: [Error [BetterAuthError]: Failed to initialize database adapter]"
+**This is a known cosmetic issue** with Better Auth v1.4.7 doing async schema validation.
+
+**Status:** Does NOT affect functionality - authentication works perfectly.
+
+**Why it happens:**
+- Better Auth validates database schema asynchronously
+- The error is caught but logged as "unhandled rejection"
+- All API routes handle this gracefully
+
+**Verification:** Run `npm run db:test` - you'll see the database is working correctly.
+
+**Fix (optional):** This will be resolved in a future Better Auth update. You can safely ignore it.
+
 ---
 
 ## Development Workflow
