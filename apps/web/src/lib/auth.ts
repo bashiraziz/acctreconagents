@@ -5,19 +5,33 @@
 
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { Kysely, PostgresDialect } from "kysely";
 
-// Create database connection pool with Neon-specific settings
+// Create Kysely database instance with explicit SSL config
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-  ssl: process.env.POSTGRES_URL?.includes('neon.tech') ? { rejectUnauthorized: false } : undefined,
-  max: 20,
+  connectionString: process.env.POSTGRES_URL!,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
 });
 
-// Handle pool errors to prevent unhandled rejections
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+const db = new Kysely<any>({
+  dialect: new PostgresDialect({
+    pool,
+  }),
+});
+
+// Catch unhandled rejections to see the actual error
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🚨 Unhandled Rejection at:', promise);
+  console.error('🚨 Reason:', reason);
+  if (reason instanceof Error) {
+    console.error('🚨 Stack:', reason.stack);
+    console.error('🚨 Cause:', (reason as any).cause);
+  }
 });
 
 // Initialize Better Auth with error handling
@@ -26,11 +40,13 @@ let authInstance: ReturnType<typeof betterAuth> | null = null;
 function getAuth() {
   if (!authInstance) {
     try {
+      console.log('🔧 Initializing Better Auth...');
+      console.log('Database URL configured:', !!process.env.POSTGRES_URL);
+
       authInstance = betterAuth({
-        database: {
-          provider: "postgres",
-          client: pool,
-        },
+        database: db,
+
+        trustedOrigins: ["http://localhost:3100"],
 
         emailAndPassword: {
           enabled: true,
@@ -47,6 +63,7 @@ function getAuth() {
           crossSubDomainCookies: {
             enabled: true,
           },
+          disableCSRFCheck: process.env.NODE_ENV === 'development',
         },
 
         // Optional: Add social auth providers later
@@ -57,8 +74,13 @@ function getAuth() {
         //   },
         // },
       });
+
+      console.log('✅ Better Auth initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize Better Auth:', error);
+      console.error('❌ Failed to initialize Better Auth:', error);
+      console.error('Error type:', error?.constructor?.name);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       throw error;
     }
   }

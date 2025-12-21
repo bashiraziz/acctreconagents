@@ -84,18 +84,35 @@ To enable authentication and persistence:
 **Normal behavior** when database is not configured. These are handled gracefully and don't affect functionality.
 
 #### "Unhandled Rejection: [Error [BetterAuthError]: Failed to initialize database adapter]"
-**This is a known cosmetic issue** with Better Auth v1.4.7 doing async schema validation.
+**This is a known issue** with Better Auth v1.4.7 async schema validation on Neon Postgres.
 
-**Status:** Does NOT affect functionality - authentication works perfectly.
+**Status:** Authentication is **NOT working** due to this error. This is blocking sign-up/sign-in functionality.
 
 **Why it happens:**
-- Better Auth validates database schema asynchronously
-- The error is caught but logged as "unhandled rejection"
-- All API routes handle this gracefully
+- Better Auth v1.4.7 performs async schema validation after initialization
+- The validation fails with no stack trace or error details
+- The error appears to be related to Kysely adapter compatibility with Neon's SSL requirements
+- Database tables are correct and work perfectly when tested directly
 
-**Verification:** Run `npm run db:test` - you'll see the database is working correctly.
+**What we've tried:**
+- ✅ Database schema is correct (all tables created successfully)
+- ✅ Manual database operations work (can insert/query users directly)
+- ✅ Tried multiple Better Auth configurations (raw Pool, Kysely, connection URL)
+- ✅ Recreated tables with exact Better Auth schema including all fields
+- ❌ Error still occurs with no meaningful debugging information
 
-**Fix (optional):** This will be resolved in a future Better Auth update. You can safely ignore it.
+**Temporary workarounds:**
+1. **Use the app without authentication** (fully functional for reconciliation)
+2. **Rate limiting still works** for anonymous users (5/hour, 8/2hrs, 10/3hrs)
+3. **All reconciliation features work** without needing to sign in
+
+**Next steps to fix:**
+1. Try upgrading to Better Auth v1.5.x when released
+2. Consider switching to a different auth solution (NextAuth.js, Clerk, Auth0)
+3. Contact Better Auth support with reproduction case
+4. Try using a different Postgres provider (not Neon) to isolate the issue
+
+**Verification:** Run `npm run db:test` - database works perfectly. The issue is specific to Better Auth's adapter initialization.
 
 ---
 

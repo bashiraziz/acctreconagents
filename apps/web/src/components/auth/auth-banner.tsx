@@ -65,28 +65,56 @@ function AuthModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("🔐 Form submit event triggered!");
     e.preventDefault();
+    e.stopPropagation();
+
     setLoading(true);
     setError(null);
 
+    console.log("🔐 Auth form submitted:", mode, { email, name: name || "(none)" });
+
+    // Add a small delay to ensure we see console logs before any potential reload
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       if (mode === "signup") {
-        await signUp.email({
+        console.log("📝 Calling signUp.email...");
+        if (typeof signUp?.email !== 'function') {
+          throw new Error("signUp.email is not available - Better Auth client failed to initialize");
+        }
+        const result = await signUp.email({
           email,
           password,
           name,
         });
+        console.log("✅ Sign up result:", result);
+
+        if (result.error) {
+          throw new Error(result.error.message || JSON.stringify(result.error));
+        }
       } else {
-        await signIn.email({
+        console.log("🔑 Calling signIn.email...");
+        if (typeof signIn?.email !== 'function') {
+          throw new Error("signIn.email is not available - Better Auth client failed to initialize");
+        }
+        const result = await signIn.email({
           email,
           password,
         });
+        console.log("✅ Sign in result:", result);
+
+        if (result.error) {
+          throw new Error(result.error.message || JSON.stringify(result.error));
+        }
       }
 
       // Success - close modal
+      console.log("✓ Authentication successful, reloading...");
       onClose();
       window.location.reload(); // Reload to sync with database
     } catch (err) {
+      console.error("❌ Authentication error:", err);
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
       setLoading(false);
@@ -161,8 +189,13 @@ function AuthModal({ onClose }: { onClose: () => void }) {
           )}
 
           <button
-            type="submit"
+            type="button"
             disabled={loading}
+            onClick={(e) => {
+              console.log("🔘 Button clicked!");
+              e.preventDefault();
+              handleSubmit(e as any);
+            }}
             className="w-full rounded-xl bg-sky-500 px-4 py-3 font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
           >
             {loading

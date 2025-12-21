@@ -19,7 +19,7 @@ export function ThemeToggle() {
           document.documentElement.setAttribute("data-theme", savedTheme);
         }
       } catch (error) {
-        console.warn("Could not access localStorage:", error);
+        // Silently ignore localStorage errors
       }
     }
   }, []);
@@ -31,7 +31,7 @@ export function ThemeToggle() {
         localStorage.setItem("theme", newTheme);
         document.documentElement.setAttribute("data-theme", newTheme);
       } catch (error) {
-        console.warn("Could not save theme to localStorage:", error);
+        // Silently ignore localStorage errors - theme just won't persist
       }
     }
   };
