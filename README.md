@@ -2,6 +2,13 @@
 
 Modern reconciliation stack built from a clean slate: Next.js on Vercel for the UI, a Fastify orchestrator for OpenAI/Claude/Gemini coordination, and Spec-Kit contracts that keep the whole system spec-driven and agent-ready.
 
+## 📘 Documentation
+
+- **[User Guide](USER_GUIDE.md)** - For accountants and end users performing reconciliations
+- **[Developer README](#repository-structure)** (below) - For developers setting up and extending the system
+- **[Data Dictionary](specs/data-dictionary.md)** - Field definitions and formats
+- **[Reconciliation Logic](specs/reconciliation-logic.md)** - Algorithm documentation
+
 ## Repository structure
 
 ```
