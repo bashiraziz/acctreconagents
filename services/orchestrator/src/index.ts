@@ -37,6 +37,7 @@ const transactionSchema = z.object({
   amount: z.number().optional(),
   narrative: z.string().optional(),
   source_period: z.string().optional(),
+  metadata: z.record(z.string()).optional(),
 });
 
 const payloadSchema = z.object({
@@ -154,13 +155,15 @@ fastify.post("/agent/runs", async (request, reply) => {
     const errors = parsed.error.issues.map((err) => {
       const path = err.path.join(".");
       if (err.code === "invalid_type") {
-        if (err.expected === "string" && err.received === "undefined") {
+        // Type assertion: when code is "invalid_type", err has received/expected properties
+        const typeErr = err as { expected: string; received: string };
+        if (typeErr.expected === "string" && typeErr.received === "undefined") {
           return `Missing required field: ${path}. Please check your column mappings.`;
         }
-        if (err.expected === "number" && err.received === "string") {
+        if (typeErr.expected === "number" && typeErr.received === "string") {
           return `Field "${path}" must be a number, but received text. Check your data format.`;
         }
-        return `Field "${path}" has wrong data type. Expected ${err.expected}, got ${err.received}.`;
+        return `Field "${path}" has wrong data type. Expected ${typeErr.expected}, got ${typeErr.received}.`;
       }
       if (err.code === "invalid_union") {
         return `Field "${path}" does not match expected format.`;
