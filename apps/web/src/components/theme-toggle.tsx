@@ -27,11 +27,14 @@ export function ThemeToggle() {
   const changeTheme = (newTheme: Theme) => {
     setTheme(newTheme);
     if (typeof window !== "undefined") {
+      // Always set the theme attribute (works even if localStorage is blocked)
+      document.documentElement.setAttribute("data-theme", newTheme);
+
+      // Try to save to localStorage for persistence (optional)
       try {
         localStorage.setItem("theme", newTheme);
-        document.documentElement.setAttribute("data-theme", newTheme);
       } catch (error) {
-        // Silently ignore localStorage errors - theme just won't persist
+        // Silently ignore localStorage errors - theme works but won't persist across sessions
       }
     }
   };
