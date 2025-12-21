@@ -134,16 +134,20 @@ Feature: Account Reconciliation
 
 **Type**: String
 **Required**: Yes
-**Format**: 5-digit account number (e.g., "20100")
-**Description**: General ledger account code
+**Format**: Alphanumeric (flexible - typically 4-6 characters)
+**Description**: General ledger account code from the user's accounting system
 **Examples**:
-  - "20100" - Accounts Payable Control
-  - "22010" - Accrued Expenses
-**Validation**: Must be numeric string, 3-7 characters
+  - "20100" - Accounts Payable Control (5-digit)
+  - "1000" - Cash (4-digit)
+  - "100-001" - Cash - Operating (with separator)
+  - "AP001" - Accounts Payable (alphanumeric)
+**Validation**: Non-empty string, max 20 characters
 **Used In**: GL Balance, Subledger Balance, Transactions
+**Note**: System supports various accounting systems (SAP, Oracle, QuickBooks, etc.)
+with different chart of account formats. No strict format enforcement.
 ```
 
-**Location**: `specs/data-dictionary.md` (to be created)
+**Location**: `specs/data-dictionary.md` (already created - see actual implementation there)
 
 ---
 
