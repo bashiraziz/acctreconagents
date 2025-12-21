@@ -37,7 +37,7 @@ const transactionSchema = z.object({
   amount: z.number().optional(),
   narrative: z.string().optional(),
   source_period: z.string().optional(),
-  metadata: z.record(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
 });
 
 const payloadSchema = z.object({
@@ -156,7 +156,7 @@ fastify.post("/agent/runs", async (request, reply) => {
       const path = err.path.join(".");
       if (err.code === "invalid_type") {
         // Type assertion: when code is "invalid_type", err has received/expected properties
-        const typeErr = err as { expected: string; received: string };
+        const typeErr = err as any as { expected: string; received: string };
         if (typeErr.expected === "string" && typeErr.received === "undefined") {
           return `Missing required field: ${path}. Please check your column mappings.`;
         }
@@ -815,9 +815,8 @@ function normalizeTransactions(
     const booked_at = Number.isNaN(bookedDate.getTime())
       ? new Date().toISOString()
       : bookedDate.toISOString();
-    const metadata: Record<string, string> = {
-      ...(transaction.metadata ?? {}),
-    };
+    const metadata: Record<string, string> =
+      (transaction.metadata as Record<string, string> | undefined) ?? {};
     const period =
       transaction.source_period ??
       metadata.period ??
