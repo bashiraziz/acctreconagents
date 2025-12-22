@@ -96,7 +96,7 @@ const initialState = {
   },
   reconciliationData: null,
   workflowStatus: {
-    upload: "not_started" as const,
+    upload: "incomplete" as const,
     map: "incomplete" as const,
     preview: "incomplete" as const,
     run: "not_started" as const,
