@@ -128,14 +128,12 @@ export const useReconciliationStore = create<ReconciliationStore>()(
         // Update workflow status based on uploaded files
         const files = get().uploadedFiles;
 
-        // If this is the first file uploaded, set status to "running"
-        if (currentStatus === "not_started") {
-          get().updateWorkflowStatus("upload", "running");
-        }
-
         // If both required files are uploaded, mark as complete
         if (files.glBalance && files.subledgerBalance) {
           get().updateWorkflowStatus("upload", "complete");
+        } else {
+          // Otherwise, ensure status is incomplete
+          get().updateWorkflowStatus("upload", "incomplete");
         }
       },
 
@@ -155,12 +153,12 @@ export const useReconciliationStore = create<ReconciliationStore>()(
 
         // Update workflow status based on remaining files
         const files = get().uploadedFiles;
-        const hasAnyFiles = files.glBalance || files.subledgerBalance || files.transactions;
 
-        if (hasAnyFiles) {
-          get().updateWorkflowStatus("upload", "running");
+        // If both required files are still uploaded, mark as complete; otherwise incomplete
+        if (files.glBalance && files.subledgerBalance) {
+          get().updateWorkflowStatus("upload", "complete");
         } else {
-          get().updateWorkflowStatus("upload", "not_started");
+          get().updateWorkflowStatus("upload", "incomplete");
         }
 
         get().updateWorkflowStatus("map", "incomplete");
@@ -173,7 +171,7 @@ export const useReconciliationStore = create<ReconciliationStore>()(
           columnMappings: initialState.columnMappings,
           reconciliationData: initialState.reconciliationData,
         });
-        get().updateWorkflowStatus("upload", "not_started");
+        get().updateWorkflowStatus("upload", "incomplete");
         get().updateWorkflowStatus("map", "incomplete");
         get().updateWorkflowStatus("preview", "incomplete");
       },
