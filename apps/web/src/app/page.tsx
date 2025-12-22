@@ -19,21 +19,32 @@ export default function Home() {
         <header className="theme-card theme-border border-b p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold theme-text">
-                Account Reconciliation
+              <h1 className="text-3xl font-bold theme-text">
+                Rowshni
               </h1>
+              <p className="mt-1 text-lg font-medium text-amber-500">
+                Shedding light on your ledger
+              </p>
               <p className="mt-2 max-w-3xl text-sm theme-text-muted">
-                Upload your GL and subledger data, map columns, and run AI-powered reconciliation analysis.
+                AI-powered reconciliation that illuminates variances, detects errors, and brings clarity to your month-end close.
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <Link
+                href="https://github.com/bashiraziz/acctreconagents/blob/master/USER_GUIDE.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border theme-border theme-card px-4 py-2 text-sm font-medium theme-text hover:theme-muted transition-colors"
+              >
+                How to Use
+              </Link>
               <ThemeToggle />
               <UserMenu />
             </div>
           </div>
         </header>
 
-        {/* Auth Banner for Anonymous Users */}
+        {/* Rate Limit Banner */}
         <AuthBanner />
 
         {/* Workflow Progress Indicator */}
@@ -71,9 +82,10 @@ function SpecPill({ label, value }: { label: string; value: string }) {
 function AboutPanel() {
   return (
     <section className="theme-card theme-border border p-6">
-      <h3 className="text-base font-semibold theme-text">About</h3>
+      <h3 className="text-base font-semibold theme-text">About Rowshni</h3>
       <p className="mt-2 text-sm theme-text-muted">
-        AI-powered reconciliation workspace. Upload source reports, map columns, and run automated analysis.
+        <span className="font-medium text-amber-500">Rowshni</span> means "light".
+        We illuminate your reconciliations with AI-powered insights, bringing clarity to complex financial data.
       </p>
 
       <details className="mt-4 border-t theme-border pt-4">

@@ -1,8 +1,0 @@
-account_code,period,currency,amount,description
-11000-AR Control,2025-10,USD,965000,Receivables
-12050-Unbilled Revenue,2025-10,USD,146000,Unbilled/WIP
-20100-AP Control,2025-10,USD,-1185000,Accounts Payable
-22010-Accrued Expenses,2025-10,USD,-215000,Payroll & vendor accruals
-40000-Software Revenue,2025-10,USD,-241000,Recognized revenue
-61000-Depreciation Expense,2025-10,USD,45000,Monthly depreciation
-15900-Accumulated Depreciation,2025-10,USD,-510000,Accumulated depreciation balance

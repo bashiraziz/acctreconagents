@@ -1,7 +1,7 @@
 {
-  "name": "orchestrator",
+  "name": "rowshni-orchestrator",
   "version": "1.0.0",
-  "description": "",
+  "description": "Rowshni AI orchestrator service - coordinates multi-agent reconciliation analysis",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { promises as fs } from "fs";
 
-const MOCK_ROOT = path.join(process.cwd(), "../../data/mock");
+const SCENARIOS_ROOT = path.join(process.cwd(), "../../data/scenarios");
 
 const MIME_MAP: Record<string, string> = {
   ".csv": "text/csv",
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
   }
 
-  const absolutePath = path.join(MOCK_ROOT, sanitized);
+  const absolutePath = path.join(SCENARIOS_ROOT, sanitized);
   try {
     const fileBuffer = await fs.readFile(absolutePath);
     const extension = path.extname(absolutePath);

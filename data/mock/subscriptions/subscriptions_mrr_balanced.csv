@@ -1,6 +1,0 @@
-metric,period,amount
-Beginning ARR,2025-10,4,800,000
-New Bookings,2025-10,420,000
-Expansion,2025-10,130,000
-Churn,(2025-10),-220,000
-Ending ARR,2025-10,5,130,000

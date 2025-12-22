@@ -14,9 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AcctRecon Agentic Workspace",
+  title: "Rowshni - Shedding Light on Your Ledger",
   description:
-    "Spec-Kit driven reconciliation platform with OpenAI ChatKit, Claude Skills, and Gemini insights.",
+    "AI-powered reconciliation that illuminates variances, detects errors, and brings clarity to your month-end close. Intelligent GL-to-subledger reconciliation with multi-agent AI analysis.",
+  keywords: ["reconciliation", "accounting", "AI", "ledger", "GL", "subledger", "variance detection", "month-end close"],
+  authors: [{ name: "Rowshni" }],
+  openGraph: {
+    title: "Rowshni - Shedding Light on Your Ledger",
+    description: "AI-powered reconciliation that illuminates variances and brings clarity to your month-end close.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

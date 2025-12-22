@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { specMetadata } from "@/lib/spec";
 import { useReconciliationStore } from "@/store/reconciliationStore";
 import type { OrchestratorResponse } from "@/types/reconciliation";
@@ -12,13 +12,24 @@ type AgentError = {
   technical?: string;
 };
 
+const AGENT_STEPS = [
+  { id: 1, name: "Data Validation Agent", description: "Validating data quality and completeness" },
+  { id: 2, name: "Reconciliation Analyst Agent", description: "Analyzing variances and patterns" },
+  { id: 3, name: "Variance Investigator Agent", description: "Investigating material variances" },
+  { id: 4, name: "Report Generator Agent", description: "Creating audit-ready documentation" },
+];
+
 export function OrchestratorConsole() {
-  const [prompt, setPrompt] = useState(
-    "Reconcile account 1000 inventory roll-forward for October close.",
-  );
+  const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OrchestratorResponse | null>(null);
   const [error, setError] = useState<AgentError | null>(null);
+  const [currentAgentStep, setCurrentAgentStep] = useState(0);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Refs for auto-scrolling to error fields
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const materialityRef = useRef<HTMLInputElement>(null);
 
   // Get data from Zustand store
   const reconciliationData = useReconciliationStore(
@@ -28,8 +39,76 @@ export function OrchestratorConsole() {
   const startRun = useReconciliationStore((state) => state.startRun);
   const stopRun = useReconciliationStore((state) => state.stopRun);
   const completeRun = useReconciliationStore((state) => state.completeRun);
+  const materialityThreshold = useReconciliationStore((state) => state.materialityThreshold);
+  const setMaterialityThreshold = useReconciliationStore((state) => state.setMaterialityThreshold);
+
+  // Clear results when reconciliation data is cleared
+  useEffect(() => {
+    if (!reconciliationData) {
+      setResult(null);
+      setError(null);
+      setFieldErrors({});
+    }
+  }, [reconciliationData]);
+
+  // Simulate agent progress
+  useEffect(() => {
+    if (!loading) {
+      setCurrentAgentStep(0);
+      return;
+    }
+
+    // Cycle through agents to show progress
+    const interval = setInterval(() => {
+      setCurrentAgentStep((prev) => {
+        if (prev >= AGENT_STEPS.length - 1) return prev;
+        return prev + 1;
+      });
+    }, 8000); // Change agent every 8 seconds
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  // Helper function to extract field errors from error message
+  const extractFieldErrors = (errorMessage: string | undefined): Record<string, string> => {
+    if (!errorMessage) return {};
+
+    const errors: Record<string, string> = {};
+
+    // Parse error messages like: Field "userPrompt": Too small: expected string to have >=1 characters
+    const fieldErrorPattern = /Field "(\w+)":\s*(.+?)(?=\n|$)/gi;
+    let match;
+
+    while ((match = fieldErrorPattern.exec(errorMessage)) !== null) {
+      const fieldName = match[1];
+      const errorText = match[2];
+
+      // Map API field names to UI field names
+      if (fieldName === "userPrompt") {
+        errors.prompt = errorText;
+      } else if (fieldName === "materialityThreshold") {
+        errors.materiality = errorText;
+      }
+    }
+
+    return errors;
+  };
+
+  // Helper function to scroll to first error field
+  const scrollToFirstError = (errors: Record<string, string>) => {
+    if (errors.prompt && promptRef.current) {
+      promptRef.current.focus();
+      promptRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (errors.materiality && materialityRef.current) {
+      materialityRef.current.focus();
+      materialityRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   const runAgents = async () => {
+    // Clear any previous field errors
+    setFieldErrors({});
+
     // Validate data exists
     if (!reconciliationData) {
       setError({
@@ -60,6 +139,7 @@ export function OrchestratorConsole() {
         body: JSON.stringify({
           userPrompt: prompt,
           payload: reconciliationData, // ✅ Using real data from Zustand!
+          materialityThreshold, // ✅ User-defined materiality threshold
         }),
         signal: abortController.signal,
       });
@@ -97,11 +177,21 @@ export function OrchestratorConsole() {
           help,
           technical: data?.technical as string | undefined,
         });
+
+        // Extract field-level errors and highlight them
+        const errors = extractFieldErrors(details);
+        if (Object.keys(errors).length > 0) {
+          setFieldErrors(errors);
+          // Auto-scroll to first error field after a brief delay
+          setTimeout(() => scrollToFirstError(errors), 100);
+        }
+
         completeRun();
         return;
       }
 
       setResult(data);
+      setFieldErrors({}); // Clear any field errors on success
       completeRun();
     } catch (err: any) {
       if (err.name === "AbortError") {
@@ -134,7 +224,7 @@ export function OrchestratorConsole() {
 
   return (
     <section className="theme-card theme-border border p-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+      <header>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.4em] theme-text-muted">
             Orchestrator
@@ -147,12 +237,131 @@ export function OrchestratorConsole() {
             schema v{specMetadata.version}.
           </p>
         </div>
-        <div className="flex gap-2">
+      </header>
+
+      {/* Agent Progress Indicator */}
+      {loading && (
+        <div className="mt-4 rounded-2xl border border-blue-500/40 bg-blue-500/10 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-blue-100">
+                {AGENT_STEPS[currentAgentStep].name}
+              </p>
+              <p className="text-xs text-blue-200/80">
+                {AGENT_STEPS[currentAgentStep].description}
+              </p>
+              <p className="mt-1 text-xs font-medium text-blue-300">
+                Step {currentAgentStep + 1} of {AGENT_STEPS.length}
+              </p>
+            </div>
+          </div>
+          {/* Progress Bar */}
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-blue-900/30">
+            <div
+              className="h-full bg-blue-500 transition-all duration-500"
+              style={{
+                width: `${((currentAgentStep + 1) / AGENT_STEPS.length) * 100}%`,
+              }}
+            ></div>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 space-y-4">
+        <label className="text-xs font-medium uppercase theme-text-muted">
+          Analysis Prompt
+          <textarea
+            ref={promptRef}
+            className={`mt-2 w-full rounded border p-3 text-sm theme-text focus:outline-none ${
+              fieldErrors.prompt
+                ? "border-red-500 bg-red-500/5 focus:border-red-500"
+                : "theme-border theme-card focus:theme-border"
+            }`}
+            rows={3}
+            value={prompt}
+            onChange={(event) => {
+              setPrompt(event.target.value);
+              // Clear error when user starts typing
+              if (fieldErrors.prompt) {
+                setFieldErrors((prev) => {
+                  const next = { ...prev };
+                  delete next.prompt;
+                  return next;
+                });
+              }
+            }}
+            placeholder="Example: Reconcile account 1000 inventory for October close."
+          />
+          {fieldErrors.prompt && (
+            <p className="mt-1 text-xs text-red-400">
+              {fieldErrors.prompt}
+            </p>
+          )}
+        </label>
+
+        <div className="flex items-center gap-4">
+          <label className="flex-1 text-xs font-medium uppercase theme-text-muted">
+            Materiality Threshold
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-sm theme-text">$</span>
+              <input
+                ref={materialityRef}
+                type="number"
+                min="0"
+                step="1"
+                className={`flex-1 rounded border px-3 py-2 text-sm theme-text focus:outline-none ${
+                  fieldErrors.materiality
+                    ? "border-red-500 bg-red-500/5 focus:border-red-500"
+                    : "theme-border theme-card focus:theme-border"
+                }`}
+                value={materialityThreshold}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  if (value >= 0) {
+                    setMaterialityThreshold(value);
+                    // Clear error when user changes value
+                    if (fieldErrors.materiality) {
+                      setFieldErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.materiality;
+                        return next;
+                      });
+                    }
+                  }
+                }}
+                placeholder="50"
+              />
+            </div>
+            {fieldErrors.materiality && (
+              <p className="mt-1 text-xs text-red-400">
+                {fieldErrors.materiality}
+              </p>
+            )}
+          </label>
+          <div className="flex-1 text-xs theme-text-muted">
+            <p className="font-medium uppercase theme-text-muted mb-2">What is this?</p>
+            <p>
+              Variances above this amount are flagged as material and require investigation.
+              Lower values = stricter reconciliation.
+            </p>
+            {materialityThreshold === 0 && (
+              <p className="mt-2 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-200">
+                ⚠️ Threshold of $0 means ALL variances (even $0.01) will be flagged as material.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Run/Stop Agents Button */}
+        <div className="flex justify-end pt-2">
           {isRunning ? (
             <button
               type="button"
               onClick={handleStop}
-              className="rounded bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
+              className="rounded bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
             >
               Stop Agents
             </button>
@@ -161,24 +370,12 @@ export function OrchestratorConsole() {
               type="button"
               onClick={runAgents}
               disabled={!reconciliationData || loading}
-              className="rounded bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+              className="rounded bg-gradient-to-r from-amber-500 to-yellow-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:from-amber-600 hover:to-yellow-600 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400"
             >
-              {loading ? "Running..." : "Run Agents"}
+              {loading ? "Illuminating... ✨" : "Illuminate ✨"}
             </button>
           )}
         </div>
-      </header>
-
-      <div className="mt-4">
-        <label className="text-xs font-medium uppercase theme-text-muted">
-          Analysis Prompt
-          <textarea
-            className="mt-2 w-full rounded border theme-border theme-card p-3 text-sm theme-text focus:theme-border focus:outline-none"
-            rows={3}
-            value={prompt}
-            onChange={(event) => setPrompt(event.target.value)}
-          />
-        </label>
       </div>
 
       {/* Data Status */}
@@ -292,8 +489,67 @@ function humanizeIssue(path: string, message: string) {
 }
 
 function RunResultPanel({ result }: { result: OrchestratorResponse }) {
+  // Check if any Gemini agents hit rate limits
+  const hasRateLimitIssue = result.geminiAgents?.status &&
+    Object.values(result.geminiAgents.status).some(
+      (s: any) => s.usedFallback && s.error?.includes("429")
+    );
+
   return (
     <div className="mt-6 space-y-4">
+      {/* Rate Limit Warning - Only shown when quota hit */}
+      {hasRateLimitIssue && (
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+              ⚠️
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-amber-100">
+                AI Analysis Quota Reached
+              </p>
+              <p className="mt-1 text-sm text-amber-200/80">
+                Some AI agents used fallback analysis due to shared quota limits. Your reconciliation is complete, but AI insights may be limited.
+              </p>
+              <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+                <p className="text-xs font-semibold text-amber-200">
+                  💡 Get Unlimited AI Analysis (Free!)
+                </p>
+                <p className="mt-1 text-xs text-amber-200/70">
+                  Use your own Google Gemini API key to avoid quotas:
+                </p>
+                <ol className="mt-2 space-y-1 text-xs text-amber-200/70">
+                  <li>
+                    1. Get a free key at:{" "}
+                    <a
+                      href="https://ai.google.dev/gemini-api/docs/api-key"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-amber-100"
+                    >
+                      ai.google.dev/gemini-api
+                    </a>
+                  </li>
+                  <li>
+                    2. Set{" "}
+                    <code className="rounded bg-amber-900/30 px-1 py-0.5 font-mono text-amber-100">
+                      GEMINI_API_KEY=your-key
+                    </code>{" "}
+                    in your{" "}
+                    <code className="rounded bg-amber-900/30 px-1 py-0.5 font-mono text-amber-100">
+                      .env
+                    </code>{" "}
+                    file
+                  </li>
+                  <li>3. Restart the orchestrator service</li>
+                  <li>4. ✅ Enjoy unlimited AI analysis!</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Timeline */}
       {result.timeline && result.timeline.length > 0 && (
         <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
@@ -344,9 +600,12 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
           {/* Validation */}
           {result.geminiAgents.validation && (
             <div className="rounded-2xl border theme-border theme-card p-4">
-              <h4 className="font-semibold theme-text">
-                1️⃣ Data Validation Agent
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold theme-text">
+                  1️⃣ Data Validation Agent
+                </h4>
+                <GeminiAgentStatusBadge status={result.geminiAgents.status?.validation} />
+              </div>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="theme-text-muted">Confidence Score:</span>
@@ -379,9 +638,12 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
           {/* Analysis */}
           {result.geminiAgents.analysis && (
             <div className="rounded-2xl border theme-border theme-card p-4">
-              <h4 className="font-semibold theme-text">
-                2️⃣ Reconciliation Analyst Agent
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold theme-text">
+                  2️⃣ Reconciliation Analyst Agent
+                </h4>
+                <GeminiAgentStatusBadge status={result.geminiAgents.status?.analysis} />
+              </div>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="theme-text-muted">Risk Level:</span>
@@ -422,9 +684,12 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
           {/* Investigation */}
           {(result.geminiAgents.investigation?.investigations?.length ?? 0) > 0 && (
             <div className="rounded-2xl border theme-border theme-card p-4">
-              <h4 className="font-semibold theme-text">
-                3️⃣ Variance Investigator Agent
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold theme-text">
+                  3️⃣ Variance Investigator Agent
+                </h4>
+                <GeminiAgentStatusBadge status={result.geminiAgents.status?.investigation} />
+              </div>
               <div className="mt-3 space-y-3">
                 {result.geminiAgents.investigation?.investigations?.map(
                   (inv: any, i: number) => (
@@ -466,9 +731,12 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
           {/* Report */}
           {result.geminiAgents.report && (
             <div className="rounded-2xl border theme-border theme-card p-4">
-              <h4 className="font-semibold theme-text">
-                4️⃣ Report Generator Agent
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold theme-text">
+                  4️⃣ Report Generator Agent
+                </h4>
+                <GeminiAgentStatusBadge status={result.geminiAgents.status?.report} />
+              </div>
               <div className="mt-3 prose prose-invert prose-sm max-w-none">
                 <div className="whitespace-pre-wrap text-sm theme-text/90">
                   {typeof result.geminiAgents.report === 'string'
@@ -482,5 +750,61 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
       )}
 
     </div>
+  );
+}
+
+type GeminiAgentStatus = {
+  success: boolean;
+  retryCount?: number;
+  usedFallback: boolean;
+  error?: string;
+};
+
+function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
+  if (!status) {
+    return (
+      <span className="rounded-full bg-gray-500/20 px-2 py-1 text-xs font-medium text-gray-400">
+        No Status
+      </span>
+    );
+  }
+
+  if (status.success) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-300">
+          ✓ AI Success
+        </span>
+        {status.retryCount && status.retryCount > 0 && (
+          <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
+            {status.retryCount} {status.retryCount === 1 ? 'retry' : 'retries'}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (status.usedFallback) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="rounded-full bg-orange-500/20 px-2 py-1 text-xs font-medium text-orange-300">
+          ⚠ Fallback
+        </span>
+        {status.error && (
+          <span
+            className="rounded-full bg-rose-500/20 px-2 py-1 text-xs font-medium text-rose-300"
+            title={status.error}
+          >
+            Rate Limit
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <span className="rounded-full bg-gray-500/20 px-2 py-1 text-xs font-medium text-gray-400">
+      Unknown
+    </span>
   );
 }

@@ -1,6 +1,15 @@
-# AcctReCon Agentic Workspace
+# Rowshni ✨
 
-Modern reconciliation stack built from a clean slate: Next.js on Vercel for the UI, a Fastify orchestrator for OpenAI/Claude/Gemini coordination, and Spec-Kit contracts that keep the whole system spec-driven and agent-ready.
+### Shedding Light on Your Ledger
+
+**Rowshni** (meaning "light") is an AI-powered reconciliation platform that illuminates variances, detects errors, and brings clarity to your month-end close. Built with Next.js, Fastify, and multi-agent AI (OpenAI/Claude/Gemini), Rowshni transforms complex GL-to-subledger reconciliation into an intelligent, automated workflow.
+
+**🌟 Key Features:**
+- ✨ **AI-Powered Variance Detection** - Four specialized agents illuminate hidden discrepancies
+- 💡 **Intelligent Analysis** - Multi-agent pipeline validates, analyzes, investigates, and reports
+- 📊 **Multi-Period Support** - Roll-forward schedules with period-over-period tracking
+- ⚡ **Fast & Free** - Uses Gemini 2.0 Flash (free tier: 1500 runs/day, $0 per reconciliation)
+- 🎯 **Audit-Ready Reports** - Professional documentation with AI-generated insights
 
 ## 📘 Documentation
 
@@ -24,19 +33,28 @@ package.json           # Root scripts (Spec-Kit check)
 ```
 
 ### Frontend (apps/web)
-* Next.js 15 App Router + Tailwind.
-* Upload workspace with structured/supporting file lanes (hits `/api/uploads`).  
-* Spec-guided column mapper and Spec blueprint card derived from `specs/reconciliation.speckit.json`.
-* Agent Console hitting `/api/agent/runs` to trigger multi-agent workflows and show OpenAI/Claude/Gemini output.
-* ChatKit control room scaffolding (currently hidden; ready to re-enable once a workflow is available).
-* Ready for Vercel deployment (just set environment variables and link to your project).
+* **Next.js 16** App Router with Tailwind CSS and custom dark/light themes
+* **File Upload System** - Drag-and-drop support for GL, subledger, and transaction files
+* **Intelligent Column Mapping** - Auto-detects and maps CSV columns to canonical schema
+* **Live Data Preview** - See transformed data before running reconciliation
+* **AI Agent Console** - Real-time progress tracking through 4-agent pipeline
+* **Rate Limiting** - Built-in protection (30/hour anonymous, 60/hour authenticated)
+* **Authentication** - Better Auth + Vercel Postgres (optional)
+* **Deployment** - Optimized for Vercel with environment-based configuration
 
 ### Backend (services/orchestrator)
-* Fastify service that exposes:
-  * `POST /agent/runs` — validates payloads via Spec-Kit, runs OpenAI supervisor/reviewer agents, invokes Claude Skills subagents, and requests Gemini-driven commentary. Currently uses a placeholder reconciliation function that you can replace.
-* `POST /agent/runs` — multi-agent reconciliation / summary orchestration.
-* TypeScript project with scripts for dev, build, and start (`npm run dev|build|start`).
-* Integrations: `openai` (Agents SDK, `beta.assistants`), `@anthropic-ai/sdk` for Claude Skills, and `@google/generative-ai` for Gemini summarization.
+* **Fastify service** exposing RESTful API for reconciliation workflows
+* **Multi-Agent Pipeline:**
+  1. **Data Validation Agent** - Validates data quality and completeness
+  2. **Reconciliation Analyst** - Analyzes variances and patterns
+  3. **Variance Investigator** - Investigates material discrepancies
+  4. **Report Generator** - Creates audit-ready documentation
+* **AI Integrations:**
+  * Gemini 2.0 Flash (primary - free tier)
+  * OpenAI Agents SDK (optional)
+  * Anthropic Claude (optional)
+* **Spec-Kit Validation** - Ensures data conforms to canonical schema
+* **TypeScript** with full type safety and schema validation
 
 ### Spec-Kit contracts
 * `specs/reconciliation.speckit.json` documents actors, canonical data models, agent tool contracts, and workflows.
@@ -68,7 +86,7 @@ package.json           # Root scripts (Spec-Kit check)
 | --- | --- |
 | `OPENAI_API_KEY` | Required for orchestrator (OpenAI Agents + ChatKit). |
 | `ANTHROPIC_API_KEY` or `CLAUDE_API_KEY` | Enables Claude Skills subagents. |
-| `GEMINI_API_KEY` or `GOOGLE_API_KEY` | Enables Gemini narrative commentary. |
+| `GEMINI_API_KEY` or `GOOGLE_API_KEY` | **Recommended:** Enables Gemini AI analysis (free tier available). Get your key at [ai.google.dev/gemini-api](https://ai.google.dev/gemini-api/docs/api-key). Using your own key avoids shared quota limits and enables unlimited analysis. |
 | `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` | Workflow ID from Agent Builder (`wf_...`) used by the ChatKit widget. |
 | `ORCHESTRATOR_URL` | Next.js uses this to reach the orchestrator service (default `http://localhost:4100`). |
 | `MATERIALITY_THRESHOLD` | Variance threshold (in account currency) used by the reconciler. |

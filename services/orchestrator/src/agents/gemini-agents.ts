@@ -22,7 +22,75 @@ function getGeminiClient(): GoogleGenerativeAI | null {
 }
 
 function getGeminiModel() {
-  return process.env.GEMINI_MODEL || "gemini-2.0-flash-exp";
+  return process.env.GEMINI_MODEL || "gemini-2.5-flash";
+}
+
+// ============================================
+// Retry Logic for Rate Limiting
+// ============================================
+
+interface GeminiError {
+  status?: number;
+  statusText?: string;
+  errorDetails?: Array<{
+    "@type"?: string;
+    retryDelay?: string;
+  }>;
+}
+
+function parseRetryDelay(error: any): number {
+  // Default retry delay in milliseconds
+  const defaultDelay = 10000; // 10 seconds
+
+  if (!error.errorDetails) return defaultDelay;
+
+  const retryInfo = error.errorDetails.find(
+    (detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo"
+  );
+
+  if (retryInfo?.retryDelay) {
+    // Parse delay like "12s" or "1.5s"
+    const match = retryInfo.retryDelay.match(/^([\d.]+)s?$/);
+    if (match) {
+      return Math.ceil(parseFloat(match[1]) * 1000);
+    }
+  }
+
+  return defaultDelay;
+}
+
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 2,
+  operationName: string = "Gemini API call"
+): Promise<{ result: T; retryCount: number }> {
+  let lastError: any;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await fn();
+      return { result, retryCount: attempt };
+    } catch (error: any) {
+      lastError = error;
+
+      // Check if it's a rate limit error
+      if (error.status === 429 && attempt < maxRetries) {
+        const retryDelay = parseRetryDelay(error);
+        console.log(
+          `⏳ ${operationName} rate limited. Retrying in ${retryDelay / 1000}s (attempt ${attempt + 1}/${maxRetries})...`
+        );
+
+        // Wait for the specified delay
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        continue;
+      }
+
+      // For non-429 errors or max retries exceeded, throw immediately
+      throw error;
+    }
+  }
+
+  throw lastError;
 }
 
 // ============================================
@@ -41,11 +109,24 @@ type RunInput = {
   payload: any;
 };
 
+export type GeminiAgentStatus = {
+  success: boolean;
+  retryCount?: number;
+  usedFallback: boolean;
+  error?: string;
+};
+
 export type GeminiAgentResults = {
   validation: any | null;
   analysis: any | null;
   investigation: any | null;
   report: string | null;
+  status: {
+    validation: GeminiAgentStatus;
+    analysis: GeminiAgentStatus;
+    investigation: GeminiAgentStatus;
+    report: GeminiAgentStatus;
+  };
 };
 
 // ============================================
@@ -55,9 +136,14 @@ export type GeminiAgentResults = {
 async function runValidationAgent(
   input: RunInput,
   localOutput: LocalToolOutput,
-): Promise<any | null> {
+): Promise<{ data: any | null; status: GeminiAgentStatus }> {
   const client = getGeminiClient();
-  if (!client) return null;
+  if (!client) {
+    return {
+      data: null,
+      status: { success: false, usedFallback: false, error: "No Gemini API key" },
+    };
+  }
 
   const model = client.getGenerativeModel({
     model: getGeminiModel(),
@@ -73,14 +159,19 @@ Analyze the following reconciliation data and provide validation insights:
 
 USER PROMPT: ${input.userPrompt}
 
-GL BALANCES (${input.payload.glBalances?.length || 0} rows):
-${JSON.stringify(input.payload.glBalances?.slice(0, 3) || [])}
+RECONCILIATION RESULTS (CALCULATED):
+${JSON.stringify(localOutput.reconciliations, null, 2)}
 
-SUBLEDGER BALANCES (${input.payload.subledgerBalances?.length || 0} rows):
-${JSON.stringify(input.payload.subledgerBalances?.slice(0, 3) || [])}
+GL BALANCES (${input.payload.glBalances?.length || 0} rows total):
+${JSON.stringify(input.payload.glBalances || [])}
 
-TRANSACTIONS (${input.payload.transactions?.length || 0} rows):
-${JSON.stringify(input.payload.transactions?.slice(0, 3) || [])}
+SUBLEDGER BALANCES (${input.payload.subledgerBalances?.length || 0} rows total):
+${JSON.stringify(input.payload.subledgerBalances || [])}
+
+TRANSACTIONS (${input.payload.transactions?.length || 0} rows total):
+${JSON.stringify(input.payload.transactions?.slice(0, 10) || [])}
+
+IMPORTANT: Base your validation on the RECONCILIATION RESULTS above, which show the actual calculated balances and variances. Do not contradict these results. If the reconciliation shows 0 variance and "balanced" status, acknowledge that the accounts are balanced.
 
 Provide a validation report in JSON format with:
 {
@@ -93,18 +184,35 @@ Provide a validation report in JSON format with:
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
-  } catch (error) {
+    const { result, retryCount } = await retryWithBackoff(
+      async () => {
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+        return JSON.parse(responseText);
+      },
+      2, // maxRetries
+      "Validation Agent"
+    );
+    return {
+      data: result,
+      status: { success: true, retryCount, usedFallback: false },
+    };
+  } catch (error: any) {
     console.error("Validation Agent failed:", error);
     return {
-      isValid: true,
-      confidence: 0.5,
-      warnings: ["Validation agent encountered an error"],
-      errors: [],
-      dataQualityScore: 70,
-      suggestions: [],
+      data: {
+        isValid: true,
+        confidence: 0.5,
+        warnings: ["Validation agent encountered an error"],
+        errors: [],
+        dataQualityScore: 70,
+        suggestions: [],
+      },
+      status: {
+        success: false,
+        usedFallback: true,
+        error: error.message || "Unknown error",
+      },
     };
   }
 }
@@ -117,9 +225,14 @@ async function runAnalysisAgent(
   input: RunInput,
   localOutput: LocalToolOutput,
   validationResult: any,
-): Promise<any | null> {
+): Promise<{ data: any | null; status: GeminiAgentStatus }> {
   const client = getGeminiClient();
-  if (!client) return null;
+  if (!client) {
+    return {
+      data: null,
+      status: { success: false, usedFallback: false, error: "No Gemini API key" },
+    };
+  }
 
   const model = client.getGenerativeModel({
     model: getGeminiModel(),
@@ -141,6 +254,19 @@ MATERIALITY THRESHOLD: $${localOutput.materiality}
 VALIDATION RESULT:
 ${JSON.stringify(validationResult, null, 2)}
 
+IMPORTANT: The RECONCILIATIONS data above shows the ACTUAL calculated results. Each reconciliation shows:
+- glBalance: The GL balance for that account
+- subledgerBalance: The sum of all subledger entries for that account
+- variance: The difference (GL - Subledger)
+- status: "balanced" means variance is 0 or negligible
+
+If an account shows status="balanced" and variance=0, it means the GL and subledger ARE reconciled. Do not report these as variances or discrepancies.
+
+Only flag accounts where:
+- status = "material_variance"
+- variance is not 0
+- material = true
+
 Provide analysis in JSON format:
 {
   "riskLevel": "low" | "medium" | "high",
@@ -159,17 +285,34 @@ Provide analysis in JSON format:
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
-  } catch (error) {
+    const { result, retryCount } = await retryWithBackoff(
+      async () => {
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+        return JSON.parse(responseText);
+      },
+      2, // maxRetries
+      "Analysis Agent"
+    );
+    return {
+      data: result,
+      status: { success: true, retryCount, usedFallback: false },
+    };
+  } catch (error: any) {
     console.error("Analysis Agent failed:", error);
     return {
-      riskLevel: "medium",
-      materialVariances: [],
-      patterns: [],
-      flags: [],
-      overallHealth: 75,
+      data: {
+        riskLevel: "medium",
+        materialVariances: [],
+        patterns: [],
+        flags: [],
+        overallHealth: 75,
+      },
+      status: {
+        success: false,
+        usedFallback: true,
+        error: error.message || "Unknown error",
+      },
     };
   }
 }
@@ -182,15 +325,23 @@ async function runInvestigatorAgent(
   input: RunInput,
   localOutput: LocalToolOutput,
   analysisResult: any,
-): Promise<any | null> {
+): Promise<{ data: any | null; status: GeminiAgentStatus }> {
   const client = getGeminiClient();
-  if (!client) return null;
+  if (!client) {
+    return {
+      data: null,
+      status: { success: false, usedFallback: false, error: "No Gemini API key" },
+    };
+  }
 
   // Only run if there are material variances
   if (!analysisResult.materialVariances || analysisResult.materialVariances.length === 0) {
     return {
-      investigations: [],
-      message: "No material variances to investigate",
+      data: {
+        investigations: [],
+        message: "No material variances to investigate",
+      },
+      status: { success: true, retryCount: 0, usedFallback: false },
     };
   }
 
@@ -231,14 +382,31 @@ For each material variance, provide investigation results in JSON format:
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
-  } catch (error) {
+    const { result, retryCount } = await retryWithBackoff(
+      async () => {
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+        return JSON.parse(responseText);
+      },
+      2, // maxRetries
+      "Investigator Agent"
+    );
+    return {
+      data: result,
+      status: { success: true, retryCount, usedFallback: false },
+    };
+  } catch (error: any) {
     console.error("Investigator Agent failed:", error);
     return {
-      investigations: [],
-      message: "Investigation encountered an error",
+      data: {
+        investigations: [],
+        message: "Investigation encountered an error",
+      },
+      status: {
+        success: false,
+        usedFallback: true,
+        error: error.message || "Unknown error",
+      },
     };
   }
 }
@@ -253,9 +421,14 @@ async function runReportAgent(
   validationResult: any,
   analysisResult: any,
   investigationResult: any,
-): Promise<string | null> {
+): Promise<{ data: string | null; status: GeminiAgentStatus }> {
   const client = getGeminiClient();
-  if (!client) return null;
+  if (!client) {
+    return {
+      data: null,
+      status: { success: false, usedFallback: false, error: "No Gemini API key" },
+    };
+  }
 
   const model = client.getGenerativeModel({
     model: getGeminiModel(),
@@ -270,6 +443,9 @@ Create a comprehensive reconciliation report based on:
 
 USER REQUEST: ${input.userPrompt}
 
+RECONCILIATION DATA (PRIMARY SOURCE OF TRUTH):
+${JSON.stringify(localOutput.reconciliations, null, 2)}
+
 VALIDATION RESULTS:
 ${JSON.stringify(validationResult, null, 2)}
 
@@ -279,31 +455,53 @@ ${JSON.stringify(analysisResult, null, 2)}
 INVESTIGATION RESULTS:
 ${JSON.stringify(investigationResult, null, 2)}
 
-RECONCILIATION DATA:
-${JSON.stringify(localOutput.reconciliations, null, 2)}
+CRITICAL INSTRUCTIONS:
+- The RECONCILIATION DATA above is the PRIMARY SOURCE OF TRUTH
+- Each account shows: glBalance, subledgerBalance, variance, status, material
+- If status="balanced" and variance=0, the account IS reconciled - state this clearly
+- If status="material_variance", there IS a discrepancy that needs investigation
+- DO NOT contradict the reconciliation data with validation/analysis findings
+- If validation/analysis conflicts with reconciliation data, TRUST the reconciliation data
 
 Create a professional markdown report with:
 1. Executive Summary (2-3 sentences)
-2. Reconciliation Status (balanced accounts vs variances)
-3. Material Variances (if any, with details)
-4. Root Cause Analysis (from investigation)
-5. Recommended Actions
+2. Reconciliation Status (balanced accounts vs variances) - Use the reconciliation data status
+3. Material Variances (ONLY if reconciliation data shows material=true) - with details
+4. Root Cause Analysis (ONLY for accounts with actual variances)
+5. Recommended Actions (ONLY if there are actual issues to address)
 6. Conclusion
 
 Format in clean markdown suitable for audit documentation.`;
 
   try {
-    const result = await model.generateContent(prompt);
-    return result.response.text();
-  } catch (error) {
+    const { result, retryCount } = await retryWithBackoff(
+      async () => {
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+      },
+      2, // maxRetries
+      "Report Agent"
+    );
+    return {
+      data: result,
+      status: { success: true, retryCount, usedFallback: false },
+    };
+  } catch (error: any) {
     console.error("Report Agent failed:", error);
-    return `# Reconciliation Report
+    return {
+      data: `# Reconciliation Report
 
 ## Error
 Unable to generate full report due to technical error.
 
 ## Summary
-Processed ${localOutput.reconciliations.length} accounts with materiality threshold of $${localOutput.materiality}.`;
+Processed ${localOutput.reconciliations.length} accounts with materiality threshold of $${localOutput.materiality}.`,
+      status: {
+        success: false,
+        usedFallback: true,
+        error: error.message || "Unknown error",
+      },
+    };
   }
 }
 
@@ -324,42 +522,68 @@ export async function runGeminiAgentPipeline(
     analysis: null,
     investigation: null,
     report: null,
+    status: {
+      validation: { success: false, usedFallback: false },
+      analysis: { success: false, usedFallback: false },
+      investigation: { success: false, usedFallback: false },
+      report: { success: false, usedFallback: false },
+    },
   };
 
   try {
     // Agent 1: Data Validation
     console.log("  → Agent 1: Data Validation");
-    results.validation = await runValidationAgent(input, localOutput);
-    console.log("     Result:", results.validation ? "✓ Success" : "✗ Null");
+    const validationResult = await runValidationAgent(input, localOutput);
+    results.validation = validationResult.data;
+    results.status.validation = validationResult.status;
+    console.log("     Result:", validationResult.status.success ? "✓ Success" : "⚠ Fallback");
+    if (validationResult.status.retryCount) {
+      console.log(`     Retries: ${validationResult.status.retryCount}`);
+    }
 
     // Agent 2: Reconciliation Analysis
     console.log("  → Agent 2: Reconciliation Analysis");
-    results.analysis = await runAnalysisAgent(
+    const analysisResult = await runAnalysisAgent(
       input,
       localOutput,
       results.validation,
     );
-    console.log("     Result:", results.analysis ? "✓ Success" : "✗ Null");
+    results.analysis = analysisResult.data;
+    results.status.analysis = analysisResult.status;
+    console.log("     Result:", analysisResult.status.success ? "✓ Success" : "⚠ Fallback");
+    if (analysisResult.status.retryCount) {
+      console.log(`     Retries: ${analysisResult.status.retryCount}`);
+    }
 
     // Agent 3: Variance Investigation (conditional)
     console.log("  → Agent 3: Variance Investigation");
-    results.investigation = await runInvestigatorAgent(
+    const investigationResult = await runInvestigatorAgent(
       input,
       localOutput,
       results.analysis,
     );
-    console.log("     Result:", results.investigation ? "✓ Success" : "✗ Null");
+    results.investigation = investigationResult.data;
+    results.status.investigation = investigationResult.status;
+    console.log("     Result:", investigationResult.status.success ? "✓ Success" : "⚠ Fallback");
+    if (investigationResult.status.retryCount) {
+      console.log(`     Retries: ${investigationResult.status.retryCount}`);
+    }
 
     // Agent 4: Report Generation
     console.log("  → Agent 4: Report Generation");
-    results.report = await runReportAgent(
+    const reportResult = await runReportAgent(
       input,
       localOutput,
       results.validation,
       results.analysis,
       results.investigation,
     );
-    console.log("     Result:", results.report ? `✓ Success (${typeof results.report})` : "✗ Null");
+    results.report = reportResult.data;
+    results.status.report = reportResult.status;
+    console.log("     Result:", reportResult.status.success ? "✓ Success" : "⚠ Fallback");
+    if (reportResult.status.retryCount) {
+      console.log(`     Retries: ${reportResult.status.retryCount}`);
+    }
 
     console.log("✅ Gemini Agent Pipeline Complete");
     console.log("   Final results summary:", {
@@ -367,6 +591,7 @@ export async function runGeminiAgentPipeline(
       hasAnalysis: !!results.analysis,
       hasInvestigation: !!results.investigation,
       hasReport: !!results.report,
+      allSucceeded: Object.values(results.status).every(s => s.success),
     });
   } catch (error) {
     console.error("❌ Gemini Agent Pipeline Error:", error);

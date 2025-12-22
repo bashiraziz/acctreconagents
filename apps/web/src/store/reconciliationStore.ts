@@ -55,6 +55,13 @@ type ReconciliationStore = {
   updateWorkflowStatus: (step: keyof WorkflowStatus, status: WorkflowStatus[keyof WorkflowStatus]) => void;
 
   // ============================================
+  // Reconciliation Settings
+  // ============================================
+  materialityThreshold: number;
+
+  setMaterialityThreshold: (threshold: number) => void;
+
+  // ============================================
   // Agent Run State
   // ============================================
   isRunning: boolean;
@@ -89,11 +96,12 @@ const initialState = {
   },
   reconciliationData: null,
   workflowStatus: {
-    upload: "incomplete" as const,
+    upload: "not_started" as const,
     map: "incomplete" as const,
     preview: "incomplete" as const,
     run: "not_started" as const,
   },
+  materialityThreshold: 50, // Default materiality threshold
   isRunning: false,
   currentRunId: null,
   abortController: null,
@@ -108,6 +116,8 @@ export const useReconciliationStore = create<ReconciliationStore>()(
       // File Management
       // ============================================
       setUploadedFile: (type, file) => {
+        const currentStatus = get().workflowStatus.upload;
+
         set((state) => ({
           uploadedFiles: {
             ...state.uploadedFiles,
@@ -115,8 +125,15 @@ export const useReconciliationStore = create<ReconciliationStore>()(
           },
         }));
 
-        // Check if upload step is complete
+        // Update workflow status based on uploaded files
         const files = get().uploadedFiles;
+
+        // If this is the first file uploaded, set status to "running"
+        if (currentStatus === "not_started") {
+          get().updateWorkflowStatus("upload", "running");
+        }
+
+        // If both required files are uploaded, mark as complete
         if (files.glBalance && files.subledgerBalance) {
           get().updateWorkflowStatus("upload", "complete");
         }
@@ -130,15 +147,35 @@ export const useReconciliationStore = create<ReconciliationStore>()(
           },
         }));
 
-        // Update workflow status
-        get().updateWorkflowStatus("upload", "incomplete");
+        // Clear the corresponding column mapping
+        get().clearColumnMapping(type);
+
+        // Clear reconciliation data since source data changed
+        get().clearReconciliationData();
+
+        // Update workflow status based on remaining files
+        const files = get().uploadedFiles;
+        const hasAnyFiles = files.glBalance || files.subledgerBalance || files.transactions;
+
+        if (hasAnyFiles) {
+          get().updateWorkflowStatus("upload", "running");
+        } else {
+          get().updateWorkflowStatus("upload", "not_started");
+        }
+
         get().updateWorkflowStatus("map", "incomplete");
         get().updateWorkflowStatus("preview", "incomplete");
       },
 
       clearAllFiles: () => {
-        set({ uploadedFiles: initialState.uploadedFiles });
-        get().updateWorkflowStatus("upload", "incomplete");
+        set({
+          uploadedFiles: initialState.uploadedFiles,
+          columnMappings: initialState.columnMappings,
+          reconciliationData: initialState.reconciliationData,
+        });
+        get().updateWorkflowStatus("upload", "not_started");
+        get().updateWorkflowStatus("map", "incomplete");
+        get().updateWorkflowStatus("preview", "incomplete");
       },
 
       // ============================================
@@ -196,6 +233,13 @@ export const useReconciliationStore = create<ReconciliationStore>()(
             [step]: status,
           },
         }));
+      },
+
+      // ============================================
+      // Reconciliation Settings
+      // ============================================
+      setMaterialityThreshold: (threshold) => {
+        set({ materialityThreshold: threshold });
       },
 
       // ============================================
@@ -261,6 +305,7 @@ export const useReconciliationStore = create<ReconciliationStore>()(
         // Only persist these fields for anonymous users
         columnMappings: state.columnMappings,
         workflowStatus: state.workflowStatus,
+        materialityThreshold: state.materialityThreshold,
       }),
     },
   ),

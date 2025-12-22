@@ -41,9 +41,9 @@ export function SampleDataPanel() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-300">Sample data</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white">Download mock accounting files</h3>
+          <h3 className="mt-2 text-2xl font-semibold text-white">Download test scenario files</h3>
           <p className="mt-1 text-sm text-slate-400">
-            Grab canned CSVs to test uploads, mapping, and reconciliation flows without touching real customer data.
+            Realistic reconciliation scenarios with proper accounting data. Each scenario tests specific use cases like balanced reconciliations, variances, timing differences, and multi-period analysis.
           </p>
         </div>
         <button
@@ -63,12 +63,14 @@ export function SampleDataPanel() {
           {modules.map((module) => (
             <div key={module.module} className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
               <h4 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-300">{module.module}</h4>
-              <ul className="mt-3 space-y-2 text-sm">
+              <ul className="mt-3 space-y-2.5 text-sm">
                 {module.files.map((file) => (
-                  <li key={file.path} className="flex items-center justify-between gap-3">
-                    <span className="text-slate-200">{file.name}</span>
+                  <li key={file.path} className="flex items-center gap-3">
+                    <span className="min-w-0 flex-1 truncate text-slate-200" title={file.name}>
+                      {file.name}
+                    </span>
                     <a
-                      className="rounded-full border border-slate-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-100 transition hover:border-sky-400 hover:text-sky-200"
+                      className="flex-shrink-0 rounded-full border border-slate-600 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-100 transition hover:border-sky-400 hover:bg-sky-500/10 hover:text-sky-200"
                       href={`/api/mock-data/download?file=${encodeURIComponent(file.path)}`}
                     >
                       Download

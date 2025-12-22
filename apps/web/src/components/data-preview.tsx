@@ -37,7 +37,7 @@ export function DataPreview() {
         {reconciliationData.glBalances && reconciliationData.glBalances.length > 0 && (
           <PreviewTable
             title="GL Balances"
-            data={reconciliationData.glBalances.slice(0, 5)}
+            data={reconciliationData.glBalances.slice(0, 50)}
             totalRows={reconciliationData.glBalances.length}
           />
         )}
@@ -47,7 +47,7 @@ export function DataPreview() {
           reconciliationData.subledgerBalances.length > 0 && (
             <PreviewTable
               title="Subledger Balances"
-              data={reconciliationData.subledgerBalances.slice(0, 5)}
+              data={reconciliationData.subledgerBalances.slice(0, 50)}
               totalRows={reconciliationData.subledgerBalances.length}
             />
           )}
@@ -57,7 +57,7 @@ export function DataPreview() {
           reconciliationData.transactions.length > 0 && (
             <PreviewTable
               title="Transactions"
-              data={reconciliationData.transactions.slice(0, 5)}
+              data={reconciliationData.transactions.slice(0, 50)}
               totalRows={reconciliationData.transactions.length}
             />
           )}

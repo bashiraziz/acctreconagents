@@ -1,7 +1,7 @@
 {
-  "name": "y",
+  "name": "rowshni",
   "version": "1.0.0",
-  "description": "These agents will reconcile GL agents and create roll forward statements",
+  "description": "Rowshni - AI-powered reconciliation that sheds light on your ledger. Intelligent GL-to-subledger reconciliation with multi-agent AI analysis.",
   "homepage": "https://github.com/bashiraziz/acctreconagents#readme",
   "bugs": {
     "url": "https://github.com/bashiraziz/acctreconagents/issues"

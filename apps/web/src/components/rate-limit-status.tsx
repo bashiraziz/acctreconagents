@@ -37,47 +37,53 @@ export function RateLimitStatus() {
     return () => clearInterval(interval);
   }, [session]);
 
-  // Don't show anything if authenticated (no limits)
-  if (session?.user || loading || !rateLimitInfo) {
+  // Don't show anything if loading or no data
+  if (loading || !rateLimitInfo) {
     return null;
   }
 
   const { remaining, limit } = rateLimitInfo;
   const percentage = (remaining / limit) * 100;
+  const isAuthenticated = !!session?.user;
 
-  // Color coding based on remaining uses
+  // Color coding based on remaining uses (different thresholds for authenticated users)
+  const lowThreshold = isAuthenticated ? 10 : 2;
+  const mediumThreshold = isAuthenticated ? 20 : 3;
+
   let statusColor = "text-emerald-400";
   let bgColor = "bg-emerald-500/20";
   let borderColor = "border-emerald-500/40";
 
-  if (remaining <= 2) {
+  if (remaining <= lowThreshold) {
     statusColor = "text-rose-400";
     bgColor = "bg-rose-500/20";
     borderColor = "border-rose-500/40";
-  } else if (remaining <= 3) {
+  } else if (remaining <= mediumThreshold) {
     statusColor = "text-amber-400";
     bgColor = "bg-amber-500/20";
     borderColor = "border-amber-500/40";
   }
 
   return (
-    <div className={`rounded-xl border ${borderColor} ${bgColor} p-3`}>
+    <div className={`rounded-2xl border ${borderColor} ${bgColor} p-4`}>
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold text-white">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-base font-semibold text-white">
             {remaining}
           </div>
           <div>
-            <p className={`text-sm font-medium ${statusColor}`}>
+            <p className={`text-sm font-semibold ${statusColor}`}>
               {remaining === 0 ? "Rate limit reached" : `${remaining} reconciliation${remaining !== 1 ? "s" : ""} remaining`}
             </p>
             <p className="text-xs text-slate-400">
-              {remaining === 0 ? "Sign in for unlimited access" : "per hour for anonymous users"}
+              {remaining === 0
+                ? "Wait for reset or contact support"
+                : `per hour${isAuthenticated ? "" : " (sign in for 60/hour)"}`}
             </p>
           </div>
         </div>
         {remaining > 0 && (
-          <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-800">
+          <div className="h-2 w-24 flex-shrink-0 overflow-hidden rounded-full bg-slate-800">
             <div
               className={`h-full transition-all ${
                 remaining <= 2 ? "bg-rose-500" : remaining <= 3 ? "bg-amber-500" : "bg-emerald-500"

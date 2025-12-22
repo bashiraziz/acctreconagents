@@ -1,4 +1,0 @@
-contract_id,account_code,period,booked_at,currency,amount,narrative
-R-201,40000-Software Revenue,2025-10,2025-10-31,USD,95000,Monthly recognition for Apex contract
-R-202,40000-Software Revenue,2025-10,2025-10-31,USD,72000,Usage-based uplift cleared
-R-203,40000-Software Revenue,2025-10,2025-10-31,USD,56000,Managed services

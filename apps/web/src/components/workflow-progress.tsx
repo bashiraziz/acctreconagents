@@ -44,7 +44,7 @@ const steps: Step[] = [
 export function WorkflowProgress() {
   const workflowStatus = useReconciliationStore((state) => state.workflowStatus);
 
-  const getStepStatus = (stepId: string): "complete" | "active" | "incomplete" => {
+  const getStepStatus = (stepId: string): "complete" | "active" | "pending" | "incomplete" => {
     const status = workflowStatus[stepId as keyof typeof workflowStatus];
 
     if (status === "complete") {
@@ -53,6 +53,10 @@ export function WorkflowProgress() {
 
     if (status === "running") {
       return "active";
+    }
+
+    if (status === "not_started") {
+      return "pending";
     }
 
     return "incomplete";
@@ -87,7 +91,7 @@ export function WorkflowProgress() {
                 ${
                   status === "complete"
                     ? "border-emerald-500/40 bg-emerald-500/10"
-                    : isActive
+                    : status === "active"
                       ? "border-sky-500/40 bg-sky-500/10"
                       : "border-slate-800 bg-slate-900/40"
                 }
@@ -101,7 +105,7 @@ export function WorkflowProgress() {
                     ${
                       status === "complete"
                         ? "bg-emerald-500/20 text-emerald-400"
-                        : isActive
+                        : status === "active"
                           ? "bg-sky-500/20 text-sky-400"
                           : "bg-slate-800 text-slate-500"
                     }
@@ -118,7 +122,7 @@ export function WorkflowProgress() {
                         ${
                           status === "complete"
                             ? "text-emerald-100"
-                            : isActive
+                            : status === "active"
                               ? "text-sky-100"
                               : "text-slate-400"
                         }
@@ -144,7 +148,7 @@ export function WorkflowProgress() {
                     ${
                       status === "complete"
                         ? "bg-emerald-500/20 text-emerald-300"
-                        : isActive
+                        : status === "active"
                           ? "bg-sky-500/20 text-sky-300"
                           : "bg-slate-800 text-slate-500"
                     }
@@ -152,7 +156,7 @@ export function WorkflowProgress() {
                 >
                   {status === "complete"
                     ? "Completed"
-                    : isActive
+                    : status === "active"
                       ? "In Progress"
                       : "Pending"}
                 </span>

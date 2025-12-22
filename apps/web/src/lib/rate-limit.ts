@@ -1,10 +1,15 @@
 /**
- * Rate limiting for anonymous users
+ * Rate limiting for all users
  *
- * Limits:
- * - 5 requests per 1 hour
- * - 8 requests per 2 hours
- * - 10 requests per 3 hours
+ * Anonymous User Limits:
+ * - 30 requests per 1 hour
+ * - 50 requests per 2 hours
+ * - 70 requests per 3 hours
+ *
+ * Authenticated User Limits:
+ * - 60 requests per 1 hour
+ * - 120 requests per 2 hours
+ * - 180 requests per 3 hours
  *
  * Uses in-memory storage for simplicity. For production at scale,
  * consider migrating to Vercel KV or Redis.
@@ -45,23 +50,12 @@ export interface RateLimitResult {
 /**
  * Check if a request is allowed based on rate limits
  * @param identifier - IP address or user ID
- * @param authenticated - Whether the user is authenticated (bypasses rate limits)
+ * @param authenticated - Whether the user is authenticated
  */
 export function checkRateLimit(
   identifier: string,
   authenticated: boolean = false
 ): RateLimitResult {
-  // Authenticated users bypass rate limits
-  if (authenticated) {
-    return {
-      allowed: true,
-      limit: Infinity,
-      remaining: Infinity,
-      reset: 0,
-      window: "authenticated",
-    };
-  }
-
   const now = Date.now();
 
   // Get or create record
@@ -75,12 +69,18 @@ export function checkRateLimit(
   const threeHoursAgo = now - 3 * 60 * 60 * 1000;
   record.timestamps = record.timestamps.filter(ts => ts > threeHoursAgo);
 
-  // Define time windows (in milliseconds)
-  const windows = [
-    { duration: 60 * 60 * 1000, limit: 5, name: "1 hour" },      // 1 hour
-    { duration: 2 * 60 * 60 * 1000, limit: 8, name: "2 hours" }, // 2 hours
-    { duration: 3 * 60 * 60 * 1000, limit: 10, name: "3 hours" }, // 3 hours
-  ];
+  // Define time windows based on authentication status
+  const windows = authenticated
+    ? [
+        { duration: 60 * 60 * 1000, limit: 60, name: "1 hour" },       // 1 hour
+        { duration: 2 * 60 * 60 * 1000, limit: 120, name: "2 hours" }, // 2 hours
+        { duration: 3 * 60 * 60 * 1000, limit: 180, name: "3 hours" }, // 3 hours
+      ]
+    : [
+        { duration: 60 * 60 * 1000, limit: 30, name: "1 hour" },      // 1 hour
+        { duration: 2 * 60 * 60 * 1000, limit: 50, name: "2 hours" }, // 2 hours
+        { duration: 3 * 60 * 60 * 1000, limit: 70, name: "3 hours" }, // 3 hours
+      ];
 
   // Check each time window
   for (const window of windows) {
@@ -108,13 +108,14 @@ export function checkRateLimit(
   record.timestamps.push(now);
 
   // Calculate remaining requests (most restrictive window)
+  const oneHourLimit = authenticated ? 60 : 30;
   const oneHourAgo = now - 60 * 60 * 1000;
   const requestsInOneHour = record.timestamps.filter(ts => ts > oneHourAgo).length;
-  const remaining = Math.max(0, 5 - requestsInOneHour);
+  const remaining = Math.max(0, oneHourLimit - requestsInOneHour);
 
   return {
     allowed: true,
-    limit: 5,
+    limit: oneHourLimit,
     remaining,
     reset: now + 60 * 60 * 1000,
     window: "1 hour",
@@ -128,22 +129,14 @@ export function getRateLimitStatus(
   identifier: string,
   authenticated: boolean = false
 ): Omit<RateLimitResult, "allowed"> {
-  if (authenticated) {
-    return {
-      limit: Infinity,
-      remaining: Infinity,
-      reset: 0,
-      window: "authenticated",
-    };
-  }
-
   const now = Date.now();
+  const oneHourLimit = authenticated ? 60 : 30;
   const record = rateLimitStore.get(identifier);
 
   if (!record || record.timestamps.length === 0) {
     return {
-      limit: 5,
-      remaining: 5,
+      limit: oneHourLimit,
+      remaining: oneHourLimit,
       reset: now + 60 * 60 * 1000,
       window: "1 hour",
     };
@@ -156,10 +149,10 @@ export function getRateLimitStatus(
   // Calculate for 1 hour window
   const oneHourAgo = now - 60 * 60 * 1000;
   const requestsInOneHour = validTimestamps.filter(ts => ts > oneHourAgo).length;
-  const remaining = Math.max(0, 5 - requestsInOneHour);
+  const remaining = Math.max(0, oneHourLimit - requestsInOneHour);
 
   return {
-    limit: 5,
+    limit: oneHourLimit,
     remaining,
     reset: now + 60 * 60 * 1000,
     window: "1 hour",

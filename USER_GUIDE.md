@@ -1,6 +1,8 @@
-# Account Reconciliation - User Guide
+# Rowshni - User Guide
 
-**Welcome!** This guide will help you perform GL-to-subledger reconciliations using AI-powered analysis.
+**Welcome to Rowshni!** (meaning "light")
+
+This guide will help you perform GL-to-subledger reconciliations using AI-powered analysis that sheds light on your ledger, illuminates variances, and brings clarity to your month-end close.
 
 ---
 
@@ -17,32 +19,35 @@
 
 ---
 
-## What This App Does
+## What Rowshni Does
 
-This application automatically reconciles your **General Ledger (GL) balances** with your **subledger details** (like AP aging reports or AR invoices) and identifies variances.
+**Rowshni** automatically reconciles your **General Ledger (GL) balances** with your **subledger details** (like AP aging reports or AR invoices) and identifies variances—shedding light on discrepancies and illuminating the path to balanced books.
 
 **Benefits:**
-- ✅ **Automated variance detection** - No manual spreadsheet work
-- ✅ **AI-powered insights** - Get explanations for variances
-- ✅ **Multi-period support** - Reconcile across multiple accounting periods
-- ✅ **Detailed reports** - Get markdown reports with recommendations
-- ✅ **Sign convention handling** - Correctly handles credit/debit balances
+- ✨ **Illuminates hidden variances** - AI-powered detection with zero manual work
+- 🔍 **Brings clarity to complex data** - See what others miss
+- 💡 **Lights the way to resolution** - Smart insights and recommendations
+- 📊 **Multi-period visibility** - Track reconciliations across accounting periods
+- ⚖️ **Audit-ready reports** - Professional documentation with AI analysis
+- 🎯 **Smart sign conventions** - Automatically handles credit/debit balances
 
 **Who is this for?**
 - Accountants performing monthly/quarterly close
 - Controllers reviewing reconciliations
 - Finance teams analyzing account variances
-- Anyone who needs to match GL balances to subledger details
+- Anyone tired of working in the dark with manual spreadsheets
 
 ---
 
 ## Getting Started
 
-### Access the App
+### Access Rowshni
 
 **Live URL:** https://acctreconagents.vercel.app
 
 **Local Development:** http://localhost:3100 (if running locally)
+
+> 💡 **Pronunciation:** ROHSH-nee
 
 ### What You'll Need
 
@@ -61,6 +66,7 @@ This application automatically reconciles your **General Ledger (GL) balances** 
 ### Supported File Formats
 
 **CSV files only** - exported from:
+- Unanet
 - SAP
 - Oracle Financials
 - QuickBooks
@@ -146,19 +152,34 @@ After mapping, click **"Preview Data"** to see:
 
 ### Step 4: Run Reconciliation
 
-1. **Click "Run Agents"**
-   - The AI agents start analyzing your data
-   - Progress shown in real-time
+1. **Set Materiality Threshold (Optional)**
+   - Enter the dollar amount that defines a "material" variance
+   - Default: $50
+   - Example: Enter $100 if you only want to investigate variances above $100
+   - **Lower values** = stricter reconciliation (more variances flagged)
+   - **Higher values** = more lenient (only large variances flagged)
+   - Your setting is saved for future reconciliations
 
-2. **Watch the Timeline**
+2. **Enter Analysis Prompt (Optional)**
+   - Add specific instructions for the AI agents
+   - Example: "Reconcile account 1000 inventory for October close"
+   - Leave blank for standard analysis
+
+3. **Click "Illuminate ✨"**
+   - Rowshni's AI agents start analyzing your data
+   - Progress shown in real-time with a glowing progress indicator
+   - You'll see which agent is currently working (Data Validation → Analysis → Investigation → Report)
+
+4. **Watch the Timeline**
    ```
    ✅ Spec Validation     - Data validated
-   ⏳ Gemini Commentary   - AI analyzing patterns
-   ⏳ Multi-Agent Pipeline - Running reconciliation
-   ⏳ Report Generation   - Creating final report
+   ⏳ Data Validation Agent - Validating data quality
+   ⏳ Reconciliation Analyst Agent - Analyzing variances
+   ⏳ Variance Investigator Agent - Investigating material variances
+   ⏳ Report Generator Agent - Creating final report
    ```
 
-3. **Wait for Completion** (usually 10-30 seconds)
+5. **Wait for Completion** (usually 10-30 seconds)
 
 ---
 
@@ -184,8 +205,10 @@ Status: ✅ BALANCED
 | Status | Meaning | Action Needed |
 |--------|---------|---------------|
 | **✅ Balanced** | GL = Subledger (variance < $0.01) | None - reconciliation complete |
-| **⚠️ Immaterial Variance** | Small variance (< $50) | Review but likely acceptable |
-| **❌ Material Variance** | Significant variance (≥ $50) | **Investigation required** |
+| **⚠️ Immaterial Variance** | Variance below your materiality threshold | Review but likely acceptable |
+| **❌ Material Variance** | Variance ≥ your materiality threshold | **Investigation required** |
+
+**Note:** The threshold that determines "Material" vs "Immaterial" is set by you in Step 4 (default $50).
 
 ### Variance Analysis
 
@@ -247,33 +270,66 @@ Gemini provides:
 
 **💡 Tip:** If you hit the limit, wait for the timer to reset or sign in for unlimited access (when available).
 
+### AI Analysis Quotas
+
+In addition to reconciliation rate limits, **AI analysis** (Gemini agents) has usage quotas:
+- Shared quota for all anonymous users
+- Automatic retries if quota is temporarily exceeded
+- May use fallback analysis if quota fully exhausted
+
+**Want unlimited AI analysis?**
+
+Use your own free Google Gemini API key:
+1. Get a free key at: [ai.google.dev/gemini-api](https://ai.google.dev/gemini-api/docs/api-key)
+2. Set the `GEMINI_API_KEY` environment variable (see developer docs)
+3. No more quota limits on AI analysis!
+
+**Note:** Google's free tier includes generous quotas that are usually more than enough for individual use.
+
 ---
 
 ## Sample Data
 
-**Don't have data to test with?** Click **"Show Sample Files"** to download:
+**Don't have data to test with?** Click **"Show Sample Files"** to download realistic test scenarios:
 
-1. **Simple Balanced Example**
-   - GL and subledger match perfectly
-   - Good for testing the app
+### 1. **Simple Balanced (Perfect Reconciliation)**
+   - GL and subledger match perfectly (variance = $0)
+   - Tests basic functionality and workflow
+   - Good for first-time users
+   - **Files**: gl_balance.csv, subledger_balance.csv, transactions.csv
 
-2. **Material Variance Example**
-   - Intentional $275k variance
-   - Shows how investigations work
+### 2. **Material Variance (Duplicate Invoice)**
+   - Intentional $275k variance from duplicate invoice
+   - Shows how AI agents detect and investigate errors
+   - Tests materiality threshold logic
+   - **Files**: gl_balance.csv, subledger_balance.csv
 
-3. **Timing Differences Example**
+### 3. **Timing Differences (Period Cutoff)**
    - October invoices posted in November
-   - Demonstrates accrual analysis
+   - Demonstrates period cutoff and accrual analysis
+   - Shows how transactions explain variances
+   - **Files**: gl_balance.csv, subledger_balance.csv, transactions.csv
 
-4. **Multi-Period Example**
+### 4. **Multi-Period Roll-Forward**
    - January through March data
-   - Shows roll-forward analysis
+   - Shows roll-forward schedule with opening/closing balances
+   - Tests period-over-period reconciliation
+   - **Files**: gl_balance.csv, subledger_balance.csv, transactions.csv
 
-5. **Missing Data Example**
-   - Subledger missing entries
-   - Shows reconciliation breaks
+### 5. **Missing Subledger Data**
+   - Subledger missing critical entries
+   - Demonstrates how system flags incomplete data
+   - Shows data quality validation
+   - **Files**: gl_balance.csv, subledger_balance.csv, transactions.csv
 
-**Download all samples:** Get pre-formatted CSV files ready to upload.
+**What makes these scenarios realistic:**
+- ✅ Proper sign conventions (negative for liabilities)
+- ✅ Realistic vendor names and invoice numbers
+- ✅ Actual accounting periods (YYYY-MM format)
+- ✅ Account codes with descriptive names
+- ✅ Documented expected results for each scenario
+
+**How to use:** Download all 3 files for a scenario, upload them to the app, and run the reconciliation to see how the AI agents analyze different situations.
 
 ---
 
@@ -358,6 +414,21 @@ Gemini provides:
 ### Q: Do you support multi-currency reconciliations?
 **A:** Yes, as long as all amounts for a given account are in the same currency. For multi-currency accounts, reconcile each currency separately.
 
+### Q: How do I choose the right materiality threshold?
+**A:** The materiality threshold determines which variances need investigation. Consider:
+- **Company size:** Larger companies typically use higher thresholds ($500-$5,000)
+- **Account size:** For a $10M account, $50 might be too strict; try $500 or $1,000
+- **Risk tolerance:** Month-end close = stricter; preliminary review = more lenient
+- **Industry standards:** Consult your audit requirements or internal controls policies
+
+**Examples:**
+- Small business (< $1M revenue): $25-$100
+- Mid-size company ($1M-$50M): $100-$1,000
+- Large enterprise (> $50M): $1,000-$10,000
+- Audit reconciliation: Lower threshold for critical accounts
+
+**💡 Tip:** Start with the default ($50) and adjust based on results. You can always re-run with a different threshold.
+
 ### Q: Can I schedule automated reconciliations?
 **A:** Not yet - this is a manual, on-demand tool. Automated scheduling is on the roadmap.
 
@@ -385,6 +456,9 @@ Gemini provides:
 
 ---
 
-**Happy Reconciling! 🎉**
+**Let Rowshni shed light on your ledger! ✨**
 
+---
+
+*Rowshni - Shedding light on your ledger*
 *Last updated: December 2025*

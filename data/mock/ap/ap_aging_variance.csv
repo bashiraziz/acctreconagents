@@ -1,8 +1,0 @@
-vendor,invoice_number,invoice_date,due_date,bucket,currency,amount,account_code,notes
-Northwind Components,INV-45021,2025-09-18,2025-10-18,Current,USD,420000,20100-AP Control,
-Radius Labs,INV-99302,2025-08-30,2025-09-29,30 Days,USD,275000,20100-AP Control,
-Radius Labs,INV-99302-DUP,2025-08-30,2025-09-29,30 Days,USD,275000,20100-AP Control,Duplicate entry - Should be removed
-TruVista Logistics,INV-11854,2025-07-20,2025-08-19,60 Days,USD,155000,20100-AP Control,
-Global Staffing,INV-55490,2025-10-05,2025-11-04,Not Due,USD,335000,20100-AP Control,
-Accrued Payroll,ACCR-PR-2025-10,2025-10-31,2025-10-31,Accrual,USD,215000,22010-Accrued Expenses,
-Orion Research,ACCR-ORION,2025-10-15,2025-11-15,Not Due,USD,45000,20100-AP Control,Missing from GL - Needs accrual entry

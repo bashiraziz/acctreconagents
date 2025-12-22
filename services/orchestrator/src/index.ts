@@ -52,6 +52,7 @@ const payloadSchema = z.object({
 const runSchema = z.object({
   userPrompt: z.string().min(1),
   payload: payloadSchema,
+  materialityThreshold: z.number().min(0).optional(),
 });
 
 type RunInput = z.infer<typeof runSchema>;
@@ -188,7 +189,7 @@ fastify.post("/agent/runs", async (request, reply) => {
 
 async function orchestrateRun(input: RunInput) {
   const runId = `run_${Date.now()}`;
-  const localToolOutput = runReconciliationLocally(input.payload);
+  const localToolOutput = runReconciliationLocally(input.payload, input.materialityThreshold);
 
   const timeline = [
     {
@@ -464,7 +465,7 @@ async function runOpenAiTeam(
           activityByPeriod: args.activity_by_period ?? payload.activityByPeriod,
           adjustmentsByPeriod:
             args.adjustments_by_period ?? payload.adjustmentsByPeriod,
-        });
+        }, localToolOutput.materiality);
         return finalToolOutput;
       },
     );
@@ -619,7 +620,10 @@ type NormalizedTransaction = {
   metadata: Record<string, string>;
 };
 
-function runReconciliationLocally(payload: PayloadInput) {
+function runReconciliationLocally(payload: PayloadInput, customMaterialityThreshold?: number) {
+  // Use custom threshold if provided, otherwise use environment variable default
+  const threshold = customMaterialityThreshold ?? materialityThreshold;
+
   const glMap = aggregateBalances(payload.glBalances);
   const subMap = aggregateBalances(payload.subledgerBalances);
   const accounts = new Set<string>();
@@ -675,7 +679,7 @@ function runReconciliationLocally(payload: PayloadInput) {
     const variance = gl - sub;
     const absVariance = Math.abs(variance);
     const related = transactionBuckets.get(key) ?? [];
-    const material = absVariance >= materialityThreshold;
+    const material = absVariance >= threshold;
     const status =
       absVariance < 0.01
         ? "balanced"
@@ -691,7 +695,7 @@ function runReconciliationLocally(payload: PayloadInput) {
       );
       if (material) {
         notes.push(
-          `Variance exceeds materiality threshold (${materialityThreshold.toFixed(2)}).`,
+          `Variance exceeds materiality threshold (${threshold.toFixed(2)}).`,
         );
       } else {
         notes.push("Variance is immaterial but should be monitored.");
@@ -771,7 +775,7 @@ function runReconciliationLocally(payload: PayloadInput) {
   }
 
   return {
-    materiality: materialityThreshold,
+    materiality: threshold,
     reconciliations,
     rollForward,
     transactions: normalizedTransactions.slice(0, 250),
