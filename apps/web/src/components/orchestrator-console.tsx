@@ -490,7 +490,7 @@ function humanizeIssue(path: string, message: string) {
 
 function RunResultPanel({ result }: { result: OrchestratorResponse }) {
   // Check if any Gemini agents hit rate limits
-  const hasRateLimitIssue = result.geminiAgents?.status
+  const hasRateLimitIssue: boolean = result.geminiAgents?.status
     ? Object.values(result.geminiAgents.status).some(
         (s: any) => s.usedFallback && s.error?.includes("429")
       )
