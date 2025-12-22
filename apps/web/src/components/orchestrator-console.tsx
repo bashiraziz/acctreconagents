@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { specMetadata } from "@/lib/spec";
 import { useReconciliationStore } from "@/store/reconciliationStore";
-import type { OrchestratorResponse } from "@/types/reconciliation";
+import type { OrchestratorResponse, GeminiAgentStatus } from "@/types/reconciliation";
 
 type AgentError = {
   message: string;
@@ -754,13 +754,6 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
     </div>
   );
 }
-
-type GeminiAgentStatus = {
-  success: boolean;
-  retryCount?: number;
-  usedFallback: boolean;
-  error?: string;
-};
 
 function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
   if (!status) {

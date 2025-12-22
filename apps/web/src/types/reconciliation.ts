@@ -109,11 +109,24 @@ export type ReportResult = {
   auditTrail: string;
 };
 
+export type GeminiAgentStatus = {
+  success: boolean;
+  retryCount?: number;
+  usedFallback: boolean;
+  error?: string;
+};
+
 export type GeminiAgentResults = {
   validation: DataValidationResult | null;
   analysis: ReconciliationAnalysisResult | null;
   investigation: InvestigationResult | null;
   report: ReportResult | null;
+  status: {
+    validation: GeminiAgentStatus;
+    analysis: GeminiAgentStatus;
+    investigation: GeminiAgentStatus;
+    report: GeminiAgentStatus;
+  };
 };
 
 // ============================================
