@@ -38,11 +38,12 @@ const transactionSchema = z.object({
 // ============================================
 
 /**
- * Apply column mapping to raw CSV data
+ * Apply column mapping to raw CSV data and inject metadata
  */
 export function applyMapping(
   rows: Record<string, any>[],
   mapping: ColumnMapping,
+  metadata?: { accountCode?: string; period?: string },
 ): Record<string, any>[] {
   return rows.map((row) => {
     const transformed: Record<string, any> = {};
@@ -69,6 +70,19 @@ export function applyMapping(
       }
     }
 
+    // Inject metadata for fields not mapped from source columns
+    if (metadata) {
+      // Add account_code from metadata if not already mapped
+      if (metadata.accountCode && !transformed.account_code) {
+        transformed.account_code = metadata.accountCode;
+      }
+
+      // Add period from metadata if not already mapped
+      if (metadata.period && !transformed.period) {
+        transformed.period = metadata.period;
+      }
+    }
+
     return transformed;
   });
 }
@@ -84,7 +98,7 @@ export function transformBalances(
     return { data: [], errors: [] };
   }
 
-  const transformed = applyMapping(file.rows, mapping);
+  const transformed = applyMapping(file.rows, mapping, file.metadata);
   const errors: string[] = [];
   const validated: Balance[] = [];
 
@@ -115,7 +129,7 @@ export function transformTransactions(
     return { data: [], errors: [] };
   }
 
-  const transformed = applyMapping(file.rows, mapping);
+  const transformed = applyMapping(file.rows, mapping, file.metadata);
   const errors: string[] = [];
   const validated: Transaction[] = [];
 

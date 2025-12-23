@@ -31,6 +31,7 @@ export function UploadWorkspace() {
   const setUploadedFile = useReconciliationStore((state) => state.setUploadedFile);
   const clearUploadedFile = useReconciliationStore((state) => state.clearUploadedFile);
   const clearAllFiles = useReconciliationStore((state) => state.clearAllFiles);
+  const updateFileMetadata = useReconciliationStore((state) => state.updateFileMetadata);
 
   const removeUploadByFileType = (fileType: FileType) => {
     setUploads((records) => records.filter((record) => record.fileType !== fileType));
@@ -240,6 +241,7 @@ export function UploadWorkspace() {
             clearUploadedFile("subledger_balance");
             removeUploadByFileType("subledger_balance");
           }}
+          onMetadataUpdate={(metadata) => updateFileMetadata("subledger_balance", metadata)}
           required
         />
 
@@ -361,6 +363,7 @@ function FileTypeUploadZone({
   uploadedFile,
   onFiles,
   onRemove,
+  onMetadataUpdate,
   required,
 }: {
   fileType: FileType;
@@ -370,9 +373,12 @@ function FileTypeUploadZone({
   uploadedFile: any;
   onFiles: (files: FileList | null) => void;
   onRemove: () => void;
+  onMetadataUpdate?: (metadata: { accountCode?: string; period?: string }) => void;
   required: boolean;
 }) {
   const [isDragging, setIsDragging] = useState(false);
+  const [localAccountCode, setLocalAccountCode] = useState(uploadedFile?.metadata?.accountCode || "");
+  const [localPeriod, setLocalPeriod] = useState(uploadedFile?.metadata?.period || "");
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -404,25 +410,72 @@ function FileTypeUploadZone({
 
   if (uploadedFile) {
     // Show uploaded file info
+    const needsMetadata = fileType === "subledger_balance" && onMetadataUpdate;
+
     return (
-      <div className="flex items-center justify-between rounded border border-emerald-500/40 bg-emerald-500/10 p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
-            ✓
+      <div className="rounded border border-emerald-500/40 bg-emerald-500/10 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+              ✓
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-100">{label}</p>
+              <p className="mt-0.5 text-xs text-emerald-200/80">
+                {uploadedFile.name} • {uploadedFile.rowCount} rows × {uploadedFile.columnCount} columns
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-emerald-100">{label}</p>
-            <p className="mt-0.5 text-xs text-emerald-200/80">
-              {uploadedFile.name} • {uploadedFile.rowCount} rows × {uploadedFile.columnCount} columns
-            </p>
-          </div>
+          <button
+            onClick={onRemove}
+            className="rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text-muted transition hover:theme-muted"
+          >
+            Remove
+          </button>
         </div>
-        <button
-          onClick={onRemove}
-          className="rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text-muted transition hover:theme-muted"
-        >
-          Remove
-        </button>
+
+        {/* Metadata inputs for subledger files */}
+        {needsMetadata && (
+          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-emerald-500/20 pt-4">
+            <div>
+              <label className="block text-xs font-medium text-emerald-200">
+                GL Account Code
+                <span className="ml-1 text-emerald-300/60">(e.g., 200 for AP)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="200"
+                value={localAccountCode}
+                onChange={(e) => {
+                  setLocalAccountCode(e.target.value);
+                  onMetadataUpdate({ accountCode: e.target.value, period: localPeriod });
+                }}
+                className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-emerald-200">
+                Period
+                <span className="ml-1 text-emerald-300/60">(YYYY-MM)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="2025-12"
+                value={localPeriod}
+                onChange={(e) => {
+                  setLocalPeriod(e.target.value);
+                  onMetadataUpdate({ accountCode: localAccountCode, period: e.target.value });
+                }}
+                className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
+              />
+            </div>
+            <div className="col-span-2">
+              <p className="text-xs text-emerald-200/60">
+                💡 These values will be added to every row in this file during mapping
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
