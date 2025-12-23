@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useReconciliationStore } from "@/store/reconciliationStore";
 import { parseCSVFile } from "@/lib/parseFile";
 import type { FileType } from "@/types/reconciliation";
@@ -21,8 +21,44 @@ type UploadRecord = {
 
 const ACCEPTED_CSV =
   ".csv,.tsv,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const ACCEPTED_CSV_OR_PDF =
+  ".csv,.tsv,.xls,.xlsx,.pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf";
 const ACCEPTED_SUPPORTING =
   ".pdf,.doc,.docx,.ppt,.pptx,.csv,.xls,.xlsx,.txt,image/*";
+
+/**
+ * Extract period (YYYY-MM) from filename or file content
+ * Examples:
+ * - "AP_Aging_2025-12.pdf" → "2025-12"
+ * - "GL Summary Dec 31, 2025.pdf" → "2025-12"
+ * - "Accounts Payable 12-2025.csv" → "2025-12"
+ */
+function extractPeriodFromFilename(filename: string): string | undefined {
+  // Pattern 1: YYYY-MM format
+  const yearMonthMatch = filename.match(/(\d{4})-(\d{2})/);
+  if (yearMonthMatch) {
+    return `${yearMonthMatch[1]}-${yearMonthMatch[2]}`;
+  }
+
+  // Pattern 2: MM-YYYY or MM/YYYY format
+  const monthYearMatch = filename.match(/(\d{2})[-/](\d{4})/);
+  if (monthYearMatch) {
+    return `${monthYearMatch[2]}-${monthYearMatch[1]}`;
+  }
+
+  // Pattern 3: Month name YYYY (e.g., "December 2025" or "Dec 2025")
+  const monthNameMatch = filename.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})[,\s]+(\d{4})/i);
+  if (monthNameMatch) {
+    const monthMap: Record<string, string> = {
+      jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+      jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12"
+    };
+    const month = monthMap[monthNameMatch[1].toLowerCase().slice(0, 3)];
+    return `${monthNameMatch[3]}-${month}`;
+  }
+
+  return undefined;
+}
 
 export function UploadWorkspace() {
   const [uploads, setUploads] = useState<UploadRecord[]>([]);
@@ -71,6 +107,16 @@ export function UploadWorkspace() {
       const result = await parseCSVFile(file, fileType);
 
       if (result.success && result.data) {
+        // Auto-extract period from filename for subledger files
+        const extractedPeriod = extractPeriodFromFilename(file.name);
+        if (extractedPeriod && fileType === "subledger_balance") {
+          result.data.metadata = {
+            ...result.data.metadata,
+            period: extractedPeriod,
+            reportDate: file.name, // Store original filename as reference
+          };
+        }
+
         // Store in Zustand
         setUploadedFile(fileType, result.data);
 
@@ -82,7 +128,7 @@ export function UploadWorkspace() {
                   status: "ready",
                   rowCount: result.data!.rowCount,
                   columnCount: result.data!.columnCount,
-                  message: `✓ ${result.data!.rowCount} rows, ${result.data!.columnCount} columns`,
+                  message: `✓ ${result.data!.rowCount} rows, ${result.data!.columnCount} columns${extractedPeriod ? ` • Period: ${extractedPeriod}` : ""}`,
                 }
               : entry,
           ),
@@ -233,8 +279,8 @@ export function UploadWorkspace() {
         <FileTypeUploadZone
           fileType="subledger_balance"
           label="Subledger Balance (AP/AR Aging)"
-          description="Your subledger detail balances"
-          accept={ACCEPTED_CSV}
+          description="CSV or PDF - Period auto-detected from filename"
+          accept={ACCEPTED_CSV_OR_PDF}
           uploadedFile={uploadedFiles.subledgerBalance}
           onFiles={(files) => handleFiles(files, "subledger_balance")}
           onRemove={() => {
@@ -379,6 +425,18 @@ function FileTypeUploadZone({
   const [isDragging, setIsDragging] = useState(false);
   const [localAccountCode, setLocalAccountCode] = useState(uploadedFile?.metadata?.accountCode || "");
   const [localPeriod, setLocalPeriod] = useState(uploadedFile?.metadata?.period || "");
+
+  // Sync local state with uploaded file metadata (e.g., auto-extracted period)
+  useEffect(() => {
+    if (uploadedFile?.metadata) {
+      if (uploadedFile.metadata.accountCode) {
+        setLocalAccountCode(uploadedFile.metadata.accountCode);
+      }
+      if (uploadedFile.metadata.period) {
+        setLocalPeriod(uploadedFile.metadata.period);
+      }
+    }
+  }, [uploadedFile?.metadata]);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
