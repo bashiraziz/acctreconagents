@@ -107,9 +107,9 @@ export function UploadWorkspace() {
       const result = await parseCSVFile(file, fileType);
 
       if (result.success && result.data) {
-        // Auto-extract period from filename for subledger files
+        // Auto-extract period from filename for GL and subledger files
         const extractedPeriod = extractPeriodFromFilename(file.name);
-        if (extractedPeriod && fileType === "subledger_balance") {
+        if (extractedPeriod && (fileType === "gl_balance" || fileType === "subledger_balance")) {
           result.data.metadata = {
             ...result.data.metadata,
             period: extractedPeriod,
@@ -264,14 +264,15 @@ export function UploadWorkspace() {
         <FileTypeUploadZone
           fileType="gl_balance"
           label="GL Trial Balance"
-          description="Your general ledger account balances"
-          accept={ACCEPTED_CSV}
+          description="CSV or PDF - Period auto-detected from filename"
+          accept={ACCEPTED_CSV_OR_PDF}
           uploadedFile={uploadedFiles.glBalance}
           onFiles={(files) => handleFiles(files, "gl_balance")}
           onRemove={() => {
             clearUploadedFile("gl_balance");
             removeUploadByFileType("gl_balance");
           }}
+          onMetadataUpdate={(metadata) => updateFileMetadata("gl_balance", metadata)}
           required
         />
 
@@ -468,7 +469,9 @@ function FileTypeUploadZone({
 
   if (uploadedFile) {
     // Show uploaded file info
-    const needsMetadata = fileType === "subledger_balance" && onMetadataUpdate;
+    const needsMetadata = onMetadataUpdate !== undefined;
+    const isSubledger = fileType === "subledger_balance";
+    const isGL = fileType === "gl_balance";
 
     return (
       <div className="rounded border border-emerald-500/40 bg-emerald-500/10 p-4">
@@ -486,50 +489,59 @@ function FileTypeUploadZone({
           </div>
           <button
             onClick={onRemove}
-            className="rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text-muted transition hover:theme-muted"
+            className="flex-shrink-0 rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text-muted transition hover:theme-muted"
           >
             Remove
           </button>
         </div>
 
-        {/* Metadata inputs for subledger files */}
+        {/* Metadata inputs for GL and subledger files */}
         {needsMetadata && (
-          <div className="mt-4 grid grid-cols-2 gap-3 border-t border-emerald-500/20 pt-4">
-            <div>
-              <label className="block text-xs font-medium text-emerald-200">
-                GL Account Code
-                <span className="ml-1 text-emerald-300/60">(e.g., 200 for AP)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="200"
-                value={localAccountCode}
-                onChange={(e) => {
-                  setLocalAccountCode(e.target.value);
-                  onMetadataUpdate({ accountCode: e.target.value, period: localPeriod });
-                }}
-                className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
-              />
+          <div className="mt-4 border-t border-emerald-500/20 pt-4">
+            <div className={`grid gap-3 ${isSubledger ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {/* Account Code (only for subledger) */}
+              {isSubledger && (
+                <div>
+                  <label className="block text-xs font-medium text-emerald-200">
+                    GL Account Code
+                    <span className="ml-1 text-emerald-300/60">(e.g., 200 for AP)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="200"
+                    value={localAccountCode}
+                    onChange={(e) => {
+                      setLocalAccountCode(e.target.value);
+                      onMetadataUpdate({ accountCode: e.target.value, period: localPeriod });
+                    }}
+                    className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
+                  />
+                </div>
+              )}
+
+              {/* Period (for both GL and subledger) */}
+              <div>
+                <label className="block text-xs font-medium text-emerald-200">
+                  Period
+                  <span className="ml-1 text-emerald-300/60">(YYYY-MM)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="2025-12"
+                  value={localPeriod}
+                  onChange={(e) => {
+                    setLocalPeriod(e.target.value);
+                    onMetadataUpdate({ accountCode: localAccountCode, period: e.target.value });
+                  }}
+                  className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-emerald-200">
-                Period
-                <span className="ml-1 text-emerald-300/60">(YYYY-MM)</span>
-              </label>
-              <input
-                type="text"
-                placeholder="2025-12"
-                value={localPeriod}
-                onChange={(e) => {
-                  setLocalPeriod(e.target.value);
-                  onMetadataUpdate({ accountCode: localAccountCode, period: e.target.value });
-                }}
-                className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
-              />
-            </div>
-            <div className="col-span-2">
+            <div className="mt-3">
               <p className="text-xs text-emerald-200/60">
-                💡 These values will be added to every row in this file during mapping
+                💡 {isSubledger
+                  ? "These values will be added to every row in this file during mapping"
+                  : "Period will be added to rows that don't have it"}
               </p>
             </div>
           </div>
