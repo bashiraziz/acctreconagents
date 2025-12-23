@@ -19,8 +19,9 @@ export type UploadedFile = {
   headers: string[];
   rows: Record<string, any>[];
   metadata?: {
-    accountCode?: string;    // For subledger files that don't have GL account codes
+    accountCode?: string;    // For files missing account codes (e.g., subledger with vendor names)
     period?: string;          // For files where period is in header, not in rows (format: YYYY-MM)
+    currency?: string;        // For files missing currency (e.g., "USD", "EUR", "GBP")
     reportDate?: string;      // Original report date extracted from PDF/header
   };
 };

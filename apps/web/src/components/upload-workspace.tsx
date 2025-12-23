@@ -420,12 +420,13 @@ function FileTypeUploadZone({
   uploadedFile: any;
   onFiles: (files: FileList | null) => void;
   onRemove: () => void;
-  onMetadataUpdate?: (metadata: { accountCode?: string; period?: string }) => void;
+  onMetadataUpdate?: (metadata: { accountCode?: string; period?: string; currency?: string }) => void;
   required: boolean;
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const [localAccountCode, setLocalAccountCode] = useState(uploadedFile?.metadata?.accountCode || "");
   const [localPeriod, setLocalPeriod] = useState(uploadedFile?.metadata?.period || "");
+  const [localCurrency, setLocalCurrency] = useState(uploadedFile?.metadata?.currency || "USD");
 
   // Sync local state with uploaded file metadata (e.g., auto-extracted period)
   useEffect(() => {
@@ -435,6 +436,9 @@ function FileTypeUploadZone({
       }
       if (uploadedFile.metadata.period) {
         setLocalPeriod(uploadedFile.metadata.period);
+      }
+      if (uploadedFile.metadata.currency) {
+        setLocalCurrency(uploadedFile.metadata.currency);
       }
     }
   }, [uploadedFile?.metadata]);
@@ -498,7 +502,7 @@ function FileTypeUploadZone({
         {/* Metadata inputs for GL and subledger files */}
         {needsMetadata && (
           <div className="mt-4 border-t border-emerald-500/20 pt-4">
-            <div className={`grid gap-3 ${isSubledger ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-3 ${isSubledger ? 'grid-cols-3' : 'grid-cols-2'}`}>
               {/* Account Code (only for subledger) */}
               {isSubledger && (
                 <div>
@@ -512,7 +516,7 @@ function FileTypeUploadZone({
                     value={localAccountCode}
                     onChange={(e) => {
                       setLocalAccountCode(e.target.value);
-                      onMetadataUpdate({ accountCode: e.target.value, period: localPeriod });
+                      onMetadataUpdate({ accountCode: e.target.value, period: localPeriod, currency: localCurrency });
                     }}
                     className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
                   />
@@ -531,9 +535,28 @@ function FileTypeUploadZone({
                   value={localPeriod}
                   onChange={(e) => {
                     setLocalPeriod(e.target.value);
-                    onMetadataUpdate({ accountCode: localAccountCode, period: e.target.value });
+                    onMetadataUpdate({ accountCode: localAccountCode, period: e.target.value, currency: localCurrency });
                   }}
                   className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
+                />
+              </div>
+
+              {/* Currency (for both GL and subledger) */}
+              <div>
+                <label className="block text-xs font-medium text-emerald-200">
+                  Currency
+                  <span className="ml-1 text-emerald-300/60">(e.g., USD, EUR)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="USD"
+                  value={localCurrency}
+                  onChange={(e) => {
+                    setLocalCurrency(e.target.value.toUpperCase());
+                    onMetadataUpdate({ accountCode: localAccountCode, period: localPeriod, currency: e.target.value.toUpperCase() });
+                  }}
+                  className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
+                  maxLength={3}
                 />
               </div>
             </div>
@@ -541,7 +564,7 @@ function FileTypeUploadZone({
               <p className="text-xs text-emerald-200/60">
                 💡 {isSubledger
                   ? "These values will be added to every row in this file during mapping"
-                  : "Period will be added to rows that don't have it"}
+                  : "Missing values will be filled in from metadata"}
               </p>
             </div>
           </div>

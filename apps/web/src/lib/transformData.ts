@@ -43,7 +43,7 @@ const transactionSchema = z.object({
 export function applyMapping(
   rows: Record<string, any>[],
   mapping: ColumnMapping,
-  metadata?: { accountCode?: string; period?: string },
+  metadata?: { accountCode?: string; period?: string; currency?: string },
 ): Record<string, any>[] {
   return rows.map((row) => {
     const transformed: Record<string, any> = {};
@@ -80,6 +80,11 @@ export function applyMapping(
       // Add period from metadata if not already mapped
       if (metadata.period && !transformed.period) {
         transformed.period = metadata.period;
+      }
+
+      // Add currency from metadata if not already mapped
+      if (metadata.currency && !transformed.currency) {
+        transformed.currency = metadata.currency;
       }
     }
 

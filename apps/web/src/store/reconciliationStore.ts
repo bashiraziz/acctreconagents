@@ -26,7 +26,7 @@ type ReconciliationStore = {
   setUploadedFile: (type: FileType, file: UploadedFile) => void;
   clearUploadedFile: (type: FileType) => void;
   clearAllFiles: () => void;
-  updateFileMetadata: (type: FileType, metadata: { accountCode?: string; period?: string }) => void;
+  updateFileMetadata: (type: FileType, metadata: { accountCode?: string; period?: string; currency?: string }) => void;
 
   // ============================================
   // Column Mappings State
