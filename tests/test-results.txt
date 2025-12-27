@@ -1,0 +1,161 @@
+
+> acctrecon-tests@1.0.0 test
+> tsx scenario-runner.ts
+
+🧪 Automated Scenario Testing Framework
+
+Orchestrator URL: http://127.0.0.1:4100
+Materiality Threshold: $50
+
+Found 10 scenario(s) to test
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ 01-simple-balanced - PASSED (7092ms)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ 02-material-variance - PASSED (11021ms)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 03-timing-differences - FAILED (91274ms)
+
+Reconciliation Results:
+  ✗ Account 20100 (2025-10)
+     Expected: variance=180000, status=material_variance
+     Actual:   variance=330000, status=material_variance
+  ✓ Account 22010 (2025-10)
+     Expected: variance=0, status=balanced
+     Actual:   variance=0, status=balanced
+
+Errors:
+  ❌ Reconciliation count mismatch: expected 2, got 3
+  ❌ Variance mismatch for 20100: expected 180000, got 330000
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 04-roll-forward-multi-period - FAILED (121912ms)
+
+Reconciliation Results:
+  ✓ Account 20100 (2025-08)
+     Expected: variance=0, status=balanced
+     Actual:   variance=0, status=balanced
+  ✗ Account 20100 (2025-09)
+     Expected: variance=0, status=balanced
+     Actual:   variance=-300000, status=material_variance
+  ✗ Account 20100 (2025-10)
+     Expected: variance=0, status=balanced
+     Actual:   variance=-430000, status=material_variance
+  ✓ Account 22010 (2025-08)
+     Expected: variance=0, status=balanced
+     Actual:   variance=0, status=balanced
+  ✗ Account 22010 (2025-09)
+     Expected: variance=0, status=balanced
+     Actual:   variance=-135000, status=material_variance
+  ✗ Account 22010 (2025-10)
+     Expected: variance=0, status=balanced
+     Actual:   variance=-150000, status=material_variance
+
+Errors:
+  ❌ Variance mismatch for 20100: expected 0, got -300000
+  ❌ Status mismatch for 20100: expected "balanced", got "material_variance"
+  ❌ Variance mismatch for 20100: expected 0, got -430000
+  ❌ Status mismatch for 20100: expected "balanced", got "material_variance"
+  ❌ Variance mismatch for 22010: expected 0, got -135000
+  ❌ Status mismatch for 22010: expected "balanced", got "material_variance"
+  ❌ Variance mismatch for 22010: expected 0, got -150000
+  ❌ Status mismatch for 22010: expected "balanced", got "material_variance"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ 05-missing-subledger-data - PASSED (14904ms)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 06-quickbooks-format - FAILED (35251ms)
+
+Reconciliation Results:
+  ✗ Account 2000 (2025-12)
+     Expected: variance=0, status=balanced
+     Actual:   variance=-52850, status=material_variance
+  ✗ Account 2100 (2025-12)
+     Expected: variance=0, status=balanced
+     Actual:   variance=-8500, status=material_variance
+
+Errors:
+  ❌ Reconciliation count mismatch: expected 2, got 4
+  ❌ Variance mismatch for 2000: expected 0, got -52850
+  ❌ Status mismatch for 2000: expected "balanced", got "material_variance"
+  ❌ Variance mismatch for 2100: expected 0, got -8500
+  ❌ Status mismatch for 2100: expected "balanced", got "material_variance"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 07-costpoint-format - FAILED (5ms)
+
+Reconciliation Results:
+
+Errors:
+  ❌ API error (400): {"message":"Unable to process your data. Please check the errors below:","errors":["Field \"payload.subledgerBalances.0.amount\" has wrong data type. Expected number, got undefined.","Field \"payload.subledgerBalances.1.amount\" has wrong data type. Expected number, got undefined.","Field \"payload.subledgerBalances.2.amount\" has wrong data type. Expected number, got undefined.","Field \"payload.subledgerBalances.3.amount\" has wrong data type. Expected number, got undefined.","Field \"payload.subledgerBalances.4.amount\" has wrong data type. Expected number, got undefined.","Field \"payload.subledgerBalances.5.amount\" has wrong data type. Expected number, got undefined.","Field \"payload.subledgerBalances.6.amount\" has wrong data type. Expected number, got undefined."],"help":["Make sure all required columns are mapped correctly","Check that numeric fields (like 'amount') contain numbers","Verify that account codes are text (not formulas or blank)"]}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ 08-netsuite-format - PASSED (65226ms)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 09-multiple-variance-types - FAILED (13292ms)
+
+Reconciliation Results:
+  ✗ Account 2000 (2025-12)
+     Expected: variance=22500, status=variance
+     Actual:   variance=0, status=balanced
+  ✗ Account 2100 (2025-12)
+     Expected: variance=1400, status=variance
+     Actual:   variance=1400, status=material_variance
+  ✓ Account 2200 (2025-12)
+     Expected: variance=0, status=balanced
+     Actual:   variance=0, status=balanced
+  ✓ Account 3000 (2025-12)
+     Expected: variance=0, status=balanced
+     Actual:   variance=0, status=balanced
+
+Errors:
+  ❌ Variance mismatch for 2000: expected 22500, got 0
+  ❌ Status mismatch for 2000: expected "variance", got "balanced"
+  ❌ Status mismatch for 2100: expected "variance", got "material_variance"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 10-systematic-errors - FAILED (18357ms)
+
+Reconciliation Results:
+  ✗ Account 2000 (2025-12)
+     Expected: variance=46800, status=variance
+     Actual:   variance=-31400, status=material_variance
+  ✗ Account 4100 (2025-12)
+     Expected: variance=46000, status=variance
+     Actual:   variance=205600, status=material_variance
+  ✗ Account 1300 (2025-12)
+     Expected: variance=0, status=balanced
+     Actual:   variance=91200, status=material_variance
+
+Errors:
+  ❌ Variance mismatch for 2000: expected 46800, got -31400
+  ❌ Status mismatch for 2000: expected "variance", got "material_variance"
+  ❌ Variance mismatch for 4100: expected 46000, got 205600
+  ❌ Status mismatch for 4100: expected "variance", got "material_variance"
+  ❌ Variance mismatch for 1300: expected 0, got 91200
+  ❌ Status mismatch for 1300: expected "balanced", got "material_variance"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+================================================================================
+TEST SUMMARY
+================================================================================
+Total:    10 scenarios
+Passed:   4 ✅
+Failed:   6 ❌
+Duration: 378334ms
+================================================================================
+
+❌ Some tests failed!
+
+Failed scenarios:
+  - 03-timing-differences
+  - 04-roll-forward-multi-period
+  - 06-quickbooks-format
+  - 07-costpoint-format
+  - 09-multiple-variance-types
+  - 10-systematic-errors

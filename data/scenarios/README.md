@@ -7,10 +7,17 @@ This directory contains comprehensive test scenarios for the accounting reconcil
 ```
 scenarios/
 ├── README.md (this file)
+├── SYSTEM_FORMATS_GUIDE.md      # Guide to different accounting system formats
 ├── 01-simple-balanced/          # Perfect reconciliation
 ├── 02-material-variance/        # Duplicate invoice error
 ├── 03-timing-differences/       # Period cutoff issues
 ├── 04-roll-forward-multi-period/# Multi-period reconciliation
+├── 05-missing-subledger-data/   # Missing subledger entries
+├── 06-quickbooks-format/        # QuickBooks export format
+├── 07-costpoint-format/         # Deltek Costpoint format (government)
+├── 08-netsuite-format/          # NetSuite multi-currency format
+├── 09-multiple-variance-types/  # Mixed variance testing
+├── 10-systematic-errors/        # Pattern detection testing
 └── XX-scenario-name/            # Additional scenarios
 ```
 
@@ -108,20 +115,40 @@ Use ISO 8601 year-month format: `YYYY-MM` (e.g., `2025-10`)
 
 ### 1. Balanced Scenarios (01-series)
 Perfect reconciliations where GL = Subledger
-- Tests: Basic functionality, data flow, agent responses
+- **01-simple-balanced**: Basic functionality, data flow, agent responses
 
 ### 2. Variance Scenarios (02-series)
 Material variances requiring investigation
+- **02-material-variance**: Duplicate invoice detection
+- **03-timing-differences**: Period cutoff issues
 - Tests: Error detection, root cause analysis, investigation logic
-- Examples: Duplicates, missing entries, timing differences
 
-### 3. Complex Scenarios (03-series)
+### 3. Complex Scenarios (04-series)
 Multi-period, roll-forwards, adjustments
-- Tests: Period-over-period logic, opening balance calculations
+- **04-roll-forward-multi-period**: Period-over-period logic, opening balance calculations
+- Tests: Time-series reconciliation
 
-### 4. Edge Cases (04-series)
+### 4. Edge Cases (05-series)
 Boundary conditions, unusual situations
+- **05-missing-subledger-data**: Incomplete subledger entries
 - Tests: System robustness, error handling
+
+### 5. System Format Scenarios (06-08 series)
+Real-world accounting system export formats
+- **06-quickbooks-format**: Small business accounting (account extraction, comma parsing)
+- **07-costpoint-format**: Government contract accounting (sign reversal critical!)
+- **08-netsuite-format**: Enterprise ERP (multi-currency, multi-dimensional)
+- Tests: Format compatibility, sign conventions, currency handling
+
+**📖 See [SYSTEM_FORMATS_GUIDE.md](SYSTEM_FORMATS_GUIDE.md) for detailed comparison of accounting system formats.**
+
+### 6. Variance Analysis Scenarios (09-10 series)
+Testing variance detection and AI investigation capabilities
+- **09-multiple-variance-types**: Mixed variances (duplicate, missing, amount errors)
+- **10-systematic-errors**: Pattern detection (interface failures, calculation errors)
+- Tests: Variance detection, root cause analysis, pattern recognition, AI investigation quality
+
+**🔍 These scenarios test the AI's ability to analyze WHY variances exist, not just detect THAT they exist.**
 
 ## Creating New Scenarios
 

@@ -23,6 +23,7 @@ export type UploadedFile = {
     period?: string;          // For files where period is in header, not in rows (format: YYYY-MM)
     currency?: string;        // For files missing currency (e.g., "USD", "EUR", "GBP")
     reportDate?: string;      // Original report date extracted from PDF/header
+    reverseSign?: boolean;    // Multiply all amounts by -1 to fix sign convention mismatches
   };
 };
 

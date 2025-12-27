@@ -160,25 +160,61 @@ function AboutPanel() {
             <li>Gemini 2.0 Flash (free tier) for AI agents</li>
             <li>Better Auth + Vercel Postgres</li>
           </ul>
-          <div className="rounded border border-gray-300 bg-gray-50 p-3">
-            <p className="text-sm font-medium text-gray-900">
+
+          <details className="rounded border theme-border theme-muted p-3">
+            <summary className="cursor-pointer text-sm font-medium theme-text">
+              What are Spec-Kit contracts?
+            </summary>
+            <div className="mt-2 space-y-2 text-xs theme-text-muted">
+              <p>
+                Spec-Kit contracts are structured JSON schemas that define the "source of truth"
+                for data validation and system behavior.
+              </p>
+              <p className="font-medium theme-text">They define:</p>
+              <ul className="list-disc space-y-1 pl-4">
+                <li>
+                  <span className="font-medium">Data Models</span>: Canonical schemas like
+                  <code className="mx-1 rounded bg-gray-700 px-1 py-0.5 text-[11px] text-gray-200">canonical_balance</code>
+                  (account_code, period, amount, currency)
+                </li>
+                <li>
+                  <span className="font-medium">Interfaces</span>: Exact inputs/outputs for the reconciliation
+                  tool that AI agents consume
+                </li>
+                <li>
+                  <span className="font-medium">Workflows</span>: Expected process flows for upload and reconciliation
+                </li>
+              </ul>
+              <p>
+                Your uploaded CSVs are transformed to match these canonical schemas. This ensures
+                consistency across different accounting systems and allows AI agents to reliably
+                process your data.
+              </p>
+              <p className="pt-1 text-[11px] italic">
+                Contract version {specMetadata.version} • {canonicalBalanceFields.length + transactionFields.length} fields total
+              </p>
+            </div>
+          </details>
+
+          <div className="rounded border theme-border theme-muted p-3">
+            <p className="text-sm font-medium theme-text">
               Free AI Agents
             </p>
-            <p className="mt-1 text-xs text-gray-600">
+            <p className="mt-1 text-xs theme-text-muted">
               Uses Gemini 2.0 Flash free tier (1500 runs/day). Cost: $0 per reconciliation.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/master/README.md"
-              className="text-xs font-medium text-gray-700 underline hover:text-gray-900"
+              className="text-xs font-medium theme-text underline hover:text-amber-500 transition-colors"
               target="_blank"
             >
               View README →
             </Link>
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/master/specs/reconciliation.speckit.json"
-              className="text-xs font-medium text-gray-700 underline hover:text-gray-900"
+              className="text-xs font-medium theme-text underline hover:text-amber-500 transition-colors"
               target="_blank"
             >
               View Spec →
@@ -187,19 +223,19 @@ function AboutPanel() {
         </div>
       </details>
 
-      <details className="mt-4 border-t border-gray-200 pt-4">
-        <summary className="cursor-pointer text-sm font-medium text-gray-700">
+      <details className="mt-4 border-t theme-border pt-4">
+        <summary className="cursor-pointer text-sm font-medium theme-text">
           Data Model
         </summary>
-        <p className="mt-2 text-sm text-gray-600">{specMetadata.summary}</p>
+        <p className="mt-2 text-sm theme-text-muted">{specMetadata.summary}</p>
         <div className="mt-4 space-y-4">
           <div>
-            <p className="text-xs font-medium uppercase text-gray-700">Balance Fields</p>
-            <ul className="mt-2 space-y-1 text-sm text-gray-900">
+            <p className="text-xs font-medium uppercase theme-text-muted">Balance Fields</p>
+            <ul className="mt-2 space-y-1 text-sm theme-text">
               {canonicalBalanceFields.map((field) => (
                 <li key={field.key} className="flex items-center justify-between">
                   <span>{field.label}</span>
-                  <span className="text-xs text-gray-700">
+                  <span className="text-xs theme-text-muted">
                     {field.required ? "required" : "optional"}
                   </span>
                 </li>
@@ -207,12 +243,12 @@ function AboutPanel() {
             </ul>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase text-gray-700">Transaction Fields</p>
-            <ul className="mt-2 space-y-1 text-sm text-gray-900">
+            <p className="text-xs font-medium uppercase theme-text-muted">Transaction Fields</p>
+            <ul className="mt-2 space-y-1 text-sm theme-text">
               {transactionFields.map((field) => (
                 <li key={field.key} className="flex items-center justify-between">
                   <span>{field.label}</span>
-                  <span className="text-xs text-gray-700">
+                  <span className="text-xs theme-text-muted">
                     {field.required ? "required" : "optional"}
                   </span>
                 </li>
@@ -222,32 +258,32 @@ function AboutPanel() {
         </div>
       </details>
 
-      <details className="mt-4 border-t border-gray-200 pt-4">
-        <summary className="cursor-pointer text-sm font-medium text-gray-700">
+      <details className="mt-4 border-t theme-border pt-4">
+        <summary className="cursor-pointer text-sm font-medium theme-text">
           AI Agent Pipeline
         </summary>
         <div className="mt-3 space-y-2 text-sm">
-          <div className="border-l-2 border-gray-400 pl-3">
-            <p className="font-medium text-gray-900">1. Data Validation Agent</p>
-            <p className="text-xs text-gray-600">
+          <div className="border-l-2 border-gray-500 pl-3">
+            <p className="font-medium theme-text">1. Data Validation Agent</p>
+            <p className="text-xs theme-text-muted">
               Validates data quality and detects issues
             </p>
           </div>
-          <div className="border-l-2 border-gray-400 pl-3">
-            <p className="font-medium text-gray-900">2. Reconciliation Analyst</p>
-            <p className="text-xs text-gray-600">
+          <div className="border-l-2 border-gray-500 pl-3">
+            <p className="font-medium theme-text">2. Reconciliation Analyst</p>
+            <p className="text-xs theme-text-muted">
               Analyzes variances and identifies patterns
             </p>
           </div>
-          <div className="border-l-2 border-gray-400 pl-3">
-            <p className="font-medium text-gray-900">3. Variance Investigator</p>
-            <p className="text-xs text-gray-600">
+          <div className="border-l-2 border-gray-500 pl-3">
+            <p className="font-medium theme-text">3. Variance Investigator</p>
+            <p className="text-xs theme-text-muted">
               Investigates material variances and root causes
             </p>
           </div>
-          <div className="border-l-2 border-gray-400 pl-3">
-            <p className="font-medium text-gray-900">4. Report Generator</p>
-            <p className="text-xs text-gray-600">
+          <div className="border-l-2 border-gray-500 pl-3">
+            <p className="font-medium theme-text">4. Report Generator</p>
+            <p className="text-xs theme-text-muted">
               Creates audit-ready documentation
             </p>
           </div>

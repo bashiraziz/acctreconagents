@@ -8,9 +8,12 @@
     "test:verbose": "tsx scenario-runner.ts --verbose",
     "test:watch": "tsx watch scenario-runner.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@types/node-fetch": "^2.6.13",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

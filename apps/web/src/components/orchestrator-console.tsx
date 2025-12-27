@@ -69,6 +69,24 @@ export function OrchestratorConsole() {
     return () => clearInterval(interval);
   }, [loading]);
 
+  // Helper function to make error messages more user-friendly
+  const humanizeErrorMessage = (errorText: string): string => {
+    // Replace "Too small: expected string to have >=1 characters" with friendlier message
+    if (errorText.includes("Too small") && errorText.includes("string")) {
+      return "Prompt is too short. Please enter at least 1 character.";
+    }
+
+    // Replace technical terms with user-friendly ones
+    let friendly = errorText
+      .replace(/string/gi, "text")
+      .replace(/>=(\d+)/g, "at least $1")
+      .replace(/<=(\d+)/g, "at most $1")
+      .replace(/>(\d+)/g, "more than $1")
+      .replace(/<(\d+)/g, "less than $1");
+
+    return friendly;
+  };
+
   // Helper function to extract field errors from error message
   const extractFieldErrors = (errorMessage: string | undefined): Record<string, string> => {
     if (!errorMessage) return {};
@@ -83,11 +101,11 @@ export function OrchestratorConsole() {
       const fieldName = match[1];
       const errorText = match[2];
 
-      // Map API field names to UI field names
+      // Map API field names to UI field names and humanize error messages
       if (fieldName === "userPrompt") {
-        errors.prompt = errorText;
+        errors.prompt = humanizeErrorMessage(errorText);
       } else if (fieldName === "materialityThreshold") {
-        errors.materiality = errorText;
+        errors.materiality = humanizeErrorMessage(errorText);
       }
     }
 
@@ -737,9 +755,65 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                 <h4 className="font-semibold theme-text">
                   4️⃣ Report Generator Agent
                 </h4>
-                <GeminiAgentStatusBadge status={result.geminiAgents.status?.report} />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(result.geminiAgents.report || "");
+                        // Show a brief success indicator
+                        const btn = document.activeElement as HTMLButtonElement;
+                        const originalText = btn.textContent;
+                        btn.textContent = "✓ Copied!";
+                        setTimeout(() => {
+                          btn.textContent = originalText;
+                        }, 2000);
+                      } catch (err) {
+                        console.error("Failed to copy:", err);
+                      }
+                    }}
+                    className="rounded-lg bg-purple-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-purple-500"
+                    title="Copy to Clipboard"
+                  >
+                    📋 Copy
+                  </button>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([result.geminiAgents.report || ""], { type: "text/markdown" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `reconciliation-report-${new Date().toISOString().split('T')[0]}.md`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="rounded-lg bg-emerald-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-emerald-500"
+                    title="Download as Markdown"
+                  >
+                    📄 MD
+                  </button>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([result.geminiAgents.report || ""], { type: "text/plain" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `reconciliation-report-${new Date().toISOString().split('T')[0]}.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="rounded-lg bg-sky-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-sky-500"
+                    title="Download as Text"
+                  >
+                    📝 TXT
+                  </button>
+                  <GeminiAgentStatusBadge status={result.geminiAgents.status?.report} />
+                </div>
               </div>
-              <div className="mt-3 prose prose-invert prose-sm max-w-none">
+              <div className="mt-3">
                 <div className="whitespace-pre-wrap text-sm theme-text/90">
                   {typeof result.geminiAgents.report === 'string'
                     ? result.geminiAgents.report
@@ -770,7 +844,7 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
         <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-300">
           ✓ AI Success
         </span>
-        {status.retryCount && status.retryCount > 0 && (
+        {(status.retryCount ?? 0) > 0 && (
           <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
             {status.retryCount} {status.retryCount === 1 ? 'retry' : 'retries'}
           </span>

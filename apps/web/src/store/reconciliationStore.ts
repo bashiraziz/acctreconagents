@@ -26,7 +26,7 @@ type ReconciliationStore = {
   setUploadedFile: (type: FileType, file: UploadedFile) => void;
   clearUploadedFile: (type: FileType) => void;
   clearAllFiles: () => void;
-  updateFileMetadata: (type: FileType, metadata: { accountCode?: string; period?: string; currency?: string }) => void;
+  updateFileMetadata: (type: FileType, metadata: { accountCode?: string; period?: string; currency?: string; reverseSign?: boolean }) => void;
 
   // ============================================
   // Column Mappings State
@@ -125,6 +125,11 @@ export const useReconciliationStore = create<ReconciliationStore>()(
             [type === "gl_balance" ? "glBalance" : type === "subledger_balance" ? "subledgerBalance" : "transactions"]: file,
           },
         }));
+
+        // Reset downstream workflow steps since source data changed
+        get().clearReconciliationData();
+        get().updateWorkflowStatus("map", "incomplete");
+        get().updateWorkflowStatus("preview", "incomplete");
 
         // Update workflow status based on uploaded files
         const files = get().uploadedFiles;

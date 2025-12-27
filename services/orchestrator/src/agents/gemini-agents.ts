@@ -437,7 +437,10 @@ async function runReportAgent(
     },
   });
 
-  const prompt = `You are a report writer creating audit-ready reconciliation documentation.
+  const prompt = `You are a report writer creating audit-ready reconciliation documentation for an AI-POWERED AUTOMATED RECONCILIATION SYSTEM.
+
+IMPORTANT CONTEXT:
+This reconciliation was performed AUTOMATICALLY by Rowshni, an AI-powered reconciliation platform. The reconciliation process, variance detection, and analysis are ALREADY AUTOMATED. Do NOT recommend automation, automated matching, or implementing AI/ML systems - those are already in use.
 
 Create a comprehensive reconciliation report based on:
 
@@ -462,13 +465,16 @@ CRITICAL INSTRUCTIONS:
 - If status="material_variance", there IS a discrepancy that needs investigation
 - DO NOT contradict the reconciliation data with validation/analysis findings
 - If validation/analysis conflicts with reconciliation data, TRUST the reconciliation data
+- DO NOT recommend automation or AI implementation - this IS an automated AI system
+- Focus recommendations on BUSINESS ACTIONS (adjusting entries, contacting vendors, reviewing transactions)
+- Avoid generic or obvious recommendations that add no value
 
 Create a professional markdown report with:
 1. Executive Summary (2-3 sentences)
 2. Reconciliation Status (balanced accounts vs variances) - Use the reconciliation data status
 3. Material Variances (ONLY if reconciliation data shows material=true) - with details
 4. Root Cause Analysis (ONLY for accounts with actual variances)
-5. Recommended Actions (ONLY if there are actual issues to address)
+5. Recommended Actions (ONLY if there are actual issues requiring business action)
 6. Conclusion
 
 Format in clean markdown suitable for audit documentation.`;

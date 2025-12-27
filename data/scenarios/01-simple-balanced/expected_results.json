@@ -11,7 +11,9 @@
       "variance": 0,
       "status": "balanced",
       "material": false,
-      "notes": ["In balance."]
+      "notes": [
+        "In balance"
+      ]
     },
     {
       "account": "22010",
@@ -21,7 +23,9 @@
       "variance": 0,
       "status": "balanced",
       "material": false,
-      "notes": ["In balance."]
+      "notes": [
+        "In balance"
+      ]
     }
   ],
   "gemini_agent_expectations": {

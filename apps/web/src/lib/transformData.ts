@@ -13,24 +13,80 @@ import type {
 } from "@/types/reconciliation";
 
 // ============================================
-// Zod Schemas (same as backend)
+// Zod Schemas (flexible to handle various CSV formats)
 // ============================================
 
+// Helper to coerce any value to number (handles strings with commas, parentheses for negatives, etc.)
+const coerceToNumber = z.preprocess((val) => {
+  if (val == null || val === "") return undefined;
+  if (typeof val === "number") return val;
+  if (typeof val === "string") {
+    let cleaned = val.trim();
+
+    // Handle parentheses for negative numbers: (95.50) -> -95.50
+    const isNegative = cleaned.startsWith("(") && cleaned.endsWith(")");
+    if (isNegative) {
+      cleaned = "-" + cleaned.slice(1, -1);
+    }
+
+    // Remove commas
+    cleaned = cleaned.replace(/,/g, "");
+
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? val : num;
+  }
+  return val;
+}, z.number());
+
+// Helper to coerce any value to string (handles numbers, nulls)
+const coerceToString = z.preprocess((val) => {
+  if (val == null || val === "") return undefined;
+  return String(val);
+}, z.string().optional());
+
+// Helper to coerce to optional number (same logic as coerceToNumber but for optional fields)
+const coerceToOptionalNumber = z.preprocess((val) => {
+  if (val == null || val === "") return undefined;
+  if (typeof val === "number") return val;
+  if (typeof val === "string") {
+    let cleaned = val.trim();
+
+    // Handle parentheses for negative numbers: (95.50) -> -95.50
+    const isNegative = cleaned.startsWith("(") && cleaned.endsWith(")");
+    if (isNegative) {
+      cleaned = "-" + cleaned.slice(1, -1);
+    }
+
+    // Remove commas
+    cleaned = cleaned.replace(/,/g, "");
+
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? undefined : num;
+  }
+  return undefined;
+}, z.number().optional());
+
 const balanceSchema = z.object({
-  account_code: z.string().min(1, "Account code is required"),
-  period: z.string().optional(),
-  amount: z.number(),
-  currency: z.string().optional(),
+  account_code: z.preprocess((val) => {
+    if (val == null || val === "" || String(val).trim() === "") return undefined;
+    return String(val).trim();
+  }, z.string().min(1, "Account code is required")),
+  period: coerceToString,
+  amount: coerceToNumber,
+  currency: coerceToString,
 });
 
 const transactionSchema = z.object({
-  account_code: z.string().min(1, "Account code is required"),
+  account_code: z.preprocess((val) => {
+    if (val == null || val === "" || String(val).trim() === "") return undefined;
+    return String(val).trim();
+  }, z.string().min(1, "Account code is required")),
   booked_at: z.union([z.string(), z.date()]),
-  debit: z.number().optional(),
-  credit: z.number().optional(),
-  amount: z.number().optional(),
-  narrative: z.string().optional(),
-  source_period: z.string().optional(),
+  debit: coerceToOptionalNumber,
+  credit: coerceToOptionalNumber,
+  amount: coerceToOptionalNumber,
+  narrative: coerceToString,
+  source_period: coerceToString,
 });
 
 // ============================================
@@ -43,10 +99,18 @@ const transactionSchema = z.object({
 export function applyMapping(
   rows: Record<string, any>[],
   mapping: ColumnMapping,
-  metadata?: { accountCode?: string; period?: string; currency?: string },
+  metadata?: { accountCode?: string; period?: string; currency?: string; reverseSign?: boolean },
 ): Record<string, any>[] {
   return rows.map((row) => {
     const transformed: Record<string, any> = {};
+
+    // Pre-populate metadata fields to ensure they exist as properties
+    // This ensures they appear in data previews and Object.keys()
+    if (metadata) {
+      if (metadata.accountCode) transformed.account_code = metadata.accountCode;
+      if (metadata.period) transformed.period = metadata.period;
+      if (metadata.currency) transformed.currency = metadata.currency;
+    }
 
     for (const [canonicalField, sourceColumn] of Object.entries(mapping)) {
       if (sourceColumn && row[sourceColumn] !== undefined) {
@@ -60,30 +124,39 @@ export function applyMapping(
           // Ensure amount is always a number
           const num = typeof value === "string" ? parseFloat(value.replace(/,/g, "")) : Number(value);
           value = isNaN(num) ? value : num;
+          // Apply sign reversal if specified
+          if (typeof value === "number" && metadata?.reverseSign) {
+            value = value * -1;
+          }
         } else if ((canonicalField === "debit" || canonicalField === "credit") && value !== null && value !== undefined) {
           // Ensure debit/credit are numbers
           const num = typeof value === "string" ? parseFloat(value.replace(/,/g, "")) : Number(value);
           value = isNaN(num) ? undefined : num;
+          // Apply sign reversal if specified
+          if (typeof value === "number" && metadata?.reverseSign) {
+            value = value * -1;
+          }
         }
 
         transformed[canonicalField] = value;
       }
     }
 
-    // Inject metadata for fields not mapped from source columns
+    // Re-apply metadata for fields that were mapped to empty/undefined values
+    // This ensures metadata takes precedence over empty mapped values
     if (metadata) {
-      // Add account_code from metadata if not already mapped
-      if (metadata.accountCode && !transformed.account_code) {
+      // Restore account_code from metadata if it became empty
+      if (metadata.accountCode && (!transformed.account_code || transformed.account_code === "")) {
         transformed.account_code = metadata.accountCode;
       }
 
-      // Add period from metadata if not already mapped
-      if (metadata.period && !transformed.period) {
+      // Restore period from metadata if it became empty
+      if (metadata.period && (!transformed.period || transformed.period === "")) {
         transformed.period = metadata.period;
       }
 
-      // Add currency from metadata if not already mapped
-      if (metadata.currency && !transformed.currency) {
+      // Restore currency from metadata if it became empty
+      if (metadata.currency && (!transformed.currency || transformed.currency === "")) {
         transformed.currency = metadata.currency;
       }
     }

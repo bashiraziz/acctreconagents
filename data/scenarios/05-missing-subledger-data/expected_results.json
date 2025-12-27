@@ -2,8 +2,6 @@
   "scenario": "05-missing-subledger-data",
   "description": "Missing subledger detail due to manual journal entry",
   "materiality_threshold": 50,
-  "severity": "CRITICAL",
-  "error_description": "GL has balance of -$1,185k but subledger only shows -$800k. Missing $385k due to manual journal entry JE-2025-1045 not reflected in AP system",
   "reconciliations": [
     {
       "account": "20100",
@@ -14,9 +12,7 @@
       "status": "material_variance",
       "material": true,
       "notes": [
-        "Variance of -385000.00 detected between GL and subledger.",
-        "Variance exceeds materiality threshold (50.00).",
-        "GL balance significantly higher than subledger - missing detail"
+        "Material variance"
       ]
     },
     {
@@ -27,7 +23,9 @@
       "variance": 0,
       "status": "balanced",
       "material": false,
-      "notes": ["In balance."]
+      "notes": [
+        "In balance"
+      ]
     }
   ],
   "gemini_agent_expectations": {

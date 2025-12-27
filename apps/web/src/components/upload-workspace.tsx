@@ -420,13 +420,14 @@ function FileTypeUploadZone({
   uploadedFile: any;
   onFiles: (files: FileList | null) => void;
   onRemove: () => void;
-  onMetadataUpdate?: (metadata: { accountCode?: string; period?: string; currency?: string }) => void;
+  onMetadataUpdate?: (metadata: { accountCode?: string; period?: string; currency?: string; reverseSign?: boolean }) => void;
   required: boolean;
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const [localAccountCode, setLocalAccountCode] = useState(uploadedFile?.metadata?.accountCode || "");
   const [localPeriod, setLocalPeriod] = useState(uploadedFile?.metadata?.period || "");
   const [localCurrency, setLocalCurrency] = useState(uploadedFile?.metadata?.currency || "USD");
+  const [localReverseSign, setLocalReverseSign] = useState(uploadedFile?.metadata?.reverseSign || false);
 
   // Sync local state with uploaded file metadata (e.g., auto-extracted period)
   useEffect(() => {
@@ -442,6 +443,19 @@ function FileTypeUploadZone({
       }
     }
   }, [uploadedFile?.metadata]);
+
+  // Initialize metadata with default currency when file is uploaded
+  useEffect(() => {
+    if (uploadedFile && !uploadedFile.metadata?.currency) {
+      // Set default USD if no currency is set
+      onMetadataUpdate({
+        accountCode: uploadedFile.metadata?.accountCode || "",
+        period: uploadedFile.metadata?.period || "",
+        currency: "USD",
+        reverseSign: uploadedFile.metadata?.reverseSign || false
+      });
+    }
+  }, [uploadedFile?.id, onMetadataUpdate]); // Only run when file changes
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -516,7 +530,7 @@ function FileTypeUploadZone({
                     value={localAccountCode}
                     onChange={(e) => {
                       setLocalAccountCode(e.target.value);
-                      onMetadataUpdate({ accountCode: e.target.value, period: localPeriod, currency: localCurrency });
+                      onMetadataUpdate({ accountCode: e.target.value, period: localPeriod, currency: localCurrency, reverseSign: localReverseSign });
                     }}
                     className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
                   />
@@ -535,7 +549,7 @@ function FileTypeUploadZone({
                   value={localPeriod}
                   onChange={(e) => {
                     setLocalPeriod(e.target.value);
-                    onMetadataUpdate({ accountCode: localAccountCode, period: e.target.value, currency: localCurrency });
+                    onMetadataUpdate({ accountCode: localAccountCode, period: e.target.value, currency: localCurrency, reverseSign: localReverseSign });
                   }}
                   className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
                 />
@@ -553,13 +567,37 @@ function FileTypeUploadZone({
                   value={localCurrency}
                   onChange={(e) => {
                     setLocalCurrency(e.target.value.toUpperCase());
-                    onMetadataUpdate({ accountCode: localAccountCode, period: localPeriod, currency: e.target.value.toUpperCase() });
+                    onMetadataUpdate({ accountCode: localAccountCode, period: localPeriod, currency: e.target.value.toUpperCase(), reverseSign: localReverseSign });
                   }}
                   className="mt-1 w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-1.5 text-sm text-emerald-100 placeholder-emerald-300/40 focus:border-emerald-400 focus:outline-none"
                   maxLength={3}
                 />
               </div>
             </div>
+
+            {/* Sign Reversal Option */}
+            <div className="mt-3 rounded border border-amber-500/30 bg-amber-500/5 p-3">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={localReverseSign}
+                  onChange={(e) => {
+                    setLocalReverseSign(e.target.checked);
+                    onMetadataUpdate({ accountCode: localAccountCode, period: localPeriod, currency: localCurrency, reverseSign: e.target.checked });
+                  }}
+                  className="mt-0.5 h-4 w-4 rounded border-amber-500/50 bg-amber-500/10 text-amber-500 focus:ring-amber-500 focus:ring-offset-0"
+                />
+                <div>
+                  <span className="text-xs font-medium text-amber-200">
+                    Reverse signs (multiply all amounts by -1)
+                  </span>
+                  <p className="mt-1 text-xs text-amber-300/60">
+                    Check this if balances have opposite signs (e.g., GL shows -10,768.63 but subledger shows 10,768.63)
+                  </p>
+                </div>
+              </label>
+            </div>
+
             <div className="mt-3">
               <p className="text-xs text-emerald-200/60">
                 💡 {isSubledger

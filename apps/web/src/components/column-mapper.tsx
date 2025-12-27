@@ -42,9 +42,20 @@ export function ColumnMapper() {
 
     const fields =
       fileType === "transactions" ? transactionFields : canonicalBalanceFields;
+
+    // Filter out fields that already have metadata values
+    const metadata = file.metadata;
+    const fieldsToMap = fields.filter((f) => {
+      // Skip fields that have metadata
+      if (f.key === 'period' && metadata?.period) return false;
+      if (f.key === 'currency' && metadata?.currency) return false;
+      if (f.key === 'account_code' && metadata?.accountCode) return false;
+      return true;
+    });
+
     const suggestions = suggestColumnMappings(
       file.headers,
-      fields.map((f) => f.key),
+      fieldsToMap.map((f) => f.key),
     );
 
     setColumnMapping(fileType, suggestions);
@@ -132,17 +143,33 @@ export function ColumnMapper() {
 
   const glCompletion = useMemo(() => {
     if (!hasGLFile) return 0;
-    const requiredFields = canonicalBalanceFields.filter((f) => f.required);
+    const metadata = uploadedFiles.glBalance?.metadata;
+    const requiredFields = canonicalBalanceFields.filter((f) => {
+      if (!f.required) return false;
+      // Exclude fields that have metadata values
+      if (f.key === 'period' && metadata?.period) return false;
+      if (f.key === 'currency' && metadata?.currency) return false;
+      if (f.key === 'account_code' && metadata?.accountCode) return false;
+      return true;
+    });
     const mapped = requiredFields.filter((f) => columnMappings.gl_balance[f.key]);
-    return Math.round((mapped.length / requiredFields.length) * 100);
-  }, [hasGLFile, columnMappings.gl_balance]);
+    return requiredFields.length === 0 ? 100 : Math.round((mapped.length / requiredFields.length) * 100);
+  }, [hasGLFile, columnMappings.gl_balance, uploadedFiles.glBalance?.metadata]);
 
   const subledgerCompletion = useMemo(() => {
     if (!hasSubledgerFile) return 0;
-    const requiredFields = canonicalBalanceFields.filter((f) => f.required);
+    const metadata = uploadedFiles.subledgerBalance?.metadata;
+    const requiredFields = canonicalBalanceFields.filter((f) => {
+      if (!f.required) return false;
+      // Exclude fields that have metadata values
+      if (f.key === 'period' && metadata?.period) return false;
+      if (f.key === 'currency' && metadata?.currency) return false;
+      if (f.key === 'account_code' && metadata?.accountCode) return false;
+      return true;
+    });
     const mapped = requiredFields.filter((f) => columnMappings.subledger_balance[f.key]);
-    return Math.round((mapped.length / requiredFields.length) * 100);
-  }, [hasSubledgerFile, columnMappings.subledger_balance]);
+    return requiredFields.length === 0 ? 100 : Math.round((mapped.length / requiredFields.length) * 100);
+  }, [hasSubledgerFile, columnMappings.subledger_balance, uploadedFiles.subledgerBalance?.metadata]);
 
   const transactionsCompletion = useMemo(() => {
     if (!hasTransactionsFile) return 0;
@@ -152,6 +179,37 @@ export function ColumnMapper() {
   }, [hasTransactionsFile, columnMappings.transactions]);
 
   const canApply = glCompletion === 100 && subledgerCompletion === 100;
+
+  // Get missing required fields for validation messages
+  const getMissingFields = (fileType: "gl_balance" | "subledger_balance") => {
+    const file = fileType === "gl_balance" ? uploadedFiles.glBalance : uploadedFiles.subledgerBalance;
+    if (!file) return [];
+
+    const metadata = file.metadata;
+    const mapping = columnMappings[fileType];
+    const fields = canonicalBalanceFields;
+
+    const missing: string[] = [];
+    fields.forEach((field) => {
+      if (!field.required) return;
+
+      // Check if field has metadata
+      const hasMetadata =
+        (field.key === 'period' && metadata?.period) ||
+        (field.key === 'currency' && metadata?.currency) ||
+        (field.key === 'account_code' && metadata?.accountCode);
+
+      // If no metadata and no mapping, it's missing
+      if (!hasMetadata && !mapping[field.key]) {
+        missing.push(field.label);
+      }
+    });
+
+    return missing;
+  };
+
+  const glMissing = getMissingFields("gl_balance");
+  const subledgerMissing = getMissingFields("subledger_balance");
 
   return (
     <section className="rounded-3xl border theme-border bg-slate-950/60 p-6">
@@ -255,26 +313,44 @@ export function ColumnMapper() {
       )}
 
       {/* Apply Button */}
-      <div className="mt-6 flex items-center justify-between rounded-2xl border border-sky-800/40 bg-sky-500/10 p-4">
-        <div>
-          <p className="font-semibold text-sky-100">
-            {canApply
-              ? "✓ Ready to apply mappings"
-              : "Complete GL and Subledger mappings to continue"}
-          </p>
-          <p className="mt-1 text-sm text-sky-200/80">
-            {session?.user
-              ? "Mappings will be saved to your account"
-              : "Sign in to save mappings across sessions"}
-          </p>
+      <div className="mt-6 rounded-2xl border border-sky-800/40 bg-sky-500/10 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <p className="font-semibold text-sky-100">
+              {canApply
+                ? "✓ Ready to apply mappings"
+                : "Complete required mappings to continue"}
+            </p>
+            {!canApply && (glMissing.length > 0 || subledgerMissing.length > 0) && (
+              <div className="mt-2 space-y-1">
+                {glMissing.length > 0 && (
+                  <p className="text-sm text-amber-300">
+                    <span className="font-medium">GL Missing:</span> {glMissing.join(", ")}
+                    {glMissing.includes("Account Code") && " (fill in Upload Files metadata or map column)"}
+                  </p>
+                )}
+                {subledgerMissing.length > 0 && (
+                  <p className="text-sm text-amber-300">
+                    <span className="font-medium">Subledger Missing:</span> {subledgerMissing.join(", ")}
+                    {subledgerMissing.includes("Account Code") && " (fill in Upload Files metadata)"}
+                  </p>
+                )}
+              </div>
+            )}
+            <p className="mt-1 text-sm text-sky-200/80">
+              {session?.user
+                ? "Mappings will be saved to your account"
+                : "Sign in to save mappings across sessions"}
+            </p>
+          </div>
+          <button
+            onClick={handleApplyMappings}
+            disabled={!canApply}
+            className="ml-4 rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+          >
+            Apply Mappings
+          </button>
         </div>
-        <button
-          onClick={handleApplyMappings}
-          disabled={!canApply}
-          className="rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
-        >
-          Apply Mappings
-        </button>
       </div>
     </section>
   );
@@ -315,8 +391,29 @@ function MappingTab({
     });
   };
 
-  const requiredFields = fields.filter((f) => f.required);
-  const optionalFields = fields.filter((f) => !f.required);
+  const metadata = file.metadata;
+
+  // Filter required fields, excluding those with metadata values
+  const requiredFields = fields.filter((f) => {
+    if (!f.required) return false;
+    // Exclude fields that have metadata values
+    if (f.key === 'period' && metadata?.period) return false;
+    if (f.key === 'currency' && metadata?.currency) return false;
+    if (f.key === 'account_code' && metadata?.accountCode) return false;
+    return true;
+  });
+
+  // Optional fields + fields that have metadata (so they're "optional" to map)
+  const optionalFields = fields.filter((f) => {
+    if (f.required) {
+      // Include required fields that have metadata
+      if (f.key === 'period' && metadata?.period) return true;
+      if (f.key === 'currency' && metadata?.currency) return true;
+      if (f.key === 'account_code' && metadata?.accountCode) return true;
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6">

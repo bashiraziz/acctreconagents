@@ -189,7 +189,7 @@ fastify.post("/agent/runs", async (request, reply) => {
 
 async function orchestrateRun(input: RunInput) {
   const runId = `run_${Date.now()}`;
-  const localToolOutput = runReconciliationLocally(input.payload, input.materialityThreshold);
+  const localToolOutput = runReconciliationLocally(input.payload, input.materialityThreshold, input.userPrompt);
 
   const timeline = [
     {
@@ -465,7 +465,7 @@ async function runOpenAiTeam(
           activityByPeriod: args.activity_by_period ?? payload.activityByPeriod,
           adjustmentsByPeriod:
             args.adjustments_by_period ?? payload.adjustmentsByPeriod,
-        }, localToolOutput.materiality);
+        }, localToolOutput.materiality, userPrompt);
         return finalToolOutput;
       },
     );
@@ -620,20 +620,98 @@ type NormalizedTransaction = {
   metadata: Record<string, string>;
 };
 
-function runReconciliationLocally(payload: PayloadInput, customMaterialityThreshold?: number) {
+/**
+ * Round number to 2 decimal places for accounting precision
+ */
+function roundTo2Decimals(num: number): number {
+  return Math.round(num * 100) / 100;
+}
+
+/**
+ * Extract account codes from user prompt
+ * Examples: "reconcile account 200" -> ["200"]
+ *           "reconcile accounts 200, 120, and 300" -> ["200", "120", "300"]
+ */
+function extractAccountCodesFromPrompt(prompt: string): string[] | null {
+  if (!prompt) return null;
+
+  const accountCodes: string[] = [];
+
+  // Pattern 1: "account 200" or "accounts 200, 120"
+  const matches = prompt.matchAll(/\b(?:account|acct)s?\s+([0-9,\s]+(?:and\s+[0-9]+)?)/gi);
+
+  for (const match of matches) {
+    const codes = match[1]
+      .split(/[,\s]+and\s+|[,\s]+/)
+      .map(code => code.trim())
+      .filter(code => /^\d+$/.test(code));
+    accountCodes.push(...codes);
+  }
+
+  return accountCodes.length > 0 ? [...new Set(accountCodes)] : null;
+}
+
+/**
+ * Determine which accounts to reconcile based on user prompt and available data
+ *
+ * Logic:
+ * 1. If specific accounts mentioned (e.g., "account 200"), use those
+ * 2. If user says "all accounts" or "all GL accounts", use all GL accounts
+ * 3. Default: Use intersection of GL and subledger accounts (accounts present in both)
+ */
+function determineAccountsToReconcile(
+  prompt: string | undefined,
+  glBalances: any[],
+  subledgerBalances: any[]
+): string[] {
+  // Extract explicitly requested accounts from prompt
+  const requestedAccounts = prompt ? extractAccountCodesFromPrompt(prompt) : null;
+
+  // If specific accounts mentioned, use those
+  if (requestedAccounts && requestedAccounts.length > 0) {
+    return requestedAccounts;
+  }
+
+  // Check if user wants ALL GL accounts (explicit request)
+  if (prompt && /\b(?:all|every)\s+(?:gl\s+)?accounts?\b/i.test(prompt)) {
+    // Return all GL account codes
+    return [...new Set(glBalances.map(b => b.account_code))];
+  }
+
+  // Default: Reconcile only accounts that exist in BOTH GL and subledger (intersection)
+  const glAccounts = new Set(glBalances.map(b => b.account_code));
+  const subledgerAccounts = new Set(subledgerBalances.map(b => b.account_code));
+
+  // Intersection: accounts present in both
+  return [...glAccounts].filter(acc => subledgerAccounts.has(acc));
+}
+
+function runReconciliationLocally(payload: PayloadInput, customMaterialityThreshold?: number, userPrompt?: string) {
   // Use custom threshold if provided, otherwise use environment variable default
   const threshold = customMaterialityThreshold ?? materialityThreshold;
 
-  const glMap = aggregateBalances(payload.glBalances);
-  const subMap = aggregateBalances(payload.subledgerBalances);
+  // Determine which accounts to reconcile based on prompt and available data
+  const accountsToReconcile = determineAccountsToReconcile(
+    userPrompt,
+    payload.glBalances,
+    payload.subledgerBalances
+  );
+
+  // Filter GL and subledger data to only include accounts we're reconciling
+  const accountSet = new Set(accountsToReconcile);
+  let glBalances = payload.glBalances.filter(b => accountSet.has(b.account_code));
+  let subledgerBalances = payload.subledgerBalances.filter(b => accountSet.has(b.account_code));
+
+  const glMap = aggregateBalances(glBalances);
+  const subMap = aggregateBalances(subledgerBalances);
   const accounts = new Set<string>();
   const detectedPeriods = new Set<string>();
 
-  for (const balance of payload.glBalances) {
+  for (const balance of glBalances) {
     accounts.add(balance.account_code);
     if (balance.period) detectedPeriods.add(balance.period);
   }
-  for (const balance of payload.subledgerBalances) {
+  for (const balance of subledgerBalances) {
     accounts.add(balance.account_code);
     if (balance.period) detectedPeriods.add(balance.period);
   }
@@ -674,9 +752,9 @@ function runReconciliationLocally(payload: PayloadInput, customMaterialityThresh
   ]);
   const reconciliations = Array.from(resultKeys).map((key) => {
     const { account, period } = splitKey(key);
-    const gl = glMap.get(key) ?? 0;
-    const sub = subMap.get(key) ?? 0;
-    const variance = gl - sub;
+    const gl = roundTo2Decimals(glMap.get(key) ?? 0);
+    const sub = roundTo2Decimals(subMap.get(key) ?? 0);
+    const variance = roundTo2Decimals(gl - sub);
     const absVariance = Math.abs(variance);
     const related = transactionBuckets.get(key) ?? [];
     const material = absVariance >= threshold;
@@ -706,11 +784,12 @@ function runReconciliationLocally(payload: PayloadInput, customMaterialityThresh
     } else {
       notes.push(`${related.length} supporting transactions attached.`);
     }
-    const activity =
+    const activity = roundTo2Decimals(
       activityByAccountPeriod.get(key) ??
       payload.activityByPeriod?.[period] ??
-      0;
-    const adjustments = payload.adjustmentsByPeriod?.[period] ?? 0;
+      0
+    );
+    const adjustments = roundTo2Decimals(payload.adjustmentsByPeriod?.[period] ?? 0);
 
     return {
       account,
@@ -741,16 +820,18 @@ function runReconciliationLocally(payload: PayloadInput, customMaterialityThresh
     let opening = 0;
     for (const period of periodOrder) {
       const key = makeKey(account, period);
-      const activity =
+      const activity = roundTo2Decimals(
         activityByAccountPeriod.get(key) ??
         payload.activityByPeriod?.[period] ??
-        0;
-      const adjustments = payload.adjustmentsByPeriod?.[period] ?? 0;
+        0
+      );
+      const adjustments = roundTo2Decimals(payload.adjustmentsByPeriod?.[period] ?? 0);
       const closingBalance = glMap.get(key);
-      const closing =
+      const closing = roundTo2Decimals(
         typeof closingBalance === "number"
           ? closingBalance
-          : opening + activity + adjustments;
+          : opening + activity + adjustments
+      );
       const commentaryParts: string[] = [];
       if (Math.abs(activity) > 0.01) {
         commentaryParts.push(`Activity ${activity.toFixed(2)}`);
@@ -764,7 +845,7 @@ function runReconciliationLocally(payload: PayloadInput, customMaterialityThresh
       rollForward.push({
         account,
         period,
-        opening,
+        opening: roundTo2Decimals(opening),
         activity,
         adjustments,
         closing,

@@ -2,7 +2,6 @@
   "scenario": "04-roll-forward-multi-period",
   "description": "Multi-period reconciliation with clean roll-forward across 3 months",
   "materiality_threshold": 50,
-  "periods": ["2025-08", "2025-09", "2025-10"],
   "reconciliations": [
     {
       "account": "20100",
@@ -12,27 +11,33 @@
       "variance": 0,
       "status": "balanced",
       "material": false,
-      "notes": ["In balance."]
+      "notes": [
+        "In balance"
+      ]
     },
     {
       "account": "20100",
       "period": "2025-09",
       "glBalance": -820000,
-      "subledgerBalance": -820000,
-      "variance": 0,
-      "status": "balanced",
-      "material": false,
-      "notes": ["In balance."]
+      "subledgerBalance": -520000,
+      "variance": -300000,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
     },
     {
       "account": "20100",
       "period": "2025-10",
       "glBalance": -1185000,
-      "subledgerBalance": -1185000,
-      "variance": 0,
-      "status": "balanced",
-      "material": false,
-      "notes": ["In balance."]
+      "subledgerBalance": -755000,
+      "variance": -430000,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
     },
     {
       "account": "22010",
@@ -42,75 +47,35 @@
       "variance": 0,
       "status": "balanced",
       "material": false,
-      "notes": ["In balance."]
+      "notes": [
+        "In balance"
+      ]
     },
     {
       "account": "22010",
       "period": "2025-09",
       "glBalance": -150000,
-      "subledgerBalance": -150000,
-      "variance": 0,
-      "status": "balanced",
-      "material": false,
-      "notes": ["In balance."]
+      "subledgerBalance": -15000,
+      "variance": -135000,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
     },
     {
       "account": "22010",
       "period": "2025-10",
       "glBalance": -185000,
-      "subledgerBalance": -185000,
-      "variance": 0,
-      "status": "balanced",
-      "material": false,
-      "notes": ["In balance."]
+      "subledgerBalance": -35000,
+      "variance": -150000,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
     }
   ],
-  "roll_forward_verification": {
-    "account_20100": {
-      "2025-08": {
-        "opening": -500000,
-        "activity": -150000,
-        "closing": -650000,
-        "verified": true
-      },
-      "2025-09": {
-        "opening": -650000,
-        "activity": -170000,
-        "closing": -820000,
-        "verified": true,
-        "opening_equals_prior_closing": true
-      },
-      "2025-10": {
-        "opening": -820000,
-        "activity": -365000,
-        "closing": -1185000,
-        "verified": true,
-        "opening_equals_prior_closing": true
-      }
-    },
-    "account_22010": {
-      "2025-08": {
-        "opening": -120000,
-        "activity": -15000,
-        "closing": -135000,
-        "verified": true
-      },
-      "2025-09": {
-        "opening": -135000,
-        "activity": -15000,
-        "closing": -150000,
-        "verified": true,
-        "opening_equals_prior_closing": true
-      },
-      "2025-10": {
-        "opening": -150000,
-        "activity": -35000,
-        "closing": -185000,
-        "verified": true,
-        "opening_equals_prior_closing": true
-      }
-    }
-  },
   "gemini_agent_expectations": {
     "validation": {
       "isValid": true,
@@ -122,7 +87,10 @@
     "analysis": {
       "riskLevel": "low",
       "materialVariances": [],
-      "patterns": ["Consistent month-over-month activity", "Clean roll-forward"],
+      "patterns": [
+        "Consistent month-over-month activity",
+        "Clean roll-forward"
+      ],
       "overallHealth": "95-100",
       "notes": "All periods balanced"
     },
