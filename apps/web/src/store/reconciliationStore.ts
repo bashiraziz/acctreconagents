@@ -27,6 +27,7 @@ type ReconciliationStore = {
   clearUploadedFile: (type: FileType) => void;
   clearAllFiles: () => void;
   updateFileMetadata: (type: FileType, metadata: { accountCode?: string; period?: string; currency?: string; reverseSign?: boolean }) => void;
+  updateAccountingSystem: (type: FileType, accountingSystem: string) => void;
 
   // ============================================
   // Column Mappings State
@@ -204,6 +205,30 @@ export const useReconciliationStore = create<ReconciliationStore>()(
         });
 
         // Clear reconciliation data since metadata affects final output
+        get().clearReconciliationData();
+        get().updateWorkflowStatus("map", "incomplete");
+        get().updateWorkflowStatus("preview", "incomplete");
+      },
+
+      updateAccountingSystem: (type, accountingSystem) => {
+        set((state) => {
+          const fileKey = type === "gl_balance" ? "glBalance" : type === "subledger_balance" ? "subledgerBalance" : "transactions";
+          const file = state.uploadedFiles[fileKey];
+
+          if (!file) return state;
+
+          return {
+            uploadedFiles: {
+              ...state.uploadedFiles,
+              [fileKey]: {
+                ...file,
+                accountingSystem: accountingSystem as any,
+              },
+            },
+          };
+        });
+
+        // Clear reconciliation data since accounting system affects parsing
         get().clearReconciliationData();
         get().updateWorkflowStatus("map", "incomplete");
         get().updateWorkflowStatus("preview", "incomplete");

@@ -8,6 +8,14 @@
 
 export type FileType = "gl_balance" | "subledger_balance" | "transactions";
 
+export type AccountingSystem =
+  | "auto"          // Auto-detect based on CSV patterns
+  | "quickbooks"    // QuickBooks (parenthetical accounts, US date format)
+  | "costpoint"     // Costpoint/Deltek (debit/credit columns)
+  | "netsuite"      // NetSuite/Oracle (multi-currency, dimensional data)
+  | "sap"           // SAP ERP
+  | "generic";      // Generic/Other systems
+
 export type UploadedFile = {
   id: string;
   name: string;
@@ -18,6 +26,7 @@ export type UploadedFile = {
   columnCount: number;
   headers: string[];
   rows: Record<string, any>[];
+  accountingSystem?: AccountingSystem;  // Which accounting system generated this file
   metadata?: {
     accountCode?: string;    // For files missing account codes (e.g., subledger with vendor names)
     period?: string;          // For files where period is in header, not in rows (format: YYYY-MM)

@@ -1,6 +1,7 @@
 /**
  * Data transformation utility
  * Applies column mappings and validates with Zod
+ * Integrates system-specific parsers for accounting platforms
  */
 
 import { z } from "zod";
@@ -10,7 +11,12 @@ import type {
   Balance,
   Transaction,
   ReconciliationPayload,
+  AccountingSystem,
 } from "@/types/reconciliation";
+import {
+  detectAccountingSystem,
+  parseRowForAccountingSystem,
+} from "./accountingSystemParsers";
 
 // ============================================
 // Zod Schemas (flexible to handle various CSV formats)
@@ -95,13 +101,21 @@ const transactionSchema = z.object({
 
 /**
  * Apply column mapping to raw CSV data and inject metadata
+ * Also applies system-specific parsing if accounting system is specified
  */
 export function applyMapping(
   rows: Record<string, any>[],
   mapping: ColumnMapping,
   metadata?: { accountCode?: string; period?: string; currency?: string; reverseSign?: boolean },
+  accountingSystem?: AccountingSystem,
 ): Record<string, any>[] {
   return rows.map((row) => {
+    // Step 1: Apply system-specific parsing first (if specified)
+    let parsedRow = row;
+    if (accountingSystem && accountingSystem !== "generic") {
+      parsedRow = parseRowForAccountingSystem(row, accountingSystem);
+    }
+
     const transformed: Record<string, any> = {};
 
     // Pre-populate metadata fields to ensure they exist as properties
@@ -112,9 +126,10 @@ export function applyMapping(
       if (metadata.currency) transformed.currency = metadata.currency;
     }
 
+    // Step 2: Apply column mapping
     for (const [canonicalField, sourceColumn] of Object.entries(mapping)) {
-      if (sourceColumn && row[sourceColumn] !== undefined) {
-        let value = row[sourceColumn];
+      if (sourceColumn && parsedRow[sourceColumn] !== undefined) {
+        let value = parsedRow[sourceColumn];
 
         // Type conversions to ensure data matches schema
         if (canonicalField === "account_code" && value !== null && value !== undefined) {
@@ -176,7 +191,13 @@ export function transformBalances(
     return { data: [], errors: [] };
   }
 
-  const transformed = applyMapping(file.rows, mapping, file.metadata);
+  // Auto-detect accounting system if not specified
+  let accountingSystem = file.accountingSystem || "auto";
+  if (accountingSystem === "auto" && file.rows.length > 0) {
+    accountingSystem = detectAccountingSystem(file.headers, file.rows[0]);
+  }
+
+  const transformed = applyMapping(file.rows, mapping, file.metadata, accountingSystem);
   const errors: string[] = [];
   const validated: Balance[] = [];
 
@@ -207,7 +228,13 @@ export function transformTransactions(
     return { data: [], errors: [] };
   }
 
-  const transformed = applyMapping(file.rows, mapping, file.metadata);
+  // Auto-detect accounting system if not specified
+  let accountingSystem = file.accountingSystem || "auto";
+  if (accountingSystem === "auto" && file.rows.length > 0) {
+    accountingSystem = detectAccountingSystem(file.headers, file.rows[0]);
+  }
+
+  const transformed = applyMapping(file.rows, mapping, file.metadata, accountingSystem);
   const errors: string[] = [];
   const validated: Transaction[] = [];
 

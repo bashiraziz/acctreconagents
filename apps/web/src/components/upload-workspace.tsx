@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useReconciliationStore } from "@/store/reconciliationStore";
 import { parseCSVFile } from "@/lib/parseFile";
-import type { FileType } from "@/types/reconciliation";
+import type { FileType, AccountingSystem } from "@/types/reconciliation";
 
 type UploadChannel = "structured" | "supporting";
 
@@ -68,6 +68,7 @@ export function UploadWorkspace() {
   const clearUploadedFile = useReconciliationStore((state) => state.clearUploadedFile);
   const clearAllFiles = useReconciliationStore((state) => state.clearAllFiles);
   const updateFileMetadata = useReconciliationStore((state) => state.updateFileMetadata);
+  const updateAccountingSystem = useReconciliationStore((state) => state.updateAccountingSystem);
 
   const removeUploadByFileType = (fileType: FileType) => {
     setUploads((records) => records.filter((record) => record.fileType !== fileType));
@@ -273,6 +274,7 @@ export function UploadWorkspace() {
             removeUploadByFileType("gl_balance");
           }}
           onMetadataUpdate={(metadata) => updateFileMetadata("gl_balance", metadata)}
+          onAccountingSystemUpdate={(system) => updateAccountingSystem("gl_balance", system)}
           required
         />
 
@@ -289,6 +291,7 @@ export function UploadWorkspace() {
             removeUploadByFileType("subledger_balance");
           }}
           onMetadataUpdate={(metadata) => updateFileMetadata("subledger_balance", metadata)}
+          onAccountingSystemUpdate={(system) => updateAccountingSystem("subledger_balance", system)}
           required
         />
 
@@ -411,6 +414,7 @@ function FileTypeUploadZone({
   onFiles,
   onRemove,
   onMetadataUpdate,
+  onAccountingSystemUpdate,
   required,
 }: {
   fileType: FileType;
@@ -421,6 +425,7 @@ function FileTypeUploadZone({
   onFiles: (files: FileList | null) => void;
   onRemove: () => void;
   onMetadataUpdate?: (metadata: { accountCode?: string; period?: string; currency?: string; reverseSign?: boolean }) => void;
+  onAccountingSystemUpdate?: (system: AccountingSystem) => void;
   required: boolean;
 }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -428,6 +433,7 @@ function FileTypeUploadZone({
   const [localPeriod, setLocalPeriod] = useState(uploadedFile?.metadata?.period || "");
   const [localCurrency, setLocalCurrency] = useState(uploadedFile?.metadata?.currency || "USD");
   const [localReverseSign, setLocalReverseSign] = useState(uploadedFile?.metadata?.reverseSign || false);
+  const [localAccountingSystem, setLocalAccountingSystem] = useState<AccountingSystem>(uploadedFile?.accountingSystem || "auto");
 
   // Sync local state with uploaded file metadata (e.g., auto-extracted period)
   useEffect(() => {
@@ -516,6 +522,38 @@ function FileTypeUploadZone({
         {/* Metadata inputs for GL and subledger files */}
         {needsMetadata && (
           <div className="mt-4 border-t border-emerald-500/20 pt-4">
+            {/* Accounting System Selector */}
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-emerald-200 mb-2">
+                Accounting System
+                <span className="ml-1 text-emerald-300/60">(for better parsing)</span>
+              </label>
+              <select
+                value={localAccountingSystem}
+                onChange={(e) => {
+                  const system = e.target.value as AccountingSystem;
+                  setLocalAccountingSystem(system);
+                  onAccountingSystemUpdate?.(system);
+                }}
+                className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400 focus:outline-none"
+              >
+                <option value="auto">Auto-detect (recommended)</option>
+                <option value="quickbooks">QuickBooks</option>
+                <option value="costpoint">Costpoint / Deltek</option>
+                <option value="netsuite">NetSuite / Oracle</option>
+                <option value="sap">SAP ERP</option>
+                <option value="generic">Generic / Other</option>
+              </select>
+              <p className="mt-1 text-xs text-emerald-300/50">
+                {localAccountingSystem === "auto" && "System will be detected from CSV patterns"}
+                {localAccountingSystem === "quickbooks" && "Handles parenthetical accounts, US date format"}
+                {localAccountingSystem === "costpoint" && "Processes Debit/Credit columns with sign conventions"}
+                {localAccountingSystem === "netsuite" && "Multi-currency and dimensional aggregation"}
+                {localAccountingSystem === "sap" && "SAP ERP format"}
+                {localAccountingSystem === "generic" && "Universal CSV parser"}
+              </p>
+            </div>
+
             <div className={`grid gap-3 ${isSubledger ? 'grid-cols-3' : 'grid-cols-2'}`}>
               {/* Account Code (only for subledger) */}
               {isSubledger && (
