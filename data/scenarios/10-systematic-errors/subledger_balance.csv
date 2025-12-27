@@ -1,0 +1,18 @@
+vendor,invoice_number,invoice_date,due_date,amount,account_code,period,currency,memo
+TechStaff Solutions,INV-2025-1201,2025-12-05,2026-01-05,-45600.00,2000,2025-12,USD,Consultants - December Week 1
+TechStaff Solutions,INV-2025-1208,2025-12-12,2026-01-12,-45600.00,2000,2025-12,USD,Consultants - December Week 2
+TechStaff Solutions,INV-2025-1215,2025-12-19,2026-01-19,-45600.00,2000,2025-12,USD,Consultants - December Week 3
+Office Supplies Co,OS-DEC-001,2025-12-10,2026-01-10,-12500.00,2000,2025-12,USD,Monthly supplies
+Utility Company,UTIL-DEC-2025,2025-12-15,2026-01-15,-8900.00,2000,2025-12,USD,December utilities
+Landlord Properties,RENT-DEC-2025,2025-12-01,2026-01-01,-32500.00,2000,2025-12,USD,December rent
+Insurance Broker,INS-Q4-2025,2025-12-20,2026-01-20,-18900.00,2000,2025-12,USD,Q4 Insurance premium
+Cloud Services Inc,CLOUD-DEC-2025,2025-12-28,2026-01-28,-6500.00,2000,2025-12,USD,Cloud hosting December
+Marketing Agency,MKT-2025-12-A,2025-12-15,2026-01-15,-22500.00,2000,2025-12,USD,December campaigns
+Legal Services LLP,LEG-2025-455,2025-12-22,2026-01-22,-15600.00,2000,2025-12,USD,Contract review
+Freelancer A,FL-A-DEC-2025,2025-12-31,2026-01-15,-8500.00,4100,2025-12,USD,Design work December
+Freelancer B,FL-B-DEC-2025,2025-12-31,2026-01-15,-12300.00,4100,2025-12,USD,Development December
+Contractor Corp,CC-INV-DEC-25,2025-12-31,2026-01-15,-25600.00,4100,2025-12,USD,Project management
+Specialist Services,SS-2025-12,2025-12-31,2026-01-15,-18900.00,4100,2025-12,USD,Technical consulting
+Independent Pro,IP-DEC-001,2025-12-31,2026-01-15,-14500.00,4100,2025-12,USD,Strategy consulting
+Software Licenses,LIC-2026-ANNUAL,2025-12-20,2025-12-20,-22800.00,1300,2025-12,USD,Annual licenses 2026
+Insurance Prepaid,INS-2026-H1,2025-12-28,2025-12-28,-22800.00,1300,2025-12,USD,H1 2026 insurance prepaid

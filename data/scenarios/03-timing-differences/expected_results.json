@@ -2,19 +2,17 @@
   "scenario": "03-timing-differences",
   "description": "Period cutoff error - invoice dated in wrong period",
   "materiality_threshold": 50,
-  "error_description": "Invoice INV-77845 recorded in subledger as Oct but GL entry posted in Nov",
   "reconciliations": [
     {
       "account": "20100",
       "period": "2025-10",
       "glBalance": -1005000,
-      "subledgerBalance": -1185000,
-      "variance": 180000,
+      "subledgerBalance": -1335000,
+      "variance": 330000,
       "status": "material_variance",
       "material": true,
       "notes": [
-        "Variance of 180000.00 detected between GL and subledger.",
-        "Variance exceeds materiality threshold (50.00)."
+        "Material variance"
       ]
     },
     {
@@ -25,14 +23,30 @@
       "variance": 0,
       "status": "balanced",
       "material": false,
-      "notes": ["In balance."]
+      "notes": [
+        "In balance"
+      ]
+    },
+    {
+      "account": "20100",
+      "period": "2025-11",
+      "glBalance": 0,
+      "subledgerBalance": 0,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": [
+        "In balance"
+      ]
     }
   ],
   "gemini_agent_expectations": {
     "validation": {
       "isValid": true,
       "confidence": "0.7 - 0.8",
-      "warnings": ["Period cutoff issue detected"],
+      "warnings": [
+        "Period cutoff issue detected"
+      ],
       "notes": "Data valid but timing anomaly present"
     },
     "analysis": {
@@ -44,7 +58,10 @@
           "percentage": "~18%"
         }
       ],
-      "patterns": ["Timing difference detected", "Period-end cutoff issue"],
+      "patterns": [
+        "Timing difference detected",
+        "Period-end cutoff issue"
+      ],
       "overallHealth": "60-75"
     },
     "investigation": {

@@ -1,0 +1,63 @@
+{
+  "scenario": "08-netsuite-format",
+  "description": "Test NetSuite format parsing: multi-subsidiary, multi-currency (GBP->USD), dimensional aggregation, text period format",
+  "materiality_threshold": 50,
+  "reconciliations": [
+    {
+      "account": "2000",
+      "period": "2025-12",
+      "glBalance": -145262.75,
+      "subledgerBalance": -145262.75,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": [
+        "In balance",
+        "Aggregated across US and UK subsidiaries (multi-currency)"
+      ]
+    },
+    {
+      "account": "2100",
+      "period": "2025-12",
+      "glBalance": -51250,
+      "subledgerBalance": -51250,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": [
+        "In balance",
+        "Aggregated across Finance and Operations departments"
+      ]
+    }
+  ],
+  "gemini_agent_expectations": {
+    "validation": {
+      "isValid": true,
+      "confidence": ">= 0.9",
+      "warnings": [
+        "multi-currency detected",
+        "dimensional aggregation performed"
+      ],
+      "errors": []
+    },
+    "analysis": {
+      "riskLevel": "low",
+      "materialVariances": [],
+      "overallHealth": ">= 95"
+    },
+    "investigation": {
+      "investigations": [],
+      "message": "No material variances to investigate"
+    },
+    "report": {
+      "should_contain": [
+        "in balance",
+        "no material variances"
+      ],
+      "should_not_contain": [
+        "consider automation",
+        "implement AI"
+      ]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+Company,Org,Account,Account_Desc,Fiscal_Year,Period,Debit,Credit,Net_Balance
+01,100,6210,Labor-Direct,2025,12,245680.50,0.00,245680.50
+01,100,6220,Labor-Overhead,2025,12,89234.25,0.00,89234.25
+01,100,2010,Accounts_Payable,2025,12,0.00,156890.75,156890.75
+01,100,2015,Accrued_Payroll,2025,12,0.00,45200.00,45200.00
+01,200,6210,Labor-Direct,2025,12,125400.00,0.00,125400.00
+01,200,2010,Accounts_Payable,2025,12,0.00,78945.50,78945.50

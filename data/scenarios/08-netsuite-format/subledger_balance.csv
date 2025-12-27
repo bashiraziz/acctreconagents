@@ -1,0 +1,8 @@
+Internal ID,Vendor Name,Vendor ID,Subsidiary,Department,Class,Transaction Number,Transaction Date,Due Date,Amount (Foreign Currency),Currency,Amount (Base Currency),Account Number,Period,Memo
+12456,Acme Corporation,VEN-0125,US Operations,Finance,Corporate,Bill-10245,12/15/2025,01/15/2026,-45600.00,USD,-45600.00,2000,Dec 2025,Office supplies Q4
+12789,Global Tech Solutions,VEN-0298,US Operations,Finance,Corporate,Bill-10312,12/20/2025,01/20/2026,-52850.75,USD,-52850.75,2000,Dec 2025,IT services December
+13024,Widget Distributors,VEN-0456,US Operations,Finance,Corporate,Bill-10389,12/10/2025,01/10/2026,-27000.00,USD,-27000.00,2000,Dec 2025,Product inventory
+13125,UK Supplier Ltd,VEN-UK-001,UK Operations,Finance,Corporate,Bill-10401,12/18/2025,01/18/2026,-15600.00,GBP,-19812.00,2000,Dec 2025,Manufacturing materials
+14001,Payroll Accrual,ACCR-PAYROLL,US Operations,Finance,Corporate,Journal-5124,12/31/2025,12/31/2025,-22500.00,USD,-22500.00,2100,Dec 2025,December salary accrual
+14002,Benefits Accrual,ACCR-BENEFITS,US Operations,Finance,Corporate,Journal-5125,12/31/2025,12/31/2025,-10000.00,USD,-10000.00,2100,Dec 2025,December benefits accrual
+14003,Vacation Accrual,ACCR-VACATION,US Operations,Operations,Direct,Journal-5126,12/31/2025,12/31/2025,-18750.00,USD,-18750.00,2100,Dec 2025,December vacation accrual

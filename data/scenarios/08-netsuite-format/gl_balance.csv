@@ -1,0 +1,7 @@
+Account Number,Account Name,Subsidiary,Department,Class,Period,Currency,Amount (Foreign Currency),Amount (Base Currency)
+2000,Accounts Payable,US Operations,Finance,Corporate,Dec 2025,USD,-125450.75,-125450.75
+2000,Accounts Payable,UK Operations,Finance,Corporate,Dec 2025,GBP,-15600.00,-19812.00
+2100,Accrued Liabilities,US Operations,Finance,Corporate,Dec 2025,USD,-32500.00,-32500.00
+2100,Accrued Liabilities,US Operations,Operations,Direct,Dec 2025,USD,-18750.00,-18750.00
+1200,Accounts Receivable,US Operations,Sales,Revenue,Dec 2025,USD,245600.00,245600.00
+5000,Cost of Sales,US Operations,Operations,Direct,Dec 2025,USD,156890.50,156890.50

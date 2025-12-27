@@ -1,0 +1,77 @@
+{
+  "name": "netsuite-parser",
+  "version": "1.0.0",
+  "description": "Parse Oracle NetSuite CSV exports into canonical Spec-Kit format for reconciliation",
+  "type": "project",
+  "author": "Rowshni",
+  "main": "parse.ts",
+  "capabilities": [
+    "Parse NetSuite Trial Balance exports with multi-currency support",
+    "Parse NetSuite AP Aging and transaction reports",
+    "Extract account codes from various NetSuite formats",
+    "Handle 'Amount (Base Currency)' columns for multi-currency",
+    "Support dimensional data (Department, Location, Subsidiary)",
+    "Aggregate amounts across dimensions when needed",
+    "Map NetSuite column names to canonical Spec-Kit fields",
+    "Validate NetSuite format and provide helpful error messages"
+  ],
+  "input": {
+    "csvContent": "string - Raw CSV content from NetSuite export",
+    "fileType": "enum - 'gl_balance' | 'subledger_balance' | 'transactions'",
+    "aggregateDimensions": "boolean - Whether to sum amounts across departments/locations (default: true)"
+  },
+  "output": {
+    "data": "array - Parsed data in canonical Spec-Kit format",
+    "warnings": "array - Any parsing warnings or issues detected",
+    "metadata": {
+      "accountsExtracted": "number - Count of accounts successfully parsed",
+      "formatConfidence": "number - Confidence this is NetSuite format (0-1)",
+      "transformationsApplied": "array - List of transformations performed",
+      "dimensionalRecords": "number - Count of records with dimensional data",
+      "aggregatedRecords": "number - Count of records aggregated by account"
+    }
+  },
+  "systemSpecifics": {
+    "accountFormat": "Various: '2000 Accounts Payable', 'AP-2000', or plain '2000'",
+    "numberFormat": "Standard or comma-formatted: '52850.00' or '52,850.00'",
+    "dateFormat": "US format: 'MM/DD/YYYY' or ISO: 'YYYY-MM-DD'",
+    "signConvention": "Standard accounting (liabilities negative)",
+    "multiCurrency": "Supports 'Amount (Base Currency)' column for consolidated reporting",
+    "dimensions": "May include Department, Location, Subsidiary, Class columns",
+    "commonHeaders": {
+      "gl": ["Account", "Account Name", "Amount", "Amount (Base Currency)", "Department", "Period"],
+      "subledger": ["Vendor", "Date", "Due Date", "Document Number", "Amount", "Currency"]
+    },
+    "criticalNotes": [
+      "NetSuite exports often include dimensional columns (Dept, Location, etc.)",
+      "When aggregating for reconciliation, sum 'Amount (Base Currency)' by account",
+      "Account format varies by configuration - may include name prefix or suffix",
+      "Multi-subsidiary orgs require careful currency handling"
+    ]
+  },
+  "examples": [
+    {
+      "description": "Parse GL Trial Balance with multi-currency and dimensions",
+      "input": {
+        "csvContent": "Account,Account Name,Department,Amount (Base Currency),Period\n2000,Accounts Payable,Sales,52850.00,12/31/2025\n2000,Accounts Payable,Marketing,15000.00,12/31/2025",
+        "fileType": "gl_balance",
+        "aggregateDimensions": true
+      },
+      "output": {
+        "data": [
+          {
+            "account_code": "2000",
+            "account_name": "Accounts Payable",
+            "amount": 67850,
+            "period": "2025-12"
+          }
+        ],
+        "metadata": {
+          "dimensionalRecords": 2,
+          "aggregatedRecords": 1
+        }
+      },
+      "note": "Two dimensional records aggregated into single account balance"
+    }
+  ]
+}

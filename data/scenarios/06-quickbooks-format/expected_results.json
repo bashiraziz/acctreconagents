@@ -1,0 +1,82 @@
+{
+  "scenario": "06-quickbooks-format",
+  "description": "Test QuickBooks format parsing: account codes in parentheses, comma-formatted numbers, US date format",
+  "materiality_threshold": 50,
+  "reconciliations": [
+    {
+      "account": "2000",
+      "period": "2025-12",
+      "glBalance": -52850,
+      "subledgerBalance": 0,
+      "variance": -52850,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
+    },
+    {
+      "account": "2100",
+      "period": "2025-12",
+      "glBalance": -8500,
+      "subledgerBalance": 0,
+      "variance": -8500,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
+    },
+    {
+      "account": "2000",
+      "period": "unspecified",
+      "glBalance": 0,
+      "subledgerBalance": -52850,
+      "variance": 52850,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
+    },
+    {
+      "account": "2100",
+      "period": "unspecified",
+      "glBalance": 0,
+      "subledgerBalance": -8500,
+      "variance": 8500,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
+    }
+  ],
+  "gemini_agent_expectations": {
+    "validation": {
+      "isValid": true,
+      "confidence": ">= 0.9",
+      "warnings": [],
+      "errors": []
+    },
+    "analysis": {
+      "riskLevel": "low",
+      "materialVariances": [],
+      "overallHealth": ">= 95"
+    },
+    "investigation": {
+      "investigations": [],
+      "message": "No material variances to investigate"
+    },
+    "report": {
+      "should_contain": [
+        "in balance",
+        "no material variances"
+      ],
+      "should_not_contain": [
+        "consider automation",
+        "implement AI"
+      ]
+    }
+  }
+}

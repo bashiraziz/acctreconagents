@@ -25,8 +25,18 @@ apps/
   web/                 # Next.js 15 App Router app (ChatKit UI, uploads, mapping, console)
 services/
   orchestrator/        # Fastify service coordinating OpenAI Agents, Claude Skills, Gemini
+skills/                # Claude skills for system-specific parsing and automation
+  quickbooks-parser/   # QuickBooks CSV parser (parenthetical accounts, US dates)
+  costpoint-parser/    # Costpoint CSV parser (debit/credit, sign conventions)
+  netsuite-parser/     # NetSuite CSV parser (multi-currency, dimensional data)
+  pdf-to-csv-extractor/# PDF financial report to CSV conversion
+  recon-scenario-builder/ # Test scenario generation tool
 specs/
   reconciliation...    # Spec-Kit definition for canonical models + workflows
+data/
+  scenarios/           # Test scenarios (10 comprehensive reconciliation cases)
+tests/
+  scenario-runner.ts   # Automated test framework using Claude skills
 spec-kit.config.json   # CLI hook for Spec-Kit tooling
 package.json           # Root scripts (Spec-Kit check)
 .env.sample            # Shared environment variable template
@@ -53,8 +63,29 @@ package.json           # Root scripts (Spec-Kit check)
   * Gemini 2.0 Flash (primary - free tier)
   * OpenAI Agents SDK (optional)
   * Anthropic Claude (optional)
+* **Claude Skills** - System-specific CSV parsers for accounting platforms:
+  * QuickBooks Parser - Handles parenthetical accounts, comma-formatted numbers
+  * Costpoint Parser - Processes debit/credit columns with sign convention handling
+  * NetSuite Parser - Multi-currency and dimensional data aggregation
+  * PDF-to-CSV Extractor - Converts PDF financial reports to reconciliation-ready CSV
+  * Scenario Builder - Creates comprehensive test scenarios with documentation
 * **Spec-Kit Validation** - Ensures data conforms to canonical schema
 * **TypeScript** with full type safety and schema validation
+
+### Claude Skills (skills/)
+* **System-specific CSV parsers** that understand accounting system formats
+* **Automatically integrated** into the test framework via dynamic imports
+* **Parser selection logic:**
+  * Scenario name contains "quickbooks" → QuickBooks Parser
+  * Scenario name contains "costpoint" → Costpoint Parser
+  * Scenario name contains "netsuite" → NetSuite Parser
+  * Otherwise → Legacy universal parser
+* **Each skill includes:**
+  * `skill.json` - Metadata and capability documentation
+  * `parse.ts` - TypeScript parser implementation with type safety
+  * Test scripts for validation
+  * Comprehensive documentation (README, implementation summaries, test results)
+* **See:** `skills/README.md` for architecture and `skills/QUICK_REFERENCE.md` for usage guide
 
 ### Spec-Kit contracts
 * `specs/reconciliation.speckit.json` documents actors, canonical data models, agent tool contracts, and workflows.
@@ -114,6 +145,7 @@ package.json           # Root scripts (Spec-Kit check)
 * Root: `npm run spec:check` – ensures required tooling for Spec-Kit/agent workflows is available.
 * `apps/web`: `npm run dev`, `npm run build`, `npm run lint`.
 * `services/orchestrator`: `npm run dev`, `npm run build`, `npm run start`.
+* `tests/`: `npm test` – runs automated scenario tests using Claude skills (10 scenarios, ~8 min).
 
 ## API schemas
 OpenAPI documents live in `docs/api`:

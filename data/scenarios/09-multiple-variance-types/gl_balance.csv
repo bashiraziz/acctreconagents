@@ -1,0 +1,5 @@
+account_code,account_name,period,currency,amount
+2000,Accounts Payable,2025-12,USD,-125450.00
+2100,Accrued Expenses,2025-12,USD,-45600.00
+2200,Sales Tax Payable,2025-12,USD,-8950.75
+3000,Deferred Revenue,2025-12,USD,-156000.00

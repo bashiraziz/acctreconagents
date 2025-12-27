@@ -1,0 +1,7 @@
+Vendor,Due Date,Num,Open Balance,Account
+"ABC Supplies","01/15/2026","INV-4421","-15,200.00","Accounts Payable (2000)"
+"Widget Corp","01/22/2026","WC-9901","-22,650.00","Accounts Payable (2000)"
+"Office Depot","01/10/2026","789456","-8,500.00","Accounts Payable (2000)"
+"Tech Solutions Inc","02/01/2026","TS-2025-12","-6,500.00","Accounts Payable (2000)"
+"Payroll Accrual","12/31/2025","ACCR-PR-DEC","-5,200.00","Accrued Expenses (2100)"
+"Benefits Accrual","12/31/2025","ACCR-BEN-DEC","-3,300.00","Accrued Expenses (2100)"

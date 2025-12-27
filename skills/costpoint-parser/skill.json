@@ -1,0 +1,71 @@
+{
+  "name": "costpoint-parser",
+  "version": "1.0.0",
+  "description": "Parse Deltek Costpoint CSV exports into canonical Spec-Kit format for reconciliation",
+  "type": "project",
+  "author": "Rowshni",
+  "main": "parse.ts",
+  "capabilities": [
+    "Parse Costpoint Trial Balance exports with separate Debit/Credit columns",
+    "Parse Costpoint AP Aging reports",
+    "Handle Costpoint's positive credit convention (reverse sign for liabilities)",
+    "Detect account types and apply appropriate sign conventions",
+    "Map Costpoint column names to canonical Spec-Kit fields",
+    "Validate Costpoint format and provide helpful error messages"
+  ],
+  "input": {
+    "csvContent": "string - Raw CSV content from Costpoint export",
+    "fileType": "enum - 'gl_balance' | 'subledger_balance' | 'transactions'"
+  },
+  "output": {
+    "data": "array - Parsed data in canonical Spec-Kit format",
+    "warnings": "array - Any parsing warnings or issues detected",
+    "metadata": {
+      "accountsExtracted": "number - Count of accounts successfully parsed",
+      "formatConfidence": "number - Confidence this is Costpoint format (0-1)",
+      "transformationsApplied": "array - List of transformations performed",
+      "signReversals": "number - Count of accounts where sign was reversed"
+    }
+  },
+  "systemSpecifics": {
+    "accountFormat": "Plain numeric: '2000', '2100'",
+    "numberFormat": "Separate Debit/Credit columns with plain numbers",
+    "dateFormat": "ISO format: 'YYYY-MM' or 'YYYY-MM-DD'",
+    "signConvention": "Costpoint DISPLAYS credits as positive in UI, but debit-credit formula gives correct accounting convention automatically (liabilities negative). Only revenue accounts (4000+) need sign reversal.",
+    "commonHeaders": {
+      "gl": ["Account Number", "Account Name", "Debit", "Credit", "Period"],
+      "subledger": ["Vendor ID", "Invoice Number", "Due Date", "Amount", "Account"]
+    },
+    "criticalNotes": [
+      "Costpoint DISPLAYS credits as POSITIVE in UI (e.g., Net_Balance column shows 156890.75)",
+      "When using Debit-Credit formula: Liability credit becomes NEGATIVE automatically (correct!)",
+      "Balance sheet accounts (1000-3999): NO sign reversal needed - formula handles it",
+      "Revenue accounts (4000-4999): NEED sign reversal to make credits positive",
+      "Expense accounts (5000+): NO reversal needed - debits stay positive",
+      "Multi-org data: Aggregate by account code for GL reconciliation"
+    ]
+  },
+  "examples": [
+    {
+      "description": "Parse GL Trial Balance with correct sign handling",
+      "input": {
+        "csvContent": "Account Number,Account Name,Debit,Credit,Period\n2000,Accounts Payable,0,52850,2025-12",
+        "fileType": "gl_balance"
+      },
+      "output": {
+        "data": [
+          {
+            "account_code": "2000",
+            "account_name": "Accounts Payable",
+            "amount": -52850,
+            "period": "2025-12"
+          }
+        ],
+        "metadata": {
+          "signReversals": 0
+        }
+      },
+      "note": "Debit-Credit formula (0 - 52850 = -52850) automatically gives correct negative for liability"
+    }
+  ]
+}

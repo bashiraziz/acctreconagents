@@ -1,0 +1,119 @@
+{
+  "scenario": "09-multiple-variance-types",
+  "description": "Test detection and classification of different variance types (duplicate, amount error, balanced)",
+  "materiality_threshold": 50,
+  "reconciliations": [
+    {
+      "account": "2000",
+      "period": "2025-12",
+      "glBalance": -125450,
+      "subledgerBalance": -125450,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": [
+        "In balance"
+      ]
+    },
+    {
+      "account": "2100",
+      "period": "2025-12",
+      "glBalance": -45600,
+      "subledgerBalance": -47000,
+      "variance": 1400,
+      "status": "material_variance",
+      "material": true,
+      "notes": [
+        "Material variance"
+      ]
+    },
+    {
+      "account": "2200",
+      "period": "2025-12",
+      "glBalance": -8950.75,
+      "subledgerBalance": -8950.75,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": [
+        "In balance"
+      ]
+    },
+    {
+      "account": "3000",
+      "period": "2025-12",
+      "glBalance": -156000,
+      "subledgerBalance": -156000,
+      "variance": 0,
+      "status": "balanced",
+      "material": false,
+      "notes": [
+        "In balance"
+      ]
+    }
+  ],
+  "gemini_agent_expectations": {
+    "validation": {
+      "isValid": true,
+      "confidence": ">= 0.6",
+      "warnings": [
+        "should mention duplicate invoice",
+        "should mention amount discrepancy"
+      ],
+      "errors": []
+    },
+    "analysis": {
+      "riskLevel": "medium",
+      "materialVariances": [
+        {
+          "account": "2000",
+          "variance": 22500,
+          "priority": "high"
+        },
+        {
+          "account": "2100",
+          "variance": 1400,
+          "priority": "medium"
+        }
+      ],
+      "overallHealth": "60-80"
+    },
+    "investigation": {
+      "investigations": [
+        {
+          "account": "2000",
+          "root_cause_keywords": [
+            "duplicate",
+            "invoice GC-4401",
+            "Global Consulting",
+            "same invoice twice"
+          ]
+        },
+        {
+          "account": "2100",
+          "root_cause_keywords": [
+            "accrual",
+            "calculation",
+            "amount error",
+            "discrepancy"
+          ]
+        }
+      ],
+      "message": "should identify specific variance types"
+    },
+    "report": {
+      "should_contain": [
+        "duplicate invoice",
+        "GC-4401",
+        "accrual",
+        "$22,500",
+        "$1,400"
+      ],
+      "should_not_contain": [
+        "consider automation",
+        "implement AI"
+      ],
+      "language_focus": "transaction-level analysis"
+    }
+  }
+}

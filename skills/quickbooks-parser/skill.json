@@ -1,0 +1,58 @@
+{
+  "name": "quickbooks-parser",
+  "version": "1.0.0",
+  "description": "Parse QuickBooks CSV exports into canonical Spec-Kit format for reconciliation",
+  "type": "project",
+  "author": "Rowshni",
+  "main": "parse.ts",
+  "capabilities": [
+    "Parse QuickBooks Trial Balance exports",
+    "Parse QuickBooks AP Aging reports",
+    "Extract account codes from parenthetical format: 'Accounts Payable (2000)'",
+    "Convert comma-formatted numbers: '-52,850.00' → -52850",
+    "Convert US date format: '12/31/2025' → '2025-12'",
+    "Map QuickBooks column names to canonical Spec-Kit fields",
+    "Validate QuickBooks format and provide helpful error messages"
+  ],
+  "input": {
+    "csvContent": "string - Raw CSV content from QuickBooks export",
+    "fileType": "enum - 'gl_balance' | 'subledger_balance' | 'transactions'"
+  },
+  "output": {
+    "data": "array - Parsed data in canonical Spec-Kit format",
+    "warnings": "array - Any parsing warnings or issues detected",
+    "metadata": {
+      "accountsExtracted": "number - Count of accounts successfully parsed",
+      "formatConfidence": "number - Confidence this is QuickBooks format (0-1)",
+      "transformationsApplied": "array - List of transformations performed"
+    }
+  },
+  "systemSpecifics": {
+    "accountFormat": "Parenthetical: 'Account Name (Code)'",
+    "numberFormat": "US comma-separated: '-1,234.56'",
+    "dateFormat": "US format: 'MM/DD/YYYY'",
+    "signConvention": "Standard accounting (liabilities negative)",
+    "commonHeaders": {
+      "gl": ["Account", "Balance", "As of"],
+      "subledger": ["Vendor", "Due Date", "Num", "Open Balance", "Account"]
+    }
+  },
+  "examples": [
+    {
+      "description": "Parse GL Trial Balance",
+      "input": {
+        "csvContent": "Account,Balance,As of\n\"Accounts Payable (2000)\",\"-52,850.00\",\"12/31/2025\"",
+        "fileType": "gl_balance"
+      },
+      "output": {
+        "data": [
+          {
+            "account_code": "2000",
+            "amount": -52850,
+            "period": "2025-12"
+          }
+        ]
+      }
+    }
+  ]
+}
