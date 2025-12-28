@@ -1,18 +1,15 @@
 /**
- * Authentication banner for all users
- * Shows rate limit information
+ * Anonymous mode banner
+ * Shows rate limit information for anonymous users
  */
 
 "use client";
 
 import { useState } from "react";
 import { RateLimitStatus } from "@/components/rate-limit-status";
-import { useSession } from "@/lib/auth-client";
 
 export function AuthBanner() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: session } = useSession();
-  const isAuthenticated = !!session?.user;
 
   return (
     <div className="space-y-3">
@@ -24,7 +21,7 @@ export function AuthBanner() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <p className="font-semibold text-blue-100">
-                {isAuthenticated ? "Rate Limits" : "Anonymous Mode"}
+                Anonymous Mode
               </p>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -35,44 +32,39 @@ export function AuthBanner() {
               </button>
             </div>
             <p className="mt-1 text-sm text-blue-200/80">
-              {isAuthenticated
-                ? "Your rate limits help ensure fair usage for all users."
-                : "You can use all reconciliation features without signing in. Your work is saved locally in this browser session."}
+              You can use all reconciliation features without signing in. Your work is saved locally in this browser session.
             </p>
             {isExpanded && (
               <ul className="mt-2 space-y-1 text-sm text-blue-200/80">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
                   <span>
-                    Rate limits: {isAuthenticated ? "60" : "30"} reconciliations per hour
+                    Rate limits: 5 reconciliations per hour
                   </span>
                 </li>
-                {isAuthenticated && (
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400">•</span>
-                    <span>Extended limits: 120 per 2 hours, 180 per 3 hours</span>
-                  </li>
-                )}
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Extended limits: 8 per 2 hours, 10 per 3 hours</span>
+                </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
                   <span>AI analysis: shared quotas with auto-retry</span>
                 </li>
-                {!isAuthenticated && (
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-400">•</span>
-                    <span className="text-xs">
-                      💡 Sign in for higher limits (60/hour) or use your own{" "}
-                      <a
-                        href="https://ai.google.dev/gemini-api/docs/api-key"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline hover:text-blue-100"
-                      >
-                        free Gemini API key
-                      </a>
-                    </span>
-                  </li>
-                )}
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span className="text-xs">
+                    💡 Use your own{" "}
+                    <a
+                      href="https://ai.google.dev/gemini-api/docs/api-key"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-blue-100"
+                    >
+                      free Gemini API key
+                    </a>
+                    {" "}for unlimited AI analysis
+                  </span>
+                </li>
               </ul>
             )}
           </div>

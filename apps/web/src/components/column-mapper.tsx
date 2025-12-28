@@ -9,7 +9,6 @@ import {
 import { useReconciliationStore } from "@/store/reconciliationStore";
 import { suggestColumnMappings } from "@/lib/parseFile";
 import { createReconciliationPayload } from "@/lib/transformData";
-import { useSession } from "@/lib/auth-client";
 import type { ColumnMapping, FileType } from "@/types/reconciliation";
 
 const allFields = [...canonicalBalanceFields, ...transactionFields];
@@ -23,9 +22,6 @@ export function ColumnMapper() {
   const columnMappings = useReconciliationStore((state) => state.columnMappings);
   const setColumnMapping = useReconciliationStore((state) => state.setColumnMapping);
   const setReconciliationData = useReconciliationStore((state) => state.setReconciliationData);
-
-  // Get auth session
-  const { data: session } = useSession();
 
   // Auto-suggest mappings when files are uploaded
   const handleAutoSuggest = (fileType: FileType) => {
@@ -80,62 +76,11 @@ export function ColumnMapper() {
 
     if (payload) {
       setReconciliationData(payload);
-
-      // If authenticated, save mappings to database
-      if (session?.user) {
-        try {
-          await Promise.all([
-            fetch("/api/user/mappings", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: session.user.id,
-                fileType: "gl_balance",
-                mapping: columnMappings.gl_balance,
-              }),
-            }),
-            fetch("/api/user/mappings", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: session.user.id,
-                fileType: "subledger_balance",
-                mapping: columnMappings.subledger_balance,
-              }),
-            }),
-            uploadedFiles.transactions &&
-              fetch("/api/user/mappings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  userId: session.user.id,
-                  fileType: "transactions",
-                  mapping: columnMappings.transactions,
-                }),
-              }),
-          ]);
-        } catch (error) {
-          console.error("Failed to save mappings to database:", error);
-        }
-      }
+      // Mappings are automatically saved to localStorage via Zustand persist
     }
   };
 
-  // Load saved mappings for authenticated users
-  useEffect(() => {
-    if (session?.user) {
-      fetch(`/api/user/mappings?userId=${session.user.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.mappings) {
-            data.mappings.forEach((m: any) => {
-              setColumnMapping(m.fileType, m.mapping);
-            });
-          }
-        })
-        .catch((err) => console.error("Failed to load mappings:", err));
-    }
-  }, [session, setColumnMapping]);
+  // Mappings are automatically loaded from localStorage via Zustand persist
 
   const hasGLFile = !!uploadedFiles.glBalance;
   const hasSubledgerFile = !!uploadedFiles.subledgerBalance;
@@ -338,9 +283,7 @@ export function ColumnMapper() {
               </div>
             )}
             <p className="mt-1 text-sm text-sky-200/80">
-              {session?.user
-                ? "Mappings will be saved to your account"
-                : "Sign in to save mappings across sessions"}
+              Mappings are saved locally in your browser
             </p>
           </div>
           <button

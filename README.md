@@ -48,8 +48,8 @@ package.json           # Root scripts (Spec-Kit check)
 * **Intelligent Column Mapping** - Auto-detects and maps CSV columns to canonical schema
 * **Live Data Preview** - See transformed data before running reconciliation
 * **AI Agent Console** - Real-time progress tracking through 4-agent pipeline
-* **Rate Limiting** - Built-in protection (30/hour anonymous, 60/hour authenticated)
-* **Authentication** - Better Auth + Vercel Postgres (optional)
+* **Rate Limiting** - Built-in protection (5/hour anonymous mode)
+* **Data Storage** - Browser localStorage for column mappings and workflow state
 * **Deployment** - Optimized for Vercel with environment-based configuration
 
 ### Backend (services/orchestrator)

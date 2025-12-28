@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "@/lib/auth-client";
 
 interface RateLimitInfo {
   authenticated: boolean;
@@ -12,7 +11,6 @@ interface RateLimitInfo {
 }
 
 export function RateLimitStatus() {
-  const { data: session } = useSession();
   const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +33,7 @@ export function RateLimitStatus() {
     // Refresh every 30 seconds
     const interval = setInterval(fetchRateLimitStatus, 30000);
     return () => clearInterval(interval);
-  }, [session]);
+  }, []);
 
   // Don't show anything if loading or no data
   if (loading || !rateLimitInfo) {
@@ -44,11 +42,10 @@ export function RateLimitStatus() {
 
   const { remaining, limit } = rateLimitInfo;
   const percentage = (remaining / limit) * 100;
-  const isAuthenticated = !!session?.user;
 
-  // Color coding based on remaining uses (different thresholds for authenticated users)
-  const lowThreshold = isAuthenticated ? 10 : 2;
-  const mediumThreshold = isAuthenticated ? 20 : 3;
+  // Color coding based on remaining uses (anonymous mode thresholds)
+  const lowThreshold = 2;
+  const mediumThreshold = 3;
 
   let statusColor = "text-emerald-400";
   let bgColor = "bg-emerald-500/20";
@@ -78,7 +75,7 @@ export function RateLimitStatus() {
             <p className="text-xs text-slate-400">
               {remaining === 0
                 ? "Wait for reset or contact support"
-                : `per hour${isAuthenticated ? "" : " (sign in for 60/hour)"}`}
+                : "per hour (anonymous mode)"}
             </p>
           </div>
         </div>

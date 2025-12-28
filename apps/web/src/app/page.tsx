@@ -5,7 +5,6 @@ import { OrchestratorConsole } from "@/components/orchestrator-console";
 import { SampleDataPanel } from "@/components/sample-data-panel";
 import { UploadWorkspace } from "@/components/upload-workspace";
 import { AuthBanner } from "@/components/auth/auth-banner";
-import { UserMenu } from "@/components/auth/user-menu";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { DataPreview } from "@/components/data-preview";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -55,7 +54,6 @@ export default function Home() {
                 How to Use
               </Link>
               <ThemeToggle />
-              <UserMenu />
             </div>
           </div>
         </header>
@@ -158,7 +156,7 @@ function AboutPanel() {
             <li>Fastify orchestrator service</li>
             <li>Spec-Kit contracts for data validation</li>
             <li>Gemini 2.0 Flash (free tier) for AI agents</li>
-            <li>Better Auth + Vercel Postgres</li>
+            <li>Anonymous mode with browser localStorage</li>
           </ul>
 
           <details className="rounded border theme-border theme-muted p-3">

@@ -24,55 +24,27 @@ The app is designed to work perfectly **without a database** for development and
 
 ### What Requires Database
 
-❌ **Authentication features** (optional)
-- User sign-up/sign-in
-- Saved column mappings
+❌ **Future features** (not currently implemented)
+- User authentication
+- Persistent column mappings across sessions
 - Reconciliation history
-- Cross-device sync
+- Cross-device data sync
 
 ### Expected Behavior
 
-When running without `POSTGRES_URL` configured:
-- All users treated as **anonymous**
+The app runs in **anonymous mode**:
+- All users treated as anonymous
 - Rate limits applied (5/hour, 8/2hours, 10/3hours)
-- Auth banner shown: "Sign in to save your work"
-- Data stored in **browser localStorage** (lost on tab close)
+- Banner shown: "Anonymous Mode - full features available"
+- Data stored in **browser localStorage** (persists until browser data is cleared)
 
-### Running With Database
+### Database Support (Future)
 
-To enable authentication and persistence:
+Database support for user authentication and persistence is planned for a future release. The current version is fully functional in anonymous mode.
 
-1. **Set up Postgres** (Vercel, Supabase, or local):
-   ```bash
-   # Example with local Postgres
-   POSTGRES_URL=postgresql://user:password@localhost:5432/acctrecon
-   ```
+---
 
-2. **Add to .env.local**:
-   ```bash
-   POSTGRES_URL=your-connection-string
-   BETTER_AUTH_SECRET=your-secret-key
-   ```
-
-3. **Run migrations**:
-   ```bash
-   npm run db:migrate
-   ```
-
-4. **Restart dev server**:
-   ```bash
-   npm run dev
-   ```
-
-### Troubleshooting
-
-#### "Failed to initialize database adapter"
-**This is expected** when running without a database. The app handles this gracefully:
-- Auth endpoints return empty sessions
-- Users are treated as anonymous
-- Rate limiting still works
-
-**Fix:** Configure `POSTGRES_URL` in `.env.local` (only if you need auth features)
+## Troubleshooting
 
 #### Rate limits not working
 **Check:**
@@ -83,36 +55,9 @@ To enable authentication and persistence:
 #### Session errors in console
 **Normal behavior** when database is not configured. These are handled gracefully and don't affect functionality.
 
-#### "Unhandled Rejection: [Error [BetterAuthError]: Failed to initialize database adapter]"
-**This is a known issue** with Better Auth v1.4.7 async schema validation on Neon Postgres.
+#### Database Connection Errors
 
-**Status:** Authentication is **NOT working** due to this error. This is blocking sign-up/sign-in functionality.
-
-**Why it happens:**
-- Better Auth v1.4.7 performs async schema validation after initialization
-- The validation fails with no stack trace or error details
-- The error appears to be related to Kysely adapter compatibility with Neon's SSL requirements
-- Database tables are correct and work perfectly when tested directly
-
-**What we've tried:**
-- ✅ Database schema is correct (all tables created successfully)
-- ✅ Manual database operations work (can insert/query users directly)
-- ✅ Tried multiple Better Auth configurations (raw Pool, Kysely, connection URL)
-- ✅ Recreated tables with exact Better Auth schema including all fields
-- ❌ Error still occurs with no meaningful debugging information
-
-**Temporary workarounds:**
-1. **Use the app without authentication** (fully functional for reconciliation)
-2. **Rate limiting still works** for anonymous users (5/hour, 8/2hrs, 10/3hrs)
-3. **All reconciliation features work** without needing to sign in
-
-**Next steps to fix:**
-1. Try upgrading to Better Auth v1.5.x when released
-2. Consider switching to a different auth solution (NextAuth.js, Clerk, Auth0)
-3. Contact Better Auth support with reproduction case
-4. Try using a different Postgres provider (not Neon) to isolate the issue
-
-**Verification:** Run `npm run db:test` - database works perfectly. The issue is specific to Better Auth's adapter initialization.
+If you see database connection errors, they are **normal** when `POSTGRES_URL` is not configured. The app gracefully falls back to anonymous mode with full functionality.
 
 ---
 
