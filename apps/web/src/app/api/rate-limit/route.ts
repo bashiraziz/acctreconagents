@@ -1,31 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getRateLimitStatus } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
 
 /**
  * GET /api/rate-limit
- * Returns current rate limit status for the user
+ * Returns current rate limit status for anonymous users
  */
 export async function GET(request: Request) {
   try {
-    // Check authentication status (with error handling for missing DB)
-    let isAuthenticated = false;
-    let userId: string | undefined;
+    // Always treat as anonymous user (no authentication)
+    const isAuthenticated = false;
 
-    try {
-      const session = await auth.api.getSession({ headers: request.headers });
-      isAuthenticated = !!session?.user;
-      userId = session?.user?.id;
-    } catch (authError) {
-      // If auth fails (e.g., no database), treat as anonymous user
-      // This is expected behavior when POSTGRES_URL is not configured
-      isAuthenticated = false;
-    }
-
-    // Get client identifier
+    // Get client identifier based on IP
     const clientIp = getClientIp(request);
-    const identifier = isAuthenticated && userId ? `user:${userId}` : `ip:${clientIp}`;
+    const identifier = `ip:${clientIp}`;
 
     // Get rate limit status
     const status = getRateLimitStatus(identifier, isAuthenticated);

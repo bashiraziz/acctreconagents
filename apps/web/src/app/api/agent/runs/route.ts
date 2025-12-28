@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
 
@@ -63,23 +62,12 @@ function safeParseUrl(value: string) {
 
 export async function POST(request: Request) {
   try {
-    // Check authentication status (with error handling for missing DB)
-    let isAuthenticated = false;
-    let userId: string | undefined;
+    // Always treat as anonymous user (no authentication)
+    const isAuthenticated = false;
 
-    try {
-      const session = await auth.api.getSession({ headers: request.headers });
-      isAuthenticated = !!session?.user;
-      userId = session?.user?.id;
-    } catch (authError) {
-      // If auth fails (e.g., no database), treat as anonymous user
-      // This is expected behavior when POSTGRES_URL is not configured
-      isAuthenticated = false;
-    }
-
-    // Get client identifier (IP address for anonymous users, user ID for authenticated)
+    // Get client identifier based on IP address
     const clientIp = getClientIp(request);
-    const identifier = isAuthenticated && userId ? `user:${userId}` : `ip:${clientIp}`;
+    const identifier = `ip:${clientIp}`;
 
     // Check rate limit
     const rateLimit = checkRateLimit(identifier, isAuthenticated);
@@ -96,8 +84,8 @@ export async function POST(request: Request) {
             reset: new Date(rateLimit.reset).toISOString(),
           },
           help: [
-            "Sign in to remove rate limits and save your reconciliation history",
             "Rate limits reset automatically after the time window expires",
+            "Wait for the reset time or contact support if you need higher limits",
           ],
         },
         {
