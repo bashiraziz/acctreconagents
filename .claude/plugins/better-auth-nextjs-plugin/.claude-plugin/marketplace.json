@@ -1,0 +1,15 @@
+{
+  "name": "better-auth-marketplace",
+  "owner": {
+    "name": "Bashir Aziz",
+    "email": "bashir@example.com"
+  },
+  "plugins": [
+    {
+      "name": "better-auth-nextjs",
+      "source": "./",
+      "description": "Production-ready Better Auth implementation for Next.js 16 with PostgreSQL, including email/password and social authentication. Avoids common bundling issues with Kysely and Prisma by using the pg adapter.",
+      "version": "1.0.0"
+    }
+  ]
+}

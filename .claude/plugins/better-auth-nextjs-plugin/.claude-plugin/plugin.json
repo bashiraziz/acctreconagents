@@ -1,0 +1,25 @@
+{
+  "name": "better-auth-nextjs",
+  "version": "1.0.0",
+  "description": "Production-ready Better Auth implementation for Next.js 16 with PostgreSQL, including email/password and social authentication",
+  "author": {
+    "name": "Bashir Aziz",
+    "email": "bashir@example.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bashiraziz/claude-better-auth-skill"
+  },
+  "keywords": [
+    "authentication",
+    "better-auth",
+    "nextjs",
+    "postgresql",
+    "typescript",
+    "neon",
+    "auth",
+    "login",
+    "user-management"
+  ],
+  "license": "MIT"
+}
