@@ -39,12 +39,12 @@ export function AuthBanner() {
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
                   <span>
-                    Rate limits: 5 reconciliations per hour
+                    Rate limits: 30 reconciliations per hour
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  <span>Extended limits: 8 per 2 hours, 10 per 3 hours</span>
+                  <span>Extended limits: 50 per 2 hours, 70 per 3 hours</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>

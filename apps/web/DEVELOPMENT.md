@@ -14,7 +14,7 @@ The app is designed to work perfectly **without a database** for development and
 - All Gemini AI agents
 
 ✅ **Rate limiting**
-- Anonymous users: 5 reconciliations per hour
+- Anonymous users: 30 per hour, 50 per 2 hours, 70 per 3 hours
 - IP-based tracking
 - In-memory storage
 
@@ -34,7 +34,7 @@ The app is designed to work perfectly **without a database** for development and
 
 The app runs in **anonymous mode**:
 - All users treated as anonymous
-- Rate limits applied (5/hour, 8/2hours, 10/3hours)
+- Rate limits applied (30/hour, 50/2hours, 70/3hours)
 - Banner shown: "Anonymous Mode - full features available"
 - Data stored in **browser localStorage** (persists until browser data is cleared)
 
