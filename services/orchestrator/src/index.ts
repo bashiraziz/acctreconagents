@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { OpenAI } from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -21,6 +22,12 @@ const envPath = envCandidates.find((candidate) => fs.existsSync(candidate));
 dotenv.config(envPath ? { path: envPath } : undefined);
 
 const fastify = Fastify({ logger: true });
+
+// Enable CORS for web app requests
+await fastify.register(cors, {
+  origin: ["http://localhost:3100", "http://127.0.0.1:3100", "http://localhost:3000"],
+  credentials: true,
+});
 
 const balanceSchema = z.object({
   account_code: z.string(),
