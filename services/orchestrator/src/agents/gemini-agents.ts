@@ -61,7 +61,7 @@ function parseRetryDelay(error: any): number {
 
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxRetries: number = 2,
+  maxRetries: number = 0,
   operationName: string = "Gemini API call"
 ): Promise<{ result: T; retryCount: number }> {
   let lastError: any;
