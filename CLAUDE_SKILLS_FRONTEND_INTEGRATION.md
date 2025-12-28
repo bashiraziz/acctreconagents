@@ -294,8 +294,8 @@ Final Transformed Data
 ## Documentation Updates
 
 Related documentation to update:
-- [ ] USER_GUIDE.md - Add section on accounting system selection
-- [ ] README.md - Already updated with Claude Skills info
+- [x] USER_GUIDE.md - Added section on accounting system selection (Step 3 in upload flow)
+- [x] README.md - Already updated with Claude Skills info
 - [ ] API documentation - If parsers affect API contracts
 
 ---

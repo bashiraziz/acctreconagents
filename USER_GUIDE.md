@@ -97,20 +97,32 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
    - File uploads instantly
    - You'll see a preview of the data
 
-3. **Fill in Metadata (if needed)**
+3. **Select Accounting System (for better parsing)**
+   - After uploading, you'll see an **Accounting System** dropdown
+   - Options:
+     - **Auto-detect (recommended)**: Automatically detects your system from CSV patterns
+     - **QuickBooks**: For files with parenthetical account codes like "Accounts Payable (2000)"
+     - **Costpoint / Deltek**: For files with separate Debit and Credit columns
+     - **NetSuite / Oracle**: For files with multi-currency or dimensional data
+     - **SAP ERP**: Reserved for SAP-specific formats
+     - **Generic / Other**: Universal CSV parser (works with any system)
+   - **💡 Tip**: Leave it on "Auto-detect" unless you know your specific system
+   - The app will automatically handle account code extraction, sign conventions, and format-specific parsing
+
+4. **Fill in Metadata (if needed)**
    - If your CSV is missing required fields, you can provide them as metadata:
      - **Account Code**: If all rows in the file are for the same account
      - **Period**: If all rows are for the same period (e.g., "2025-10")
      - **Currency**: If all amounts are in the same currency (e.g., "USD")
      - **Report Date**: Optional date for documentation
 
-4. **Sign Reversal (for accounting system differences)**
+5. **Sign Reversal (for accounting system differences)**
    - Some systems show credit balances as positive, others as negative
    - Check **"Reverse signs"** if your GL and subledger use opposite sign conventions
    - Example: GL shows -10,768.63 but subledger shows 10,768.63
    - This multiplies all amounts by -1 for proper reconciliation
 
-5. **Repeat for Each File**
+6. **Repeat for Each File**
    - Upload GL balance file (with metadata if needed)
    - Upload subledger balance file (with metadata if needed)
    - (Optional) Upload transactions file
@@ -502,14 +514,14 @@ Use your own free Google Gemini API key:
 **A:** Not yet - this is a manual, on-demand tool. Automated scheduling is on the roadmap.
 
 ### Q: What accounting systems are supported?
-**A:** Any system that exports to CSV:
-- ✅ SAP
-- ✅ Oracle Financials / NetSuite
-- ✅ QuickBooks (Desktop & Online)
-- ✅ Microsoft Dynamics
-- ✅ Sage Intacct
-- ✅ Xero
-- ✅ Custom/homegrown systems
+**A:** Any system that exports to CSV. Rowshni includes specialized parsers for:
+- ✅ **QuickBooks** (Desktop & Online) - Automatic parsing of parenthetical account codes
+- ✅ **Costpoint / Deltek** - Handles Debit/Credit columns with proper sign conventions
+- ✅ **NetSuite / Oracle Financials** - Multi-currency and dimensional data support
+- ✅ **SAP** (reserved for future enhancements)
+- ✅ **Generic / Other**: Microsoft Dynamics, Sage Intacct, Xero, custom systems
+
+**💡 During upload**, select your accounting system from the dropdown, or use "Auto-detect" to let the app figure it out automatically. The app will apply system-specific parsing for better accuracy.
 
 ---
 
@@ -544,6 +556,7 @@ Use your own free Google Gemini API key:
   - Override: "Reconcile all accounts" → forces all GL accounts even without subledger data
 - 📊 **Flexible CSV parsing**: Handles both text and numbers, commas (1,234.56), and parentheses for negatives (95.50)
 - 🤖 **Claude Skills Integration**: System-specific parsers for QuickBooks, Costpoint, and NetSuite
+  - **UI selector**: Choose your accounting system during file upload (or use auto-detect)
   - Automatically handles parenthetical account codes, debit/credit columns, multi-currency
   - PDF-to-CSV conversion for financial reports
   - Comprehensive automated testing (10 scenarios, all passing)

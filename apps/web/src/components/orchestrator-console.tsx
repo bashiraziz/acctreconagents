@@ -749,7 +749,7 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
           )}
 
           {/* Report */}
-          {result.geminiAgents.report && (
+          {result.geminiAgents?.report && (
             <div className="rounded-2xl border theme-border theme-card p-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold theme-text">
@@ -759,7 +759,10 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                   <button
                     onClick={async () => {
                       try {
-                        await navigator.clipboard.writeText(result.geminiAgents.report || "");
+                        const reportText = typeof result.geminiAgents?.report === 'string'
+                          ? result.geminiAgents.report
+                          : "";
+                        await navigator.clipboard.writeText(reportText);
                         // Show a brief success indicator
                         const btn = document.activeElement as HTMLButtonElement;
                         const originalText = btn.textContent;
@@ -778,7 +781,10 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                   </button>
                   <button
                     onClick={() => {
-                      const blob = new Blob([result.geminiAgents.report || ""], { type: "text/markdown" });
+                      const reportText = typeof result.geminiAgents?.report === 'string'
+                        ? result.geminiAgents.report
+                        : "";
+                      const blob = new Blob([reportText], { type: "text/markdown" });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement("a");
                       a.href = url;
@@ -795,7 +801,10 @@ function RunResultPanel({ result }: { result: OrchestratorResponse }) {
                   </button>
                   <button
                     onClick={() => {
-                      const blob = new Blob([result.geminiAgents.report || ""], { type: "text/plain" });
+                      const reportText = typeof result.geminiAgents?.report === 'string'
+                        ? result.geminiAgents.report
+                        : "";
+                      const blob = new Blob([reportText], { type: "text/plain" });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement("a");
                       a.href = url;

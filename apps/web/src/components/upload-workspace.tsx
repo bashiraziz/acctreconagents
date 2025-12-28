@@ -452,7 +452,7 @@ function FileTypeUploadZone({
 
   // Initialize metadata with default currency when file is uploaded
   useEffect(() => {
-    if (uploadedFile && !uploadedFile.metadata?.currency) {
+    if (uploadedFile && !uploadedFile.metadata?.currency && onMetadataUpdate) {
       // Set default USD if no currency is set
       onMetadataUpdate({
         accountCode: uploadedFile.metadata?.accountCode || "",
@@ -535,7 +535,7 @@ function FileTypeUploadZone({
                   setLocalAccountingSystem(system);
                   onAccountingSystemUpdate?.(system);
                 }}
-                className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400 focus:outline-none"
+                className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400 focus:outline-none [&>option]:text-slate-900 [&>option]:bg-white"
               >
                 <option value="auto">Auto-detect (recommended)</option>
                 <option value="quickbooks">QuickBooks</option>
