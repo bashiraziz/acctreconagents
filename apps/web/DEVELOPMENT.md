@@ -24,11 +24,34 @@ The app is designed to work perfectly **without a database** for development and
 
 ### What Requires Database
 
-❌ **Future features** (not currently implemented)
-- User authentication
+❌ **Authenticated features**
+- User authentication (implemented with Better Auth)
 - Persistent column mappings across sessions
 - Reconciliation history
 - Cross-device data sync
+
+## Authentication Implementation
+
+This app uses **Better Auth** with PostgreSQL for user authentication. The implementation includes:
+
+- Email/password authentication
+- Social auth (Google, GitHub) ready
+- Session management with database persistence
+- User-specific rate limits (2x anonymous limits when authenticated)
+
+### 🔌 Better Auth Claude Code Skill
+
+The Better Auth implementation used in this project has been packaged as a **reusable Claude Code skill** available to the community:
+
+**📦 Repository:** [bashiraziz/claude-better-auth-skill](https://github.com/bashiraziz/claude-better-auth-skill)
+
+This skill can be used by Claude to implement similar Better Auth authentication in other Next.js 16 projects. It includes:
+- Complete implementation guide
+- Database schema and migrations
+- Environment configuration
+- Troubleshooting for common bundling issues (Kysely/Prisma with Turbopack)
+
+**Note:** The skill uses the `pg` (node-postgres) adapter instead of Kysely or Prisma to avoid bundling issues with Next.js 16 + Turbopack.
 
 ### Expected Behavior
 
@@ -38,9 +61,9 @@ The app runs in **anonymous mode**:
 - Banner shown: "Anonymous Mode - full features available"
 - Data stored in **browser localStorage** (persists until browser data is cleared)
 
-### Database Support (Future)
+### Database Support (Optional)
 
-Database support for user authentication and persistence is planned for a future release. The current version is fully functional in anonymous mode.
+Database support enables user authentication and persistence, but the app remains fully functional in anonymous mode.
 
 ---
 
@@ -84,7 +107,7 @@ Only needed if you want to:
 - Save column mappings across sessions
 - Track reconciliation history
 - Enable user accounts
-- Remove rate limits for logged-in users
+- Double rate limits for logged-in users
 
 ---
 
@@ -110,6 +133,10 @@ POSTGRES_URL=postgresql://user:password@localhost:5432/dbname
 # Authentication
 BETTER_AUTH_SECRET=random-secret-key
 BETTER_AUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
 
 # Rate Limiting
 MATERIALITY_THRESHOLD=50  # Default threshold in dollars
@@ -134,7 +161,7 @@ npm test -- --scenario=01-simple-balanced
 
 ### With Database
 
-Same as above, but users can sign in to bypass rate limits during testing.
+Same as above, but users can sign in to get higher rate limits during testing.
 
 ---
 
@@ -150,7 +177,7 @@ For production, **database is recommended** but not required:
 
 ### With Database (Full Features)
 - User accounts and persistence
-- No rate limits for authenticated users
+- Higher rate limits for authenticated users (2x)
 - Cross-device sync
 - Reconciliation history
 

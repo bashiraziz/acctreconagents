@@ -31,6 +31,7 @@ skills/                # Claude skills for system-specific parsing and automatio
   netsuite-parser/     # NetSuite CSV parser (multi-currency, dimensional data)
   pdf-to-csv-extractor/# PDF financial report to CSV conversion
   recon-scenario-builder/ # Test scenario generation tool
+  better-auth-nextjs/  # Better Auth authentication skill (also available as public plugin)
 specs/
   reconciliation...    # Spec-Kit definition for canonical models + workflows
 data/
@@ -86,6 +87,21 @@ package.json           # Root scripts (Spec-Kit check)
   * Test scripts for validation
   * Comprehensive documentation (README, implementation summaries, test results)
 * **See:** `skills/README.md` for architecture and `skills/QUICK_REFERENCE.md` for usage guide
+
+#### 🔌 Reusable Claude Code Skill: Better Auth for Next.js
+
+During this project's development, we created a **production-ready Better Auth implementation skill** for Next.js 16 that avoids common bundling pitfalls. This skill has been packaged as a **public Claude Code plugin** for the community.
+
+**📦 GitHub Repository:** [bashiraziz/claude-better-auth-skill](https://github.com/bashiraziz/claude-better-auth-skill)
+
+**Features:**
+- ✅ Email/password authentication with Better Auth
+- ✅ Social auth (Google, GitHub) ready
+- ✅ Works with Next.js 16 + Turbopack (uses `pg` adapter, not Kysely/Prisma)
+- ✅ PostgreSQL/Neon database setup
+- ✅ Complete implementation guide with troubleshooting
+
+This skill can be used by Claude Code to implement Better Auth authentication similar to what's used in Rowshni's web app. Install it in any Next.js project via the Claude Code CLI or use it in claude.ai web conversations.
 
 ### Spec-Kit contracts
 * `specs/reconciliation.speckit.json` documents actors, canonical data models, agent tool contracts, and workflows.
