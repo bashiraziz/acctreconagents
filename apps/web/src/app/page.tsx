@@ -5,6 +5,7 @@ import { OrchestratorConsole } from "@/components/orchestrator-console";
 import { SampleDataPanel } from "@/components/sample-data-panel";
 import { UploadWorkspace } from "@/components/upload-workspace";
 import { AuthBanner } from "@/components/auth/auth-banner";
+import { UserMenu } from "@/components/auth/user-menu";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { DataPreview } from "@/components/data-preview";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -54,6 +55,7 @@ export default function Home() {
                 How to Use
               </Link>
               <ThemeToggle />
+              <UserMenu />
             </div>
           </div>
         </header>
