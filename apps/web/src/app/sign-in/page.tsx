@@ -31,7 +31,8 @@ export default function SignInPage() {
           rememberMe: true,
         });
         if (signInError) {
-          setError(signInError.message);
+          setError(signInError.message || "Invalid email or password. Please try again.");
+          setIsSubmitting(false);
           return;
         }
       } else {
@@ -41,16 +42,18 @@ export default function SignInPage() {
           password: form.password,
         });
         if (signUpError) {
-          setError(signUpError.message);
+          setError(signUpError.message || "Failed to create account. Please try again.");
+          setIsSubmitting(false);
           return;
         }
       }
 
+      // Only proceed if no errors
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
-    } finally {
+      console.error("Authentication error:", err);
+      setError(err instanceof Error ? err.message : "Authentication failed. Please check your credentials and try again.");
       setIsSubmitting(false);
     }
   };
