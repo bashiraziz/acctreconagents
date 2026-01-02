@@ -9,6 +9,83 @@ async function initializeDatabase() {
   console.log("🗄️  Initializing database tables...\n");
 
   try {
+    // Create Better Auth core tables
+    await sql`
+      CREATE TABLE IF NOT EXISTS "user" (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        "emailVerified" BOOLEAN NOT NULL DEFAULT FALSE,
+        image TEXT,
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    console.log("✓ user table created");
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "session" (
+        id TEXT PRIMARY KEY,
+        "userId" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+        token TEXT NOT NULL UNIQUE,
+        "expiresAt" TIMESTAMPTZ NOT NULL,
+        "ipAddress" TEXT,
+        "userAgent" TEXT,
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    console.log("✓ session table created");
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "account" (
+        id TEXT PRIMARY KEY,
+        "accountId" TEXT NOT NULL,
+        "providerId" TEXT NOT NULL,
+        "userId" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+        "accessToken" TEXT,
+        "refreshToken" TEXT,
+        "idToken" TEXT,
+        "accessTokenExpiresAt" TIMESTAMPTZ,
+        "refreshTokenExpiresAt" TIMESTAMPTZ,
+        scope TEXT,
+        password TEXT,
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    console.log("✓ account table created");
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "verification" (
+        id TEXT PRIMARY KEY,
+        identifier TEXT NOT NULL,
+        value TEXT NOT NULL,
+        "expiresAt" TIMESTAMPTZ NOT NULL,
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    console.log("✓ verification table created");
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_session_user
+      ON "session"("userId");
+    `;
+    console.log("✓ session user index created");
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_account_user
+      ON "account"("userId");
+    `;
+    console.log("✓ account user index created");
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_verification_identifier
+      ON "verification"(identifier);
+    `;
+    console.log("✓ verification identifier index created");
+
     // Create user_mappings table
     await sql`
       CREATE TABLE IF NOT EXISTS user_mappings (
@@ -76,6 +153,10 @@ async function initializeDatabase() {
 
     console.log("\n✅ Database initialization complete!\n");
     console.log("Tables created:");
+    console.log("  - user (Better Auth users)");
+    console.log("  - session (Better Auth sessions)");
+    console.log("  - account (Better Auth accounts)");
+    console.log("  - verification (Better Auth verification tokens)");
     console.log("  - user_mappings (stores column mappings per user)");
     console.log("  - user_accounts (stores account preferences)");
     console.log("  - reconciliation_history (stores run history)\n");

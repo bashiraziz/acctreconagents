@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
+import { auth } from "@/lib/auth";
 
 const DEFAULT_ORCHESTRATOR_URL = "http://127.0.0.1:4100";
 const orchestratorUrl =
@@ -62,12 +63,18 @@ function safeParseUrl(value: string) {
 
 export async function POST(request: Request) {
   try {
-    // Always treat as anonymous user (no authentication)
-    const isAuthenticated = false;
-
-    // Get client identifier based on IP address
-    const clientIp = getClientIp(request);
-    const identifier = `ip:${clientIp}`;
+    let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+    try {
+      session = await auth.api.getSession({
+        headers: request.headers,
+      });
+    } catch (error) {
+      console.warn("Auth session lookup failed, treating as anonymous:", error);
+    }
+    const isAuthenticated = Boolean(session?.user);
+    const identifier = isAuthenticated
+      ? `user:${session!.user.id}`
+      : `ip:${getClientIp(request)}`;
 
     // Check rate limit
     const rateLimit = checkRateLimit(identifier, isAuthenticated);

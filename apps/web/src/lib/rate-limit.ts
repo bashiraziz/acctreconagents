@@ -6,10 +6,10 @@
  * - 50 requests per 2 hours
  * - 70 requests per 3 hours
  *
- * Authenticated User Limits:
+ * Authenticated User Limits (2x anonymous):
  * - 60 requests per 1 hour
- * - 120 requests per 2 hours
- * - 180 requests per 3 hours
+ * - 100 requests per 2 hours
+ * - 140 requests per 3 hours
  *
  * Uses in-memory storage for simplicity. For production at scale,
  * consider migrating to Vercel KV or Redis.
@@ -73,8 +73,8 @@ export function checkRateLimit(
   const windows = authenticated
     ? [
         { duration: 60 * 60 * 1000, limit: 60, name: "1 hour" },       // 1 hour
-        { duration: 2 * 60 * 60 * 1000, limit: 120, name: "2 hours" }, // 2 hours
-        { duration: 3 * 60 * 60 * 1000, limit: 180, name: "3 hours" }, // 3 hours
+        { duration: 2 * 60 * 60 * 1000, limit: 100, name: "2 hours" }, // 2 hours
+        { duration: 3 * 60 * 60 * 1000, limit: 140, name: "3 hours" }, // 3 hours
       ]
     : [
         { duration: 60 * 60 * 1000, limit: 30, name: "1 hour" },      // 1 hour

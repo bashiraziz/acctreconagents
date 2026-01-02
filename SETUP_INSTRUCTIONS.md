@@ -60,6 +60,10 @@ POSTGRES_URL_NON_POOLING="postgres://..."
 # Generate secret: openssl rand -base64 32
 BETTER_AUTH_SECRET="your-random-secret-here"
 BETTER_AUTH_URL="http://localhost:3000"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
 
 # ============================================
 # GEMINI API (Free tier)

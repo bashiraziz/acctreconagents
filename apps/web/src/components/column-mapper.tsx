@@ -9,6 +9,7 @@ import {
 import { useReconciliationStore } from "@/store/reconciliationStore";
 import { suggestColumnMappings } from "@/lib/parseFile";
 import { createReconciliationPayload } from "@/lib/transformData";
+import { useSession } from "@/lib/auth-client";
 import type { ColumnMapping, FileType } from "@/types/reconciliation";
 
 const allFields = [...canonicalBalanceFields, ...transactionFields];
@@ -22,6 +23,7 @@ export function ColumnMapper() {
   const columnMappings = useReconciliationStore((state) => state.columnMappings);
   const setColumnMapping = useReconciliationStore((state) => state.setColumnMapping);
   const setReconciliationData = useReconciliationStore((state) => state.setReconciliationData);
+  const { data: session } = useSession();
 
   // Auto-suggest mappings when files are uploaded
   const handleAutoSuggest = (fileType: FileType) => {
@@ -76,7 +78,21 @@ export function ColumnMapper() {
 
     if (payload) {
       setReconciliationData(payload);
-      // Mappings are automatically saved to localStorage via Zustand persist
+      if (session?.user) {
+        const entries = Object.entries(columnMappings).filter(
+          ([, mapping]) => Object.keys(mapping).length > 0,
+        ) as [FileType, ColumnMapping][];
+
+        await Promise.all(
+          entries.map(([fileType, mapping]) =>
+            fetch("/api/user/mappings", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ fileType, mapping }),
+            }),
+          ),
+        );
+      }
     }
   };
 
@@ -283,7 +299,9 @@ export function ColumnMapper() {
               </div>
             )}
             <p className="mt-1 text-sm text-sky-200/80">
-              Mappings are saved locally in your browser
+              {session?.user
+                ? "Mappings are saved to your account"
+                : "Mappings are saved locally in your browser"}
             </p>
           </div>
           <button

@@ -1,19 +1,26 @@
 import { NextResponse } from "next/server";
 import { getRateLimitStatus } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
+import { auth } from "@/lib/auth";
 
 /**
  * GET /api/rate-limit
- * Returns current rate limit status for anonymous users
+ * Returns current rate limit status for the active user
  */
 export async function GET(request: Request) {
   try {
-    // Always treat as anonymous user (no authentication)
-    const isAuthenticated = false;
-
-    // Get client identifier based on IP
-    const clientIp = getClientIp(request);
-    const identifier = `ip:${clientIp}`;
+    let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+    try {
+      session = await auth.api.getSession({
+        headers: request.headers,
+      });
+    } catch (error) {
+      console.warn("Auth session lookup failed, treating as anonymous:", error);
+    }
+    const isAuthenticated = Boolean(session?.user);
+    const identifier = isAuthenticated
+      ? `user:${session!.user.id}`
+      : `ip:${getClientIp(request)}`;
 
     // Get rate limit status
     const status = getRateLimitStatus(identifier, isAuthenticated);
