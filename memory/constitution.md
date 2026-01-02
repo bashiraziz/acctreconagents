@@ -9,7 +9,7 @@ We always start from the Spec-Kit contract before touching code. Every new featu
 The product must stay approachable for controllers and auditors. Copy favors plain English over engineering jargon, and workflows map to real close tasks (upload, map, reconcile, narrate) with no technical prerequisites.
 
 ### III. Multi-Agent Transparency
-OpenAI Agents, Claude Skills, and Gemini helpers must expose their actions, prompts, and tool outputs in the orchestrator log. No silent automation—accountants can always review what the software did.
+OpenAI Agents, Claude Skills, and Gemini helpers must expose their actions, prompts, and tool outputs in the orchestrator log. No silent automationï¿½accountants can always review what the software did.
 
 ### IV. Guarded Data Flow
 Uploads never leave the orchestrator boundary without encryption, and we only persist normalized payloads needed to reproduce reconciliations. Secrets live in env files, and every dependency is pinned.
@@ -27,4 +27,7 @@ Each release moves through research ? plan ? implementation ? verification. Lint
 - The constitution overrides ad-hoc directives. Amendments require updating this file, referencing the motivating issue, and communicating in the README changelog.
 - Code reviews confirm adherence to these principles before merge.
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-07 | **Last Amended**: 2025-12-07
+**Version**: 1.1.0 | **Ratified**: 2025-12-07 | **Last Amended**: 2025-12-29
+
+## Amendment History
+- **v1.1.0 (2025-12-29)**: Added Principle VI "File Safety & User Confirmation" - requires explicit confirmation before deleting any files after accidental deletion of user files during cleanup operations.
