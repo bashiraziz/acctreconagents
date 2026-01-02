@@ -44,8 +44,8 @@ export function RateLimitStatus() {
   const percentage = (remaining / limit) * 100;
 
   // Color coding based on remaining uses (anonymous mode thresholds)
-  const lowThreshold = 2;
-  const mediumThreshold = 3;
+  const lowThreshold = Math.max(2, Math.floor(limit * 0.1));
+  const mediumThreshold = Math.max(lowThreshold + 1, Math.floor(limit * 0.2));
 
   let statusColor = "text-emerald-400";
   let bgColor = "bg-emerald-500/20";
@@ -75,7 +75,7 @@ export function RateLimitStatus() {
             <p className="text-xs text-slate-400">
               {remaining === 0
                 ? "Wait for reset or contact support"
-                : "per hour (anonymous mode)"}
+                : `per hour (${rateLimitInfo.authenticated ? "signed in" : "anonymous mode"})`}
             </p>
           </div>
         </div>
