@@ -82,7 +82,7 @@ type ReconciliationStore = {
   // ============================================
   // Sync with Database (for authenticated users)
   // ============================================
-  syncWithDatabase: (userId: string) => Promise<void>;
+  syncWithDatabase: () => Promise<void>;
 };
 
 const initialState = {
@@ -340,10 +340,10 @@ export const useReconciliationStore = create<ReconciliationStore>()(
       // ============================================
       // Database Sync (for authenticated users)
       // ============================================
-      syncWithDatabase: async (userId) => {
+      syncWithDatabase: async () => {
         try {
           // Load mappings from database
-          const response = await fetch(`/api/user/mappings?userId=${userId}`);
+          const response = await fetch("/api/user/mappings");
           if (response.ok) {
             const { mappings } = await response.json();
             if (mappings) {
@@ -360,8 +360,8 @@ export const useReconciliationStore = create<ReconciliationStore>()(
       partialize: (state) => ({
         // Only persist these fields for anonymous users
         columnMappings: state.columnMappings,
-        workflowStatus: state.workflowStatus,
         materialityThreshold: state.materialityThreshold,
+        // Note: workflowStatus is NOT persisted - always starts fresh on page load
       }),
     },
   ),
