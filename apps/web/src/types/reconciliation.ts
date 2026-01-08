@@ -13,7 +13,9 @@ export type AccountingSystem =
   | "quickbooks"    // QuickBooks (parenthetical accounts, US date format)
   | "costpoint"     // Costpoint/Deltek (debit/credit columns)
   | "netsuite"      // NetSuite/Oracle (multi-currency, dimensional data)
-  | "sap"           // SAP ERP
+  | "sap"           // SAP ERP (company code, G/L account, multi-currency)
+  | "dynamics"      // Microsoft Dynamics 365 Finance (dimension sets, financial tags)
+  | "xero"          // Xero (simple cloud accounting, tracking categories)
   | "generic";      // Generic/Other systems
 
 export type UploadedFile = {

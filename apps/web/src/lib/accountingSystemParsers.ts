@@ -46,6 +46,30 @@ export function detectAccountingSystem(
     return "netsuite";
   }
 
+  // SAP: Look for Company Code and G/L Account
+  const hasCompanyCode = headerLower.some((h) => h.includes("company code") || h.includes("co cd"));
+  const hasGLAccount = headerLower.some((h) => h.includes("g/l account") || h === "gl account");
+  const hasGCAmount = headerLower.some((h) => h.includes("gc amount") || h.includes("group currency"));
+  if (hasCompanyCode || hasGLAccount || hasGCAmount) {
+    return "sap";
+  }
+
+  // Dynamics: Look for Ledger Account with dimensions or Financial Dimensions
+  const hasLedgerAccount = headerLower.some((h) => h.includes("ledger account") || h.includes("main account"));
+  const hasDimensionSet = headerLower.some((h) =>
+    h.includes("costcenter") || h.includes("businessunit") || h.includes("dimension")
+  );
+  if (hasLedgerAccount || hasDimensionSet) {
+    return "dynamics";
+  }
+
+  // Xero: Look for simple "Account Code" + "Debit" + "Credit" pattern
+  const hasAccountCode = headerLower.some((h) => h === "account code" || h === "code");
+  const hasXeroDebitCredit = headerLower.includes("debit") && headerLower.includes("credit");
+  if (hasAccountCode && hasXeroDebitCredit) {
+    return "xero";
+  }
+
   // Default to generic
   return "generic";
 }
@@ -214,6 +238,243 @@ export function parseNetSuiteRow(row: Record<string, any>): Record<string, any> 
 }
 
 // ============================================
+// SAP Parser
+// ============================================
+
+/**
+ * Parse SAP ERP CSV format
+ * - Handles Company Code + G/L Account structure
+ * - Multi-currency support (LC Amount + GC Amount)
+ * - Date format: YYYYMMDD or DD.MM.YYYY
+ * - Document number tracking
+ */
+export function parseSAPRow(row: Record<string, any>): Record<string, any> {
+  const parsed: Record<string, any> = { ...row };
+
+  for (const [key, value] of Object.entries(row)) {
+    const keyLower = key.toLowerCase();
+
+    // Handle Company Code + G/L Account combination
+    if (keyLower.includes("company code") || keyLower.includes("co cd")) {
+      parsed.company_code = value;
+    } else if (keyLower.includes("g/l account") || keyLower.includes("gl account") || keyLower.includes("account")) {
+      // SAP often uses leading zeros, keep them
+      parsed.account_code = String(value).trim();
+    }
+
+    // Multi-currency: Prefer Group Currency (GC) over Local Currency (LC)
+    if (keyLower.includes("gc amount") || keyLower.includes("group currency amount")) {
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      if (!isNaN(num)) {
+        parsed.amount = num;
+      }
+    } else if (!parsed.amount && (keyLower.includes("amount in loc.cur") || keyLower.includes("lc amount"))) {
+      // Use local currency as fallback if no GC amount
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      if (!isNaN(num)) {
+        parsed.amount = num;
+      }
+    }
+
+    // Handle SAP date formats (YYYYMMDD or DD.MM.YYYY)
+    if (keyLower.includes("posting date") || keyLower.includes("date")) {
+      if (typeof value === "string") {
+        // Format: YYYYMMDD
+        if (/^\d{8}$/.test(value)) {
+          const year = value.substring(0, 4);
+          const month = value.substring(4, 6);
+          parsed.period = `${year}-${month}`;
+        }
+        // Format: DD.MM.YYYY
+        else if (/^\d{2}\.\d{2}\.\d{4}$/.test(value)) {
+          const parts = value.split(".");
+          parsed.period = `${parts[2]}-${parts[1]}`;
+        }
+      }
+    }
+
+    // Handle Debit/Credit indicator (S = Credit, H = Debit in some SAP exports)
+    if (keyLower.includes("debit/credit") || keyLower.includes("d/c")) {
+      if (value === "S" || value === "C") {
+        // Credit indicator - amount should be negative for liabilities
+        if (parsed.amount && parsed.amount > 0) {
+          parsed.amount = -parsed.amount;
+        }
+      }
+    }
+  }
+
+  return parsed;
+}
+
+// ============================================
+// Microsoft Dynamics 365 Finance Parser
+// ============================================
+
+/**
+ * Parse Microsoft Dynamics 365 Finance CSV format
+ * - Handles Main Account + Dimensions (separated by -)
+ * - Financial dimension sets (Department, Cost Center, Project)
+ * - Supports both detailed and summarized exports
+ */
+export function parseDynamicsRow(row: Record<string, any>): Record<string, any> {
+  const parsed: Record<string, any> = { ...row };
+
+  for (const [key, value] of Object.entries(row)) {
+    const keyLower = key.toLowerCase();
+
+    // Handle "Ledger account" or "Main account" field
+    if (keyLower.includes("ledger account") || keyLower.includes("main account")) {
+      if (typeof value === "string") {
+        // Dynamics often uses format: "MainAccount-Dimension1-Dimension2-..."
+        // Extract just the main account (first segment)
+        const segments = value.split("-");
+        parsed.account_code = segments[0].trim();
+
+        // Store full dimensional account if needed
+        if (segments.length > 1) {
+          parsed.dimensional_account = value;
+        }
+      } else {
+        parsed.account_code = String(value).trim();
+      }
+    }
+
+    // Handle Debit/Credit columns
+    if (keyLower === "debit" || keyLower === "debit amount") {
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      parsed.debit = isNaN(num) ? 0 : Math.abs(num);
+    } else if (keyLower === "credit" || keyLower === "credit amount") {
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      parsed.credit = isNaN(num) ? 0 : Math.abs(num);
+    }
+
+    // Handle "Accounting currency amount" (standard amount column)
+    if (keyLower.includes("accounting currency amount") ||
+        (keyLower.includes("amount") && !keyLower.includes("reporting"))) {
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      if (!isNaN(num) && !parsed.amount) {
+        parsed.amount = num;
+      }
+    }
+
+    // Financial dimensions
+    if (keyLower.includes("department") || keyLower.includes("costcenter") ||
+        keyLower.includes("project") || keyLower.includes("businessunit")) {
+      // Store dimensional values for aggregation
+      parsed[key] = value;
+    }
+  }
+
+  // Calculate amount from Debit - Credit if we have those
+  if (parsed.debit !== undefined && parsed.credit !== undefined) {
+    parsed.amount = parsed.debit - parsed.credit;
+  }
+
+  return parsed;
+}
+
+// ============================================
+// Xero Parser
+// ============================================
+
+/**
+ * Parse Xero CSV format
+ * - Simple cloud accounting format
+ * - Account Code + Account Name columns
+ * - Debit/Credit columns or Net Movement
+ * - Date format: DD MMM YYYY (e.g., "31 Dec 2025")
+ * - Tracking categories for dimensional data
+ */
+export function parseXeroRow(row: Record<string, any>): Record<string, any> {
+  const parsed: Record<string, any> = { ...row };
+
+  let debit: number | undefined;
+  let credit: number | undefined;
+
+  for (const [key, value] of Object.entries(row)) {
+    const keyLower = key.toLowerCase();
+
+    // Account Code is typically a separate column
+    if (keyLower === "account code" || keyLower === "code") {
+      parsed.account_code = String(value).trim();
+    }
+
+    // Account Name
+    if (keyLower === "account name" || keyLower === "account") {
+      parsed.account_name = String(value).trim();
+    }
+
+    // Handle Debit column
+    if (keyLower === "debit") {
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      debit = isNaN(num) ? 0 : Math.abs(num);
+    }
+
+    // Handle Credit column
+    if (keyLower === "credit") {
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      credit = isNaN(num) ? 0 : Math.abs(num);
+    }
+
+    // Handle Net Movement or Balance
+    if (keyLower.includes("net movement") || keyLower.includes("balance") ||
+        (keyLower === "amount" && debit === undefined && credit === undefined)) {
+      const num = typeof value === "string"
+        ? parseFloat(value.replace(/,/g, ""))
+        : Number(value);
+      if (!isNaN(num)) {
+        parsed.amount = num;
+      }
+    }
+
+    // Handle Xero date format: "31 Dec 2025"
+    if (keyLower.includes("date") || keyLower.includes("period")) {
+      if (typeof value === "string") {
+        // Match format: DD MMM YYYY
+        const monthMap: Record<string, string> = {
+          jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+          jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
+        };
+        const match = value.match(/^\d{1,2}\s+([A-Za-z]{3})\s+(\d{4})$/);
+        if (match) {
+          const month = monthMap[match[1].toLowerCase()];
+          if (month) {
+            parsed.period = `${match[2]}-${month}`;
+          }
+        }
+      }
+    }
+
+    // Tracking categories (Xero's dimensional data)
+    if (keyLower.includes("tracking") || keyLower.includes("category")) {
+      parsed[key] = value;
+    }
+  }
+
+  // Calculate amount from Debit - Credit if we have those
+  if (debit !== undefined && credit !== undefined && parsed.amount === undefined) {
+    parsed.amount = debit - credit;
+  }
+
+  return parsed;
+}
+
+// ============================================
 // Main Parser Selection Function
 // ============================================
 
@@ -231,9 +492,14 @@ export function parseRowForAccountingSystem(
       return parseCostpointRow(row);
     case "netsuite":
       return parseNetSuiteRow(row);
+    case "sap":
+      return parseSAPRow(row);
+    case "dynamics":
+      return parseDynamicsRow(row);
+    case "xero":
+      return parseXeroRow(row);
     case "auto":
     case "generic":
-    case "sap":
     default:
       // Generic parser - just return the row as-is
       return row;
