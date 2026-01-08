@@ -1,0 +1,6 @@
+account_code,account_name,period,currency,amount,vendor
+2000,Accounts Payable,2025-11,USD,-485000.00,Strategic Suppliers Inc
+2000,Accounts Payable,2025-11,USD,-125000.00,MissingGL Corp (NOT IN GL!)
+2000,Accounts Payable,2025-11,USD,-67500.00,Tech Vendors LLC (NOT IN GL!)
+1200,Accounts Receivable,2025-11,USD,725000.00,Customer Aggregate
+5000,Cost of Goods Sold,2025-11,USD,345000.00,COGS Aggregate

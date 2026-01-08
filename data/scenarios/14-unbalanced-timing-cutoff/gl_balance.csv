@@ -1,0 +1,4 @@
+account_code,account_name,period,currency,amount
+2000,Accounts Payable,2025-11,USD,-925000.00
+5000,Cost of Goods Sold,2025-11,USD,456000.00
+1200,Accounts Receivable,2025-11,USD,678000.00

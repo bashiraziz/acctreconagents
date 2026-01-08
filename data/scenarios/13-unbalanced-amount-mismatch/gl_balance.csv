@@ -1,0 +1,4 @@
+account_code,account_name,period,currency,amount
+2000,Accounts Payable,2025-12,USD,-845000.00
+1400,Inventory,2025-12,USD,567000.00
+6000,Operating Expenses,2025-12,USD,234000.00

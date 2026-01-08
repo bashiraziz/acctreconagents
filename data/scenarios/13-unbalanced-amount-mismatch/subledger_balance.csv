@@ -1,0 +1,4 @@
+account_code,account_name,period,currency,amount,note
+2000,Accounts Payable,2025-12,USD,-894500.00,GL has wrong amount (-$845k vs -$894.5k)
+1400,Inventory,2025-12,USD,567000.00,Matches GL
+6000,Operating Expenses,2025-12,USD,267500.00,GL has wrong amount ($234k vs $267.5k)

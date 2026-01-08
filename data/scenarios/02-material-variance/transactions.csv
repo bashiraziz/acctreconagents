@@ -1,0 +1,16 @@
+transaction_id,account_code,transaction_date,period,vendor,invoice_number,description,amount,currency
+TXN-2510-001,20100,2025-10-01,2025-10,Radius Labs,INV-99302,Professional services - October,275000.00,USD
+TXN-2510-003,20100,2025-10-03,2025-10,Radius Labs,INV-99302,Professional services - October (DUPLICATE),275000.00,USD
+TXN-2510-005,20100,2025-10-05,2025-10,TechSupply Inc,INV-44521,Hardware procurement,156000.00,USD
+TXN-2510-007,20100,2025-10-08,2025-10,Global Logistics,INV-78234,Shipping and freight,42500.00,USD
+TXN-2510-010,20100,2025-10-12,2025-10,DataCenter Corp,INV-55890,Cloud hosting - Q4,185000.00,USD
+TXN-2510-015,20100,2025-10-15,2025-10,Office Solutions,INV-23456,Office supplies,8900.00,USD
+TXN-2510-018,20100,2025-10-18,2025-10,Marketing Plus,INV-67123,Digital advertising,95000.00,USD
+TXN-2510-022,20100,2025-10-22,2025-10,Legal Services LLP,INV-89012,Legal consultation,67500.00,USD
+TXN-2510-025,20100,2025-10-25,2025-10,Facility Management,INV-34567,Building maintenance,45100.00,USD
+TXN-2510-028,20100,2025-10-28,2025-10,IT Consultants,INV-90234,System integration,135000.00,USD
+TXN-2510-031,20100,2025-10-31,2025-10,Travel Agency,INV-45678,Business travel - October,175000.00,USD
+TXN-2510-100,22010,2025-10-05,2025-10,Various,ACR-OCT-01,Accrued utilities,45000.00,USD
+TXN-2510-101,22010,2025-10-15,2025-10,Various,ACR-OCT-02,Accrued payroll taxes,85000.00,USD
+TXN-2510-102,22010,2025-10-25,2025-10,Various,ACR-OCT-03,Accrued professional fees,58000.00,USD
+TXN-2510-103,22010,2025-10-31,2025-10,Various,ACR-OCT-04,Accrued interest expense,27000.00,USD

@@ -1,0 +1,4 @@
+account_code,account_name,period,currency,amount,note
+2000,Accounts Payable,2025-11,USD,-1082500.00,Includes Nov 30 invoices posted late
+5000,Cost of Goods Sold,2025-11,USD,523500.00,Includes Nov 30 shipments
+1200,Accounts Receivable,2025-11,USD,678000.00,Matches GL (no cutoff issue)

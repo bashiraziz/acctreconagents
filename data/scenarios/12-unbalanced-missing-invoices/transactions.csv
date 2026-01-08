@@ -1,0 +1,14 @@
+transaction_id,account_code,transaction_date,period,vendor,invoice_number,description,amount,currency,gl_posted
+TXN-2511-001,2000,2025-11-02,2025-11,Strategic Suppliers Inc,INV-80001,Raw materials purchase,125000.00,USD,YES
+TXN-2511-003,2000,2025-11-05,2025-11,Strategic Suppliers Inc,INV-80045,Component parts,89000.00,USD,YES
+TXN-2511-007,2000,2025-11-10,2025-11,MissingGL Corp,INV-99401,Equipment purchase,125000.00,USD,NO
+TXN-2511-010,2000,2025-11-12,2025-11,Strategic Suppliers Inc,INV-80102,Packaging materials,156000.00,USD,YES
+TXN-2511-014,2000,2025-11-18,2025-11,Tech Vendors LLC,INV-44590,Software licenses,67500.00,USD,NO
+TXN-2511-016,2000,2025-11-22,2025-11,Strategic Suppliers Inc,INV-80156,Shipping supplies,115000.00,USD,YES
+TXN-2511-020,1200,2025-11-05,2025-11,ACME Corporation,SINV-5501,Product sales Q4,285000.00,USD,YES
+TXN-2511-022,1200,2025-11-12,2025-11,Global Trading Ltd,SINV-5510,Service contract,175000.00,USD,YES
+TXN-2511-025,1200,2025-11-20,2025-11,TechStart Inc,SINV-5523,Software subscription,125000.00,USD,YES
+TXN-2511-028,1200,2025-11-28,2025-11,Enterprise Solutions,SINV-5545,Consulting services,140000.00,USD,YES
+TXN-2511-030,5000,2025-11-08,2025-11,Various,COGS-1101,Direct materials,145000.00,USD,YES
+TXN-2511-032,5000,2025-11-15,2025-11,Various,COGS-1102,Direct labor,98000.00,USD,YES
+TXN-2511-034,5000,2025-11-22,2025-11,Various,COGS-1103,Manufacturing overhead,102000.00,USD,YES
