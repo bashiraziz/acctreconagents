@@ -3,6 +3,12 @@
  * Run with: npx tsx scripts/init-db.ts
  */
 
+import * as dotenv from "dotenv";
+import { resolve } from "path";
+
+// Load environment variables from .env.local
+dotenv.config({ path: resolve(__dirname, "../.env.local") });
+
 import { sql } from "@vercel/postgres";
 
 async function initializeDatabase() {
