@@ -9,93 +9,73 @@ import {
   getAllUserMappings,
 } from "@/lib/db/client";
 import { auth } from "@/lib/auth";
+import { withErrorHandler, ApiErrors } from "@/lib/api-error";
 import type { FileType, ColumnMapping } from "@/types/reconciliation";
 
 // GET /api/user/mappings?fileType=gl_balance
-export async function GET(request: NextRequest) {
+export const GET = withErrorHandler(async (request: NextRequest) => {
+  let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
   try {
-    let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
-    try {
-      session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    } catch (error) {
-      console.warn("Auth session lookup failed:", error);
-    }
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
-    }
-
-    const searchParams = request.nextUrl.searchParams;
-    const fileType = searchParams.get("fileType") as FileType | null;
-
-    if (fileType) {
-      // Get specific mapping
-      const mapping = await getUserMapping(session.user.id, fileType);
-      return NextResponse.json({ mapping });
-    } else {
-      // Get all mappings
-      const mappings = await getAllUserMappings(session.user.id);
-      const byType = {
-        gl_balance: {},
-        subledger_balance: {},
-        transactions: {},
-      } as Record<FileType, ColumnMapping>;
-      mappings.forEach((entry) => {
-        byType[entry.fileType] = entry.mapping;
-      });
-      return NextResponse.json({ mappings: byType });
-    }
+    session = await auth.api.getSession({
+      headers: request.headers,
+    });
   } catch (error) {
-    console.error("Failed to get user mappings:", error);
-    return NextResponse.json(
-      { error: "Failed to get mappings" },
-      { status: 500 },
-    );
+    console.warn("Auth session lookup failed:", error);
   }
-}
+  if (!session?.user) {
+    return ApiErrors.unauthorized();
+  }
+
+  const searchParams = request.nextUrl.searchParams;
+  const fileType = searchParams.get("fileType") as FileType | null;
+
+  if (fileType) {
+    // Get specific mapping
+    const mapping = await getUserMapping(session.user.id, fileType);
+    return NextResponse.json({ mapping });
+  } else {
+    // Get all mappings
+    const mappings = await getAllUserMappings(session.user.id);
+    const byType = {
+      gl_balance: {},
+      subledger_balance: {},
+      transactions: {},
+    } as Record<FileType, ColumnMapping>;
+    mappings.forEach((entry) => {
+      byType[entry.fileType] = entry.mapping;
+    });
+    return NextResponse.json({ mappings: byType });
+  }
+});
 
 // POST /api/user/mappings
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
+  let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
   try {
-    let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
-    try {
-      session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    } catch (error) {
-      console.warn("Auth session lookup failed:", error);
-    }
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
-    }
-
-    const body = await request.json();
-    const { fileType, mapping } = body as {
-      fileType: FileType;
-      mapping: ColumnMapping;
-    };
-
-    if (!fileType || !mapping) {
-      return NextResponse.json(
-        { error: "fileType and mapping are required" },
-        { status: 400 },
-      );
-    }
-
-    const saved = await saveUserMapping(session.user.id, fileType, mapping);
-    return NextResponse.json({ mapping: saved });
+    session = await auth.api.getSession({
+      headers: request.headers,
+    });
   } catch (error) {
-    console.error("Failed to save user mapping:", error);
-    return NextResponse.json(
-      { error: "Failed to save mapping" },
-      { status: 500 },
+    console.warn("Auth session lookup failed:", error);
+  }
+  if (!session?.user) {
+    return ApiErrors.unauthorized();
+  }
+
+  const body = await request.json();
+  const { fileType, mapping } = body as {
+    fileType: FileType;
+    mapping: ColumnMapping;
+  };
+
+  if (!fileType || !mapping) {
+    return ApiErrors.badRequest(
+      "Missing required fields",
+      "Both fileType and mapping are required",
+      ["Provide fileType (e.g., 'gl_balance', 'subledger_balance', 'transactions')", "Provide mapping object with column definitions"]
     );
   }
-}
+
+  const saved = await saveUserMapping(session.user.id, fileType, mapping);
+  return NextResponse.json({ mapping: saved });
+});

@@ -2,34 +2,11 @@ import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
 import { auth } from "@/lib/auth";
+import { apiError, ApiErrors } from "@/lib/api-error";
 
 const DEFAULT_ORCHESTRATOR_URL = "http://127.0.0.1:4100";
 const orchestratorUrl =
   process.env.ORCHESTRATOR_URL?.trim() || DEFAULT_ORCHESTRATOR_URL;
-
-type OrchestratorErrorPayload = {
-  message: string;
-  detail?: string;
-  help?: string[];
-  technical?: string;
-};
-
-function buildUnreachableError(error: unknown): OrchestratorErrorPayload {
-  const technical =
-    error instanceof Error ? error.message : error ? String(error) : undefined;
-
-  return {
-    message: "Can’t reach the agent service",
-    detail:
-      "The agent service (orchestrator) isn’t running or can’t be reached from the web app.",
-    help: [
-      "If you’re running locally, start the orchestrator in another terminal: `cd services/orchestrator` then `npm run dev`.",
-      "If you changed ports/hosts, set `ORCHESTRATOR_URL` in `apps/web/.env.local` (example: `ORCHESTRATOR_URL=http://127.0.0.1:4100`).",
-      "If this keeps happening, check firewall/VPN settings and try again.",
-    ],
-    technical,
-  };
-}
 
 async function forwardToOrchestrator(payload: unknown) {
   const attempt = async (baseUrl: string) => {
@@ -80,30 +57,18 @@ export async function POST(request: Request) {
     const rateLimit = checkRateLimit(identifier, isAuthenticated);
 
     if (!rateLimit.allowed) {
-      return NextResponse.json(
+      return ApiErrors.rateLimitExceeded(
+        `You've exceeded the limit of ${rateLimit.limit} reconciliations per ${rateLimit.window}. Please try again in ${Math.ceil((rateLimit.retryAfter || 0) / 60)} minutes.`,
         {
-          error: "Rate limit exceeded",
-          message: `You've exceeded the limit of ${rateLimit.limit} reconciliations per ${rateLimit.window}. Please try again in ${Math.ceil((rateLimit.retryAfter || 0) / 60)} minutes.`,
-          details: {
-            limit: rateLimit.limit,
-            window: rateLimit.window,
-            retryAfter: rateLimit.retryAfter,
-            reset: new Date(rateLimit.reset).toISOString(),
-          },
-          help: [
-            "Rate limits reset automatically after the time window expires",
-            "Wait for the reset time or contact support if you need higher limits",
-          ],
+          "X-RateLimit-Limit": rateLimit.limit.toString(),
+          "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+          "X-RateLimit-Reset": rateLimit.reset.toString(),
+          "Retry-After": (rateLimit.retryAfter || 0).toString(),
         },
-        {
-          status: 429,
-          headers: {
-            "X-RateLimit-Limit": rateLimit.limit.toString(),
-            "X-RateLimit-Remaining": rateLimit.remaining.toString(),
-            "X-RateLimit-Reset": rateLimit.reset.toString(),
-            "Retry-After": (rateLimit.retryAfter || 0).toString(),
-          },
-        }
+        [
+          "Rate limits reset automatically after the time window expires",
+          "Wait for the reset time or contact support if you need higher limits",
+        ]
       );
     }
 
@@ -124,10 +89,14 @@ export async function POST(request: Request) {
     }
     return NextResponse.json(data, { headers });
   } catch (error) {
-    const unreachable = buildUnreachableError(error);
-    return NextResponse.json(
-      unreachable,
-      { status: 503 },
+    return ApiErrors.serviceUnavailable(
+      "Agent service",
+      error instanceof Error ? error : undefined,
+      [
+        "If you're running locally, start the orchestrator in another terminal: `cd services/orchestrator` then `npm run dev`.",
+        "If you changed ports/hosts, set `ORCHESTRATOR_URL` in `apps/web/.env.local` (example: `ORCHESTRATOR_URL=http://127.0.0.1:4100`).",
+        "If this keeps happening, check firewall/VPN settings and try again.",
+      ]
     );
   }
 }

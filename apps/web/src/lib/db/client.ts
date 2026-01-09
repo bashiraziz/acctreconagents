@@ -22,26 +22,35 @@ export async function saveUserMapping(
 ): Promise<UserMapping> {
   const id = `mapping_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-  // Upsert: update if exists, insert if not
-  const result = await sql`
-    INSERT INTO user_mappings (id, user_id, file_type, mapping, created_at, updated_at)
-    VALUES (${id}, ${userId}, ${fileType}, ${JSON.stringify(mapping)}, NOW(), NOW())
-    ON CONFLICT (user_id, file_type)
-    DO UPDATE SET
-      mapping = ${JSON.stringify(mapping)},
-      updated_at = NOW()
-    RETURNING *;
-  `;
+  try {
+    // Upsert: update if exists, insert if not
+    const result = await sql`
+      INSERT INTO user_mappings (id, user_id, file_type, mapping, created_at, updated_at)
+      VALUES (${id}, ${userId}, ${fileType}, ${JSON.stringify(mapping)}, NOW(), NOW())
+      ON CONFLICT (user_id, file_type)
+      DO UPDATE SET
+        mapping = ${JSON.stringify(mapping)},
+        updated_at = NOW()
+      RETURNING *;
+    `;
 
-  const row = result.rows[0];
-  return {
-    id: row.id,
-    userId: row.user_id,
-    fileType: row.file_type as FileType,
-    mapping: row.mapping as ColumnMapping,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to save user mapping - no rows returned");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      fileType: row.file_type as FileType,
+      mapping: row.mapping as ColumnMapping,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  } catch (error) {
+    console.error("Database error in saveUserMapping:", error);
+    throw new Error(`Failed to save user mapping: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getUserMapping(
@@ -101,25 +110,34 @@ export async function saveUserAccount(
   const id = `account_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const threshold = materialityThreshold ?? 50;
 
-  const result = await sql`
-    INSERT INTO user_accounts (id, user_id, account_code, account_name, materiality_threshold, created_at)
-    VALUES (${id}, ${userId}, ${accountCode}, ${accountName}, ${threshold}, NOW())
-    ON CONFLICT (user_id, account_code)
-    DO UPDATE SET
-      account_name = ${accountName},
-      materiality_threshold = ${threshold}
-    RETURNING *;
-  `;
+  try {
+    const result = await sql`
+      INSERT INTO user_accounts (id, user_id, account_code, account_name, materiality_threshold, created_at)
+      VALUES (${id}, ${userId}, ${accountCode}, ${accountName}, ${threshold}, NOW())
+      ON CONFLICT (user_id, account_code)
+      DO UPDATE SET
+        account_name = ${accountName},
+        materiality_threshold = ${threshold}
+      RETURNING *;
+    `;
 
-  const row = result.rows[0];
-  return {
-    id: row.id,
-    userId: row.user_id,
-    accountCode: row.account_code,
-    accountName: row.account_name,
-    materialityThreshold: parseFloat(row.materiality_threshold),
-    createdAt: row.created_at,
-  };
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to save user account - no rows returned");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      accountCode: row.account_code,
+      accountName: row.account_name,
+      materialityThreshold: parseFloat(row.materiality_threshold),
+      createdAt: row.created_at,
+    };
+  } catch (error) {
+    console.error("Database error in saveUserAccount:", error);
+    throw new Error(`Failed to save user account: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getUserAccounts(
@@ -169,26 +187,35 @@ export async function saveReconciliationHistory(
   const accountsArray = `{${accounts.map(a => `"${a}"`).join(',')}}`;
   const periodsArray = `{${periods.map(p => `"${p}"`).join(',')}}`;
 
-  const result = await sql`
-    INSERT INTO reconciliation_history
-      (id, user_id, run_id, accounts, periods, status, summary, result_data, created_at)
-    VALUES
-      (${id}, ${userId}, ${runId}, ${accountsArray}, ${periodsArray}, ${status}, ${summary},
-       ${resultData ? JSON.stringify(resultData) : null}, NOW())
-    RETURNING *;
-  `;
+  try {
+    const result = await sql`
+      INSERT INTO reconciliation_history
+        (id, user_id, run_id, accounts, periods, status, summary, result_data, created_at)
+      VALUES
+        (${id}, ${userId}, ${runId}, ${accountsArray}, ${periodsArray}, ${status}, ${summary},
+         ${resultData ? JSON.stringify(resultData) : null}, NOW())
+      RETURNING *;
+    `;
 
-  const row = result.rows[0];
-  return {
-    id: row.id,
-    userId: row.user_id,
-    runId: row.run_id,
-    accounts: row.accounts,
-    periods: row.periods,
-    status: row.status as "success" | "failed" | "partial",
-    summary: row.summary,
-    createdAt: row.created_at,
-  };
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to save reconciliation history - no rows returned");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      runId: row.run_id,
+      accounts: row.accounts,
+      periods: row.periods,
+      status: row.status as "success" | "failed" | "partial",
+      summary: row.summary,
+      createdAt: row.created_at,
+    };
+  } catch (error) {
+    console.error("Database error in saveReconciliationHistory:", error);
+    throw new Error(`Failed to save reconciliation history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getReconciliationHistory(
