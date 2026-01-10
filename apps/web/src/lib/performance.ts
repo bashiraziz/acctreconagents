@@ -117,7 +117,7 @@ export function measureSync<T>(
  * ```
  */
 export function mark(markName: string): void {
-  if (typeof window !== 'undefined' && window.performance?.mark) {
+  if (typeof window !== 'undefined' && window.performance) {
     try {
       performance.mark(markName);
     } catch (error) {
@@ -144,7 +144,7 @@ export function mark(markName: string): void {
  * ```
  */
 export function measure(measureName: string, startMark: string, endMark: string): number | null {
-  if (typeof window !== 'undefined' && window.performance?.measure) {
+  if (typeof window !== 'undefined' && window.performance) {
     try {
       const measurement = performance.measure(measureName, startMark, endMark);
       const duration = measurement.duration;

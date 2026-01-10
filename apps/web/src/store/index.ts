@@ -3,6 +3,12 @@
  * Provides access to all domain-specific stores
  */
 
+import { useFileUploadStore } from "./fileUploadStore";
+import { useColumnMappingStore } from "./columnMappingStore";
+import { useWorkflowStore } from "./workflowStore";
+import { useAgentRunStore } from "./agentRunStore";
+import { useUserPreferencesStore } from "./userPreferencesStore";
+
 export { useFileUploadStore } from "./fileUploadStore";
 export { useColumnMappingStore } from "./columnMappingStore";
 export { useWorkflowStore } from "./workflowStore";

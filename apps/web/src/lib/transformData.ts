@@ -153,7 +153,7 @@ export function applyMapping(
         } else if ((canonicalField === "debit" || canonicalField === "credit") && value !== null && value !== undefined) {
           // Ensure debit/credit are numbers
           const num = typeof value === "string" ? parseFloat(value.replace(/,/g, "")) : Number(value);
-          value = isNaN(num) ? undefined : num;
+          value = isNaN(num) ? null : num;
           // Apply sign reversal if specified
           if (typeof value === "number" && metadata?.reverseSign) {
             value = value * -1;

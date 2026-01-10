@@ -23,7 +23,7 @@ export const GET = withErrorHandler(async (request: Request) => {
     : `ip:${getClientIp(request)}`;
 
   // Get rate limit status
-  const status = getRateLimitStatus(identifier, isAuthenticated);
+  const status = await getRateLimitStatus(identifier, isAuthenticated);
 
   return NextResponse.json({
     authenticated: isAuthenticated,

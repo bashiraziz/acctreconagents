@@ -118,7 +118,7 @@ function humanizeIssue(path: string, message: string): string {
 /**
  * Custom hook for orchestrator console state management
  */
-export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHandle>) {
+export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHandle | null>) {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OrchestratorResponse | null>(null);
