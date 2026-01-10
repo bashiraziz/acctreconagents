@@ -13,6 +13,8 @@ const ALLOWED_MIME_TYPES = [
   'text/plain',
   'application/vnd.ms-excel',
   'application/csv',
+  'application/octet-stream', // Some browsers send this for CSV files
+  '', // Empty MIME type (some browsers don't set it)
 ];
 
 // Check if Vercel Blob is configured
@@ -40,22 +42,22 @@ export const POST = withErrorHandler(async (request: Request) => {
     );
   }
 
-  // Validate MIME type
-  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    return ApiErrors.badRequest(
-      "Invalid file type",
-      `Only CSV files are allowed. Received: ${file.type}`,
-      ["Upload a CSV or TXT file", "Ensure the file has the correct MIME type"]
-    );
-  }
-
-  // Validate file extension
+  // Validate file extension (primary check)
   const fileExtension = file.name.split('.').pop()?.toLowerCase();
   if (!['csv', 'txt'].includes(fileExtension || '')) {
     return ApiErrors.badRequest(
       "Invalid file extension",
       "Only .csv and .txt files are allowed",
       ["Rename your file to have a .csv or .txt extension"]
+    );
+  }
+
+  // Validate MIME type (only if set by browser)
+  if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
+    return ApiErrors.badRequest(
+      "Invalid file type",
+      `Only CSV files are allowed. Received: ${file.type}`,
+      ["Upload a CSV or TXT file", "Ensure the file has the correct MIME type"]
     );
   }
 

@@ -155,7 +155,10 @@ export function useFileUpload() {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("Upload failed");
+        // Extract detailed error message from API response
+        const errorData = await uploadResponse.json().catch(() => null);
+        const errorMessage = errorData?.message || errorData?.details || `Upload failed (${uploadResponse.status})`;
+        throw new Error(errorMessage);
       }
 
       const payload = await uploadResponse.json();
@@ -226,7 +229,10 @@ export function useFileUpload() {
           });
 
           if (!response.ok) {
-            throw new Error("Upload failed");
+            // Extract detailed error message from API response
+            const errorData = await response.json().catch(() => null);
+            const errorMessage = errorData?.message || errorData?.details || `Upload failed (${response.status})`;
+            throw new Error(errorMessage);
           }
 
           const payload = await response.json();
