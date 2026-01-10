@@ -67,20 +67,36 @@ export const POST = withErrorHandler(async (request: Request) => {
 
   // Use Vercel Blob Storage if configured, otherwise fall back to local file system
   if (isBlobConfigured) {
-    // Upload to Vercel Blob
-    const blob = await put(fileName, file, {
-      access: "public",
-      addRandomSuffix: false,
-    });
+    try {
+      // Convert file to buffer for reliable Blob upload
+      const buffer = Buffer.from(await file.arrayBuffer());
 
-    return NextResponse.json({
-      ok: true,
-      fileName,
-      kind,
-      size: file.size,
-      url: blob.url,
-      storageType: "blob",
-    });
+      // Upload to Vercel Blob
+      const blob = await put(fileName, buffer, {
+        access: "public",
+        addRandomSuffix: false,
+      });
+
+      return NextResponse.json({
+        ok: true,
+        fileName,
+        kind,
+        size: file.size,
+        url: blob.url,
+        storageType: "blob",
+      });
+    } catch (error) {
+      // Detailed Blob storage error
+      return ApiErrors.internalServerError(
+        "Blob storage upload failed",
+        error instanceof Error ? error.message : "Unknown error during blob upload",
+        [
+          "Check Vercel Blob configuration",
+          "Verify BLOB_READ_WRITE_TOKEN is set correctly",
+          `File: ${file.name} (${(file.size / 1024).toFixed(1)}KB)`,
+        ]
+      );
+    }
   } else {
     // Fall back to local file system (development)
     await fs.mkdir(storageDir, { recursive: true });
