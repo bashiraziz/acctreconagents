@@ -87,14 +87,9 @@ export const POST = withErrorHandler(async (request: Request) => {
       });
     } catch (error) {
       // Detailed Blob storage error
-      return ApiErrors.internalServerError(
+      return ApiErrors.internalError(
         "Blob storage upload failed",
-        error instanceof Error ? error.message : "Unknown error during blob upload",
-        [
-          "Check Vercel Blob configuration",
-          "Verify BLOB_READ_WRITE_TOKEN is set correctly",
-          `File: ${file.name} (${(file.size / 1024).toFixed(1)}KB)`,
-        ]
+        error instanceof Error ? error : new Error(String(error))
       );
     }
   } else {
