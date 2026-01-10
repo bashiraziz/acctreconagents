@@ -2,20 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { signOut, useSession } from "@/lib/auth-client";
-import { useReconciliationStore } from "@/store/reconciliationStore";
+import { resetAllStores } from "@/store";
 
 export function UserMenu() {
   const { data: session, isPending } = useSession();
-  const syncWithDatabase = useReconciliationStore((state) => state.syncWithDatabase);
   const router = useRouter();
 
-  useEffect(() => {
-    if (session?.user) {
-      void syncWithDatabase();
-    }
-  }, [session?.user?.id, syncWithDatabase]);
+  // Note: syncWithDatabase() was removed per migration guide
+  // Database syncing should be handled at the API layer, not in the store
 
   if (isPending) {
     return (
@@ -45,6 +40,7 @@ export function UserMenu() {
       </div>
       <button
         onClick={async () => {
+          resetAllStores(); // Clear all store state before signing out
           await signOut();
           router.refresh();
         }}

@@ -6,7 +6,8 @@ import {
   canonicalBalanceFields,
   transactionFields,
 } from "@/lib/spec";
-import { useReconciliationStore } from "@/store/reconciliationStore";
+import { useFileUploadStore } from "@/store/fileUploadStore";
+import { useColumnMappingStore } from "@/store/columnMappingStore";
 import { suggestColumnMappings } from "@/lib/parseFile";
 import { createReconciliationPayload } from "@/lib/transformData";
 import { useSession } from "@/lib/auth-client";
@@ -18,11 +19,11 @@ export function ColumnMapper() {
   const [activeTab, setActiveTab] = useState<"gl" | "subledger" | "transactions">("gl");
   const [errors, setErrors] = useState<string[]>([]);
 
-  // Get data from Zustand store
-  const uploadedFiles = useReconciliationStore((state) => state.uploadedFiles);
-  const columnMappings = useReconciliationStore((state) => state.columnMappings);
-  const setColumnMapping = useReconciliationStore((state) => state.setColumnMapping);
-  const setReconciliationData = useReconciliationStore((state) => state.setReconciliationData);
+  // Get data from domain-specific stores (migrated from old reconciliationStore)
+  const uploadedFiles = useFileUploadStore((state) => state.files);
+  const columnMappings = useColumnMappingStore((state) => state.mappings);
+  const setColumnMapping = useColumnMappingStore((state) => state.setMapping);
+  const setReconciliationData = useFileUploadStore((state) => state.setReconciliationData);
   const { data: session } = useSession();
 
   // Auto-suggest mappings when files are uploaded

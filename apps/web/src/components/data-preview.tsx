@@ -5,11 +5,11 @@
 
 "use client";
 
-import { useReconciliationStore } from "@/store/reconciliationStore";
+import { useFileUploadStore } from "@/store/fileUploadStore";
 import type { ReconciliationPayload } from "@/types/reconciliation";
 
 export function DataPreview() {
-  const reconciliationData = useReconciliationStore(
+  const reconciliationData = useFileUploadStore(
     (state) => state.reconciliationData,
   );
 

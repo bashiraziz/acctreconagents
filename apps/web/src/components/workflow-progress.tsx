@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useReconciliationStore } from "@/store/reconciliationStore";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 type Step = {
   id: string;
@@ -42,7 +42,7 @@ const steps: Step[] = [
 ];
 
 export function WorkflowProgress() {
-  const workflowStatus = useReconciliationStore((state) => state.workflowStatus);
+  const workflowStatus = useWorkflowStore((state) => state.status);
 
   const getStepStatus = (stepId: string): "complete" | "active" | "pending" | "incomplete" => {
     const status = workflowStatus[stepId as keyof typeof workflowStatus];
