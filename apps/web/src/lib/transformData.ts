@@ -13,10 +13,17 @@ import type {
   ReconciliationPayload,
   AccountingSystem,
 } from "@/types/reconciliation";
+import type { RawCSVRow, ParsedCSVRow } from "@/types/csv";
 import {
   detectAccountingSystem,
   parseRowForAccountingSystem,
 } from "./accountingSystemParsers";
+import {
+  processBatchWithValidation,
+  shouldUseBatching,
+  calculateOptimalBatchSize,
+  type BatchOptions,
+} from "./batch-processor";
 
 // ============================================
 // Zod Schemas (flexible to handle various CSV formats)
@@ -104,11 +111,11 @@ const transactionSchema = z.object({
  * Also applies system-specific parsing if accounting system is specified
  */
 export function applyMapping(
-  rows: Record<string, any>[],
+  rows: RawCSVRow[],
   mapping: ColumnMapping,
   metadata?: { accountCode?: string; period?: string; currency?: string; reverseSign?: boolean },
   accountingSystem?: AccountingSystem,
-): Record<string, any>[] {
+): ParsedCSVRow[] {
   return rows.map((row) => {
     // Step 1: Apply system-specific parsing first (if specified)
     let parsedRow = row;
@@ -116,7 +123,7 @@ export function applyMapping(
       parsedRow = parseRowForAccountingSystem(row, accountingSystem);
     }
 
-    const transformed: Record<string, any> = {};
+    const transformed: ParsedCSVRow = {};
 
     // Pre-populate metadata fields to ensure they exist as properties
     // This ensures they appear in data previews and Object.keys()
@@ -361,4 +368,219 @@ export function getMappingCompletion(
 ): number {
   const mappedCount = Object.values(mapping).filter(Boolean).length;
   return Math.round((mappedCount / totalFields) * 100);
+}
+
+// ============================================
+// Optimized Batch Processing Functions
+// ============================================
+
+/**
+ * Transform and validate balance data with batching (optimized for large datasets)
+ * Uses batch processing to avoid blocking the event loop
+ *
+ * @param file - Uploaded file with rows
+ * @param mapping - Column mapping
+ * @param options - Batch processing options
+ * @returns Promise with validated data and errors
+ */
+export async function transformBalancesBatched(
+  file: UploadedFile | null,
+  mapping: ColumnMapping,
+  options?: BatchOptions,
+): Promise<{ data: Balance[]; errors: string[] }> {
+  if (!file) {
+    return { data: [], errors: [] };
+  }
+
+  // For small datasets, use synchronous version
+  if (!shouldUseBatching(file.rows.length)) {
+    return transformBalances(file, mapping);
+  }
+
+  // Auto-detect accounting system if not specified
+  let accountingSystem = file.accountingSystem || "auto";
+  if (accountingSystem === "auto" && file.rows.length > 0) {
+    accountingSystem = detectAccountingSystem(file.headers, file.rows[0]);
+  }
+
+  // Transform rows (still synchronous, but fast)
+  const transformed = applyMapping(file.rows, mapping, file.metadata, accountingSystem);
+
+  // Validate in batches (this is where batching helps most)
+  const batchSize = options?.batchSize || calculateOptimalBatchSize(transformed.length);
+
+  const result = await processBatchWithValidation(
+    transformed,
+    (row, index) => {
+      const validationResult = balanceSchema.safeParse(row);
+
+      if (validationResult.success) {
+        return { success: true, data: validationResult.data };
+      } else {
+        const fieldErrors = validationResult.error.issues
+          .map((err) => `${err.path.join(".")}: ${err.message}`)
+          .join(", ");
+        return { success: false, error: `Row ${index + 1}: ${fieldErrors}` };
+      }
+    },
+    { batchSize, ...options }
+  );
+
+  return {
+    data: result.data,
+    errors: result.errors.map(e => e.error),
+  };
+}
+
+/**
+ * Transform and validate transaction data with batching (optimized for large datasets)
+ * Uses batch processing to avoid blocking the event loop
+ *
+ * @param file - Uploaded file with rows
+ * @param mapping - Column mapping
+ * @param options - Batch processing options
+ * @returns Promise with validated data and errors
+ */
+export async function transformTransactionsBatched(
+  file: UploadedFile | null,
+  mapping: ColumnMapping,
+  options?: BatchOptions,
+): Promise<{ data: Transaction[]; errors: string[] }> {
+  if (!file) {
+    return { data: [], errors: [] };
+  }
+
+  // For small datasets, use synchronous version
+  if (!shouldUseBatching(file.rows.length)) {
+    return transformTransactions(file, mapping);
+  }
+
+  // Auto-detect accounting system if not specified
+  let accountingSystem = file.accountingSystem || "auto";
+  if (accountingSystem === "auto" && file.rows.length > 0) {
+    accountingSystem = detectAccountingSystem(file.headers, file.rows[0]);
+  }
+
+  // Transform rows
+  const transformed = applyMapping(file.rows, mapping, file.metadata, accountingSystem);
+
+  // Validate in batches
+  const batchSize = options?.batchSize || calculateOptimalBatchSize(transformed.length);
+
+  const result = await processBatchWithValidation(
+    transformed,
+    (row, index) => {
+      const validationResult = transactionSchema.safeParse(row);
+
+      if (validationResult.success) {
+        return { success: true, data: validationResult.data };
+      } else {
+        const fieldErrors = validationResult.error.issues
+          .map((err) => `${err.path.join(".")}: ${err.message}`)
+          .join(", ");
+        return { success: false, error: `Row ${index + 1}: ${fieldErrors}` };
+      }
+    },
+    { batchSize, ...options }
+  );
+
+  return {
+    data: result.data,
+    errors: result.errors.map(e => e.error),
+  };
+}
+
+/**
+ * Create complete reconciliation payload with batching (optimized for large datasets)
+ * Uses async batch processing for better performance with large files
+ *
+ * @param glBalanceFile - GL balance file
+ * @param glBalanceMapping - GL balance mapping
+ * @param subledgerBalanceFile - Subledger balance file
+ * @param subledgerBalanceMapping - Subledger balance mapping
+ * @param transactionsFile - Transactions file (optional)
+ * @param transactionsMapping - Transactions mapping
+ * @param options - Batch processing options
+ * @returns Promise with payload and errors
+ */
+export async function createReconciliationPayloadBatched(
+  glBalanceFile: UploadedFile | null,
+  glBalanceMapping: ColumnMapping,
+  subledgerBalanceFile: UploadedFile | null,
+  subledgerBalanceMapping: ColumnMapping,
+  transactionsFile: UploadedFile | null,
+  transactionsMapping: ColumnMapping,
+  options?: BatchOptions,
+): Promise<{
+  payload: ReconciliationPayload | null;
+  errors: string[];
+}> {
+  const allErrors: string[] = [];
+
+  // Transform GL balances (with batching if large)
+  const glResult = await transformBalancesBatched(glBalanceFile, glBalanceMapping, options);
+  if (glResult.errors.length > 0) {
+    allErrors.push(...glResult.errors.map((err) => `GL Balance: ${err}`));
+  }
+
+  // Transform subledger balances (with batching if large)
+  const subledgerResult = await transformBalancesBatched(
+    subledgerBalanceFile,
+    subledgerBalanceMapping,
+    options,
+  );
+  if (subledgerResult.errors.length > 0) {
+    allErrors.push(
+      ...subledgerResult.errors.map((err) => `Subledger Balance: ${err}`),
+    );
+  }
+
+  // Transform transactions (with batching if large, optional)
+  const transactionsResult = await transformTransactionsBatched(
+    transactionsFile,
+    transactionsMapping,
+    options,
+  );
+  if (transactionsResult.errors.length > 0) {
+    allErrors.push(
+      ...transactionsResult.errors.map((err) => `Transaction: ${err}`),
+    );
+  }
+
+  // Check minimum requirements
+  if (glResult.data.length === 0) {
+    allErrors.push("GL Balance: No valid rows found");
+  }
+
+  if (subledgerResult.data.length === 0) {
+    allErrors.push("Subledger Balance: No valid rows found");
+  }
+
+  // If critical errors, return null
+  if (
+    glResult.data.length === 0 ||
+    subledgerResult.data.length === 0
+  ) {
+    return { payload: null, errors: allErrors };
+  }
+
+  // Extract unique periods
+  const periods = new Set<string>();
+  glResult.data.forEach((row) => {
+    if (row.period) periods.add(row.period);
+  });
+  subledgerResult.data.forEach((row) => {
+    if (row.period) periods.add(row.period);
+  });
+
+  const orderedPeriods = Array.from(periods).sort();
+
+  const payload: ReconciliationPayload = {
+    glBalances: glResult.data,
+    subledgerBalances: subledgerResult.data,
+    transactions: transactionsResult.data.length > 0 ? transactionsResult.data : undefined,
+    orderedPeriods: orderedPeriods.length > 0 ? orderedPeriods : undefined,
+  };
+
+  return { payload, errors: allErrors };
 }

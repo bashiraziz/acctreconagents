@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { withErrorHandler, ApiErrors } from "@/lib/api-error";
@@ -13,6 +14,9 @@ const ALLOWED_MIME_TYPES = [
   'application/vnd.ms-excel',
   'application/csv',
 ];
+
+// Check if Vercel Blob is configured
+const isBlobConfigured = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 export const POST = withErrorHandler(async (request: Request) => {
   const data = await request.formData();
@@ -55,28 +59,41 @@ export const POST = withErrorHandler(async (request: Request) => {
     );
   }
 
-  // Create storage directory
-  await fs.mkdir(storageDir, { recursive: true });
-
   // Sanitize filename and create unique name
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const fileName = `${Date.now()}-${safeName}`;
-  const filePath = path.join(storageDir, fileName);
 
-  // Read file into buffer
-  const buffer = Buffer.from(await file.arrayBuffer());
+  // Use Vercel Blob Storage if configured, otherwise fall back to local file system
+  if (isBlobConfigured) {
+    // Upload to Vercel Blob
+    const blob = await put(fileName, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
 
-  // Write file to disk
-  await fs.writeFile(filePath, buffer);
+    return NextResponse.json({
+      ok: true,
+      fileName,
+      kind,
+      size: file.size,
+      url: blob.url,
+      storageType: "blob",
+    });
+  } else {
+    // Fall back to local file system (development)
+    await fs.mkdir(storageDir, { recursive: true });
 
-  // TODO: Implement file cleanup mechanism for old files
-  // TODO: Consider moving to Vercel Blob Storage for production
+    const filePath = path.join(storageDir, fileName);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await fs.writeFile(filePath, buffer);
 
-  return NextResponse.json({
-    ok: true,
-    fileName,
-    kind,
-    size: file.size,
-    path: filePath,
-  });
+    return NextResponse.json({
+      ok: true,
+      fileName,
+      kind,
+      size: file.size,
+      path: filePath,
+      storageType: "local",
+    });
+  }
 });

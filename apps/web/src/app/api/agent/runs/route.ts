@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       : `ip:${getClientIp(request)}`;
 
     // Check rate limit
-    const rateLimit = checkRateLimit(identifier, isAuthenticated);
+    const rateLimit = await checkRateLimit(identifier, isAuthenticated);
 
     if (!rateLimit.allowed) {
       return ApiErrors.rateLimitExceeded(

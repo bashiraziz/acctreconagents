@@ -1,5 +1,5 @@
 /**
- * Rate limiting for all users
+ * Distributed Rate Limiting
  *
  * Anonymous User Limits:
  * - 30 requests per 1 hour
@@ -11,32 +11,41 @@
  * - 100 requests per 2 hours
  * - 140 requests per 3 hours
  *
- * Uses in-memory storage for simplicity. For production at scale,
- * consider migrating to Vercel KV or Redis.
+ * Storage:
+ * - Production: Vercel KV (distributed, persistent)
+ * - Development: In-memory (simple, fast)
  */
 
 interface RateLimitRecord {
   timestamps: number[];
 }
 
-// In-memory store - will reset on server restart
+// Check if Vercel KV is configured
+const isKVConfigured = !!(
+  process.env.KV_REST_API_URL &&
+  process.env.KV_REST_API_TOKEN
+);
+
+// In-memory store for development (will reset on server restart)
 const rateLimitStore = new Map<string, RateLimitRecord>();
 
-// Cleanup old entries every 10 minutes
-setInterval(() => {
-  const now = Date.now();
-  const threeHoursAgo = now - 3 * 60 * 60 * 1000;
+// Cleanup old entries every 10 minutes (in-memory only)
+if (!isKVConfigured) {
+  setInterval(() => {
+    const now = Date.now();
+    const threeHoursAgo = now - 3 * 60 * 60 * 1000;
 
-  for (const [key, record] of rateLimitStore.entries()) {
-    // Remove timestamps older than 3 hours
-    record.timestamps = record.timestamps.filter(ts => ts > threeHoursAgo);
+    for (const [key, record] of rateLimitStore.entries()) {
+      // Remove timestamps older than 3 hours
+      record.timestamps = record.timestamps.filter(ts => ts > threeHoursAgo);
 
-    // If no recent requests, remove the entry entirely
-    if (record.timestamps.length === 0) {
-      rateLimitStore.delete(key);
+      // If no recent requests, remove the entry entirely
+      if (record.timestamps.length === 0) {
+        rateLimitStore.delete(key);
+      }
     }
-  }
-}, 10 * 60 * 1000);
+  }, 10 * 60 * 1000);
+}
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -48,22 +57,58 @@ export interface RateLimitResult {
 }
 
 /**
+ * Get KV client (lazy loaded)
+ */
+async function getKVClient() {
+  if (!isKVConfigured) {
+    throw new Error("Vercel KV is not configured");
+  }
+  const { kv } = await import("@vercel/kv");
+  return kv;
+}
+
+/**
+ * Get rate limit record from storage
+ */
+async function getRecord(identifier: string): Promise<RateLimitRecord> {
+  if (isKVConfigured) {
+    const kv = await getKVClient();
+    const record = await kv.get<RateLimitRecord>(`ratelimit:${identifier}`);
+    return record || { timestamps: [] };
+  } else {
+    return rateLimitStore.get(identifier) || { timestamps: [] };
+  }
+}
+
+/**
+ * Save rate limit record to storage
+ */
+async function setRecord(
+  identifier: string,
+  record: RateLimitRecord
+): Promise<void> {
+  if (isKVConfigured) {
+    const kv = await getKVClient();
+    // Set with 3 hour expiration (auto cleanup)
+    await kv.set(`ratelimit:${identifier}`, record, { ex: 3 * 60 * 60 });
+  } else {
+    rateLimitStore.set(identifier, record);
+  }
+}
+
+/**
  * Check if a request is allowed based on rate limits
  * @param identifier - IP address or user ID
  * @param authenticated - Whether the user is authenticated
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   identifier: string,
   authenticated: boolean = false
-): RateLimitResult {
+): Promise<RateLimitResult> {
   const now = Date.now();
 
-  // Get or create record
-  let record = rateLimitStore.get(identifier);
-  if (!record) {
-    record = { timestamps: [] };
-    rateLimitStore.set(identifier, record);
-  }
+  // Get record from storage
+  const record = await getRecord(identifier);
 
   // Remove timestamps older than 3 hours
   const threeHoursAgo = now - 3 * 60 * 60 * 1000;
@@ -106,6 +151,7 @@ export function checkRateLimit(
 
   // All checks passed - record this request
   record.timestamps.push(now);
+  await setRecord(identifier, record);
 
   // Calculate remaining requests (most restrictive window)
   const oneHourLimit = authenticated ? 60 : 30;
@@ -125,13 +171,13 @@ export function checkRateLimit(
 /**
  * Get current rate limit status without incrementing
  */
-export function getRateLimitStatus(
+export async function getRateLimitStatus(
   identifier: string,
   authenticated: boolean = false
-): Omit<RateLimitResult, "allowed"> {
+): Promise<Omit<RateLimitResult, "allowed">> {
   const now = Date.now();
   const oneHourLimit = authenticated ? 60 : 30;
-  const record = rateLimitStore.get(identifier);
+  const record = await getRecord(identifier);
 
   if (!record || record.timestamps.length === 0) {
     return {
@@ -162,16 +208,31 @@ export function getRateLimitStatus(
 /**
  * Clear rate limit for a specific identifier (admin function)
  */
-export function clearRateLimit(identifier: string): void {
-  rateLimitStore.delete(identifier);
+export async function clearRateLimit(identifier: string): Promise<void> {
+  if (isKVConfigured) {
+    const kv = await getKVClient();
+    await kv.del(`ratelimit:${identifier}`);
+  } else {
+    rateLimitStore.delete(identifier);
+  }
 }
 
 /**
  * Get total number of tracked identifiers (monitoring)
+ * Note: Only works with in-memory storage
  */
 export function getRateLimitStats() {
+  if (isKVConfigured) {
+    return {
+      totalIdentifiers: -1, // KV doesn't support listing all keys efficiently
+      storageType: "kv" as const,
+      identifiers: [],
+    };
+  }
+
   return {
     totalIdentifiers: rateLimitStore.size,
+    storageType: "memory" as const,
     identifiers: Array.from(rateLimitStore.entries()).map(([id, record]) => ({
       id,
       requestCount: record.timestamps.length,
@@ -180,4 +241,18 @@ export function getRateLimitStats() {
         : null,
     })),
   };
+}
+
+/**
+ * Check if KV storage is available
+ */
+export function isKVStorageAvailable(): boolean {
+  return isKVConfigured;
+}
+
+/**
+ * Get storage type
+ */
+export function getRateLimitStorageType(): "kv" | "memory" {
+  return isKVConfigured ? "kv" : "memory";
 }

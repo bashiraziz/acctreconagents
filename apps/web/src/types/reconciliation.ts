@@ -2,6 +2,8 @@
  * Shared TypeScript types for the reconciliation application
  */
 
+import type { RawCSVRow } from './csv';
+
 // ============================================
 // File Upload Types
 // ============================================
@@ -27,7 +29,7 @@ export type UploadedFile = {
   rowCount: number;
   columnCount: number;
   headers: string[];
-  rows: Record<string, any>[];
+  rows: RawCSVRow[];
   accountingSystem?: AccountingSystem;  // Which accounting system generated this file
   metadata?: {
     accountCode?: string;    // For files missing account codes (e.g., subledger with vendor names)

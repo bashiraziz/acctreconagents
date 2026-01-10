@@ -4,6 +4,7 @@
 
 import Papa from "papaparse";
 import type { UploadedFile, FileType } from "@/types/reconciliation";
+import type { RawCSVRow } from "@/types/csv";
 
 export type ParseResult = {
   success: boolean;
@@ -45,7 +46,7 @@ export async function parseCSVFile(
         }
 
         const headers = results.meta.fields || [];
-        const rows = results.data as Record<string, any>[];
+        const rows = results.data as RawCSVRow[];
 
         const uploadedFile: UploadedFile = {
           id: `file_${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -80,7 +81,7 @@ export async function parseCSVFile(
 export function getPreviewRows(
   file: UploadedFile,
   limit: number = 5,
-): Record<string, any>[] {
+): RawCSVRow[] {
   return file.rows.slice(0, limit);
 }
 
