@@ -37,6 +37,11 @@ export function UploadWorkspace() {
   const structuredUploads = uploads.filter((record) => record.channel === "structured");
   const supportingUploads = uploads.filter((record) => record.channel === "supporting");
 
+  // Get upload records by file type for error display
+  const glUploadRecord = uploads.find((r) => r.fileType === "gl_balance");
+  const subledgerUploadRecord = uploads.find((r) => r.fileType === "subledger_balance");
+  const transactionsUploadRecord = uploads.find((r) => r.fileType === "transactions");
+
   return (
     <section className="theme-card theme-border border p-6">
       <header className="flex items-start justify-between gap-4">
@@ -50,7 +55,7 @@ export function UploadWorkspace() {
           <div className="rounded border theme-border theme-muted px-3 py-1 text-xs theme-text-muted">
             Max 20MB
           </div>
-          {(uploadedFiles.glBalance || uploadedFiles.subledgerBalance || uploadedFiles.transactions) && (
+          {(uploadedFiles.glBalance || uploadedFiles.subledgerBalance || uploadedFiles.transactions || uploads.length > 0) && (
             <button
               onClick={() => {
                 if (confirm("Clear all uploaded files? This will reset your workflow.")) {
@@ -75,6 +80,7 @@ export function UploadWorkspace() {
           description="CSV or PDF - Period auto-detected from filename"
           accept={ACCEPTED_CSV_OR_PDF}
           uploadedFile={uploadedFiles.glBalance}
+          uploadRecord={glUploadRecord}
           onFiles={(files) => handleStructuredFiles(files, "gl_balance", (file) => setUploadedFile("gl_balance", file))}
           onRemove={() => {
             clearUploadedFile("gl_balance");
@@ -92,6 +98,7 @@ export function UploadWorkspace() {
           description="CSV or PDF - Period auto-detected from filename"
           accept={ACCEPTED_CSV_OR_PDF}
           uploadedFile={uploadedFiles.subledgerBalance}
+          uploadRecord={subledgerUploadRecord}
           onFiles={(files) =>
             handleStructuredFiles(files, "subledger_balance", (file) =>
               setUploadedFile("subledger_balance", file)
@@ -113,6 +120,7 @@ export function UploadWorkspace() {
           description="Optional: Transaction-level detail for variance investigation"
           accept={ACCEPTED_CSV}
           uploadedFile={uploadedFiles.transactions}
+          uploadRecord={transactionsUploadRecord}
           onFiles={(files) =>
             handleStructuredFiles(files, "transactions", (file) => setUploadedFile("transactions", file))
           }
