@@ -43,7 +43,7 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 
 ### Access Rowshni
 
-**Live URL:** https://acctreconagents.vercel.app
+**Live URL:** https://www.rowshni.xyz
 
 **Local Development:** http://localhost:3100 (if running locally)
 
