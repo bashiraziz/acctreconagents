@@ -57,44 +57,58 @@ export async function getUserMapping(
   userId: string,
   fileType: FileType,
 ): Promise<UserMapping | null> {
-  const result = await sql`
-    SELECT * FROM user_mappings
-    WHERE user_id = ${userId} AND file_type = ${fileType}
-    LIMIT 1;
-  `;
+  try {
+    const result = await sql`
+      SELECT * FROM user_mappings
+      WHERE user_id = ${userId} AND file_type = ${fileType}
+      LIMIT 1;
+    `;
 
-  if (result.rows.length === 0) {
-    return null;
+    if (!result.rows || result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      fileType: row.file_type as FileType,
+      mapping: row.mapping as ColumnMapping,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  } catch (error) {
+    console.error("Database error in getUserMapping:", error);
+    throw new Error(`Failed to get user mapping: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  const row = result.rows[0];
-  return {
-    id: row.id,
-    userId: row.user_id,
-    fileType: row.file_type as FileType,
-    mapping: row.mapping as ColumnMapping,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
 }
 
 export async function getAllUserMappings(
   userId: string,
 ): Promise<UserMapping[]> {
-  const result = await sql`
-    SELECT * FROM user_mappings
-    WHERE user_id = ${userId}
-    ORDER BY updated_at DESC;
-  `;
+  try {
+    const result = await sql`
+      SELECT * FROM user_mappings
+      WHERE user_id = ${userId}
+      ORDER BY updated_at DESC;
+    `;
 
-  return result.rows.map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    fileType: row.file_type as FileType,
-    mapping: row.mapping as ColumnMapping,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }));
+    if (!result.rows) {
+      return [];
+    }
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      fileType: row.file_type as FileType,
+      mapping: row.mapping as ColumnMapping,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  } catch (error) {
+    console.error("Database error in getAllUserMappings:", error);
+    throw new Error(`Failed to get user mappings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 // ============================================
@@ -143,30 +157,44 @@ export async function saveUserAccount(
 export async function getUserAccounts(
   userId: string,
 ): Promise<UserAccount[]> {
-  const result = await sql`
-    SELECT * FROM user_accounts
-    WHERE user_id = ${userId}
-    ORDER BY account_code ASC;
-  `;
+  try {
+    const result = await sql`
+      SELECT * FROM user_accounts
+      WHERE user_id = ${userId}
+      ORDER BY account_code ASC;
+    `;
 
-  return result.rows.map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    accountCode: row.account_code,
-    accountName: row.account_name,
-    materialityThreshold: parseFloat(row.materiality_threshold),
-    createdAt: row.created_at,
-  }));
+    if (!result.rows) {
+      return [];
+    }
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      accountCode: row.account_code,
+      accountName: row.account_name,
+      materialityThreshold: parseFloat(row.materiality_threshold),
+      createdAt: row.created_at,
+    }));
+  } catch (error) {
+    console.error("Database error in getUserAccounts:", error);
+    throw new Error(`Failed to get user accounts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function deleteUserAccount(
   userId: string,
   accountCode: string,
 ): Promise<void> {
-  await sql`
-    DELETE FROM user_accounts
-    WHERE user_id = ${userId} AND account_code = ${accountCode};
-  `;
+  try {
+    await sql`
+      DELETE FROM user_accounts
+      WHERE user_id = ${userId} AND account_code = ${accountCode};
+    `;
+  } catch (error) {
+    console.error("Database error in deleteUserAccount:", error);
+    throw new Error(`Failed to delete user account: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 // ============================================
@@ -222,38 +250,52 @@ export async function getReconciliationHistory(
   userId: string,
   limit: number = 50,
 ): Promise<ReconciliationHistory[]> {
-  const result = await sql`
-    SELECT * FROM reconciliation_history
-    WHERE user_id = ${userId}
-    ORDER BY created_at DESC
-    LIMIT ${limit};
-  `;
+  try {
+    const result = await sql`
+      SELECT * FROM reconciliation_history
+      WHERE user_id = ${userId}
+      ORDER BY created_at DESC
+      LIMIT ${limit};
+    `;
 
-  return result.rows.map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    runId: row.run_id,
-    accounts: row.accounts,
-    periods: row.periods,
-    status: row.status as "success" | "failed" | "partial",
-    summary: row.summary,
-    createdAt: row.created_at,
-  }));
+    if (!result.rows) {
+      return [];
+    }
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      runId: row.run_id,
+      accounts: row.accounts,
+      periods: row.periods,
+      status: row.status as "success" | "failed" | "partial",
+      summary: row.summary,
+      createdAt: row.created_at,
+    }));
+  } catch (error) {
+    console.error("Database error in getReconciliationHistory:", error);
+    throw new Error(`Failed to get reconciliation history: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getReconciliationDetail(
   userId: string,
   runId: string,
 ): Promise<any | null> {
-  const result = await sql`
-    SELECT result_data FROM reconciliation_history
-    WHERE user_id = ${userId} AND run_id = ${runId}
-    LIMIT 1;
-  `;
+  try {
+    const result = await sql`
+      SELECT result_data FROM reconciliation_history
+      WHERE user_id = ${userId} AND run_id = ${runId}
+      LIMIT 1;
+    `;
 
-  if (result.rows.length === 0) {
-    return null;
+    if (!result.rows || result.rows.length === 0) {
+      return null;
+    }
+
+    return result.rows[0].result_data;
+  } catch (error) {
+    console.error("Database error in getReconciliationDetail:", error);
+    throw new Error(`Failed to get reconciliation detail: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return result.rows[0].result_data;
 }
