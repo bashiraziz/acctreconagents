@@ -51,46 +51,46 @@ export function AuthBanner() {
               </p>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-xs dark:text-blue-300 dark:hover:text-blue-100 text-blue-700 hover:text-blue-900 underline whitespace-nowrap"
+                className="text-xs dark:text-blue-300 dark:hover:text-blue-100 text-blue-900 hover:text-blue-950 underline whitespace-nowrap font-medium"
                 aria-expanded={isExpanded}
               >
                 {isExpanded ? "Hide details" : "Show details"}
               </button>
             </div>
-            <p className="mt-1 text-sm dark:text-blue-200/80 text-blue-800">
+            <p className="mt-1 text-sm dark:text-blue-200/80 text-slate-800">
               You can use all reconciliation features without signing in. Your work is saved locally in this browser session.
             </p>
             {isExpanded && (
-              <ul className="mt-2 space-y-1 text-sm dark:text-blue-200/80 text-blue-800">
+              <ul className="mt-2 space-y-1 text-sm dark:text-blue-200/80 text-slate-800">
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-700">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
                   <span>
                     Rate limits: 30 reconciliations per hour
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-700">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
                   <span>
                     Sign in to double your rate limits and save mappings
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-700">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
                   <span>Extended limits: 50 per 2 hours, 70 per 3 hours</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-700">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
                   <span>AI analysis: shared quotas with auto-retry</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-700">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
                   <span className="text-xs">
                     dY'­ Use your own{" "}
                     <a
                       href="https://ai.google.dev/gemini-api/docs/api-key"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline dark:hover:text-blue-100 hover:text-blue-900"
+                      className="underline font-medium dark:text-blue-300 dark:hover:text-blue-100 text-blue-900 hover:text-blue-950"
                     >
                       free Gemini API key
                     </a>
