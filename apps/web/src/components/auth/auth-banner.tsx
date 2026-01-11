@@ -22,10 +22,10 @@ export function AuthBanner() {
               ✓
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold dark:text-emerald-100 text-emerald-900">
+              <p className="font-semibold dark:text-emerald-100 text-slate-900">
                 Signed in as {session.user.name || session.user.email}
               </p>
-              <p className="mt-1 text-sm dark:text-emerald-200/80 text-emerald-800">
+              <p className="mt-1 text-sm dark:text-emerald-200/80 text-slate-700">
                 Your mappings are saved to your account and your rate limits are doubled.
               </p>
             </div>
