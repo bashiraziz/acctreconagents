@@ -57,11 +57,11 @@ export function AuthBanner() {
                 {isExpanded ? "Hide details" : "Show details"}
               </button>
             </div>
-            <p className="mt-1 text-sm dark:text-blue-200/80 text-slate-800">
+            <p className="mt-1 text-sm dark:text-blue-200/80 text-slate-900">
               You can use all reconciliation features without signing in. Your work is saved locally in this browser session.
             </p>
             {isExpanded && (
-              <ul className="mt-2 space-y-1 text-sm dark:text-blue-200/80 text-slate-800">
+              <ul className="mt-2 space-y-1 text-sm dark:text-blue-200/80 text-slate-900">
                 <li className="flex items-start gap-2">
                   <span className="dark:text-blue-400 text-blue-900">•</span>
                   <span>
