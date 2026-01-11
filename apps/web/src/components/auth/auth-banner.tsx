@@ -42,7 +42,7 @@ export function AuthBanner() {
       <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20 dark:text-blue-400 text-blue-700">
-            ƒ,1‹,?
+            👤
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
@@ -63,29 +63,29 @@ export function AuthBanner() {
             {isExpanded && (
               <ul className="mt-2 space-y-1 text-sm dark:text-blue-200/80 text-slate-800">
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">•</span>
                   <span>
                     Rate limits: 30 reconciliations per hour
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">•</span>
                   <span>
                     Sign in to double your rate limits and save mappings
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">•</span>
                   <span>Extended limits: 50 per 2 hours, 70 per 3 hours</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">•</span>
                   <span>AI analysis: shared quotas with auto-retry</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="dark:text-blue-400 text-blue-900">ƒ?›</span>
+                  <span className="dark:text-blue-400 text-blue-900">•</span>
                   <span className="text-xs">
-                    dY'­ Use your own{" "}
+                    💡 Use your own{" "}
                     <a
                       href="https://ai.google.dev/gemini-api/docs/api-key"
                       target="_blank"
