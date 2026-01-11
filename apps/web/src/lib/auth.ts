@@ -28,4 +28,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:3100",
+    // Add your production domain here via BETTER_AUTH_URL env var
+    ...(process.env.BETTER_AUTH_URL && process.env.BETTER_AUTH_URL !== "http://localhost:3000"
+      ? [process.env.BETTER_AUTH_URL]
+      : []),
+  ],
 });
