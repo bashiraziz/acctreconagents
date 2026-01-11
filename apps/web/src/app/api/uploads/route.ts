@@ -21,6 +21,8 @@ const ALLOWED_MIME_TYPES = [
 const isBlobConfigured = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 export const POST = withErrorHandler(async (request: Request) => {
+  console.log(`[Upload] Blob configured: ${isBlobConfigured}`);
+
   const data = await request.formData();
   const file = data.get("file");
   const kind = String(data.get("kind") ?? "supporting");
@@ -67,9 +69,11 @@ export const POST = withErrorHandler(async (request: Request) => {
 
   // Use Vercel Blob Storage if configured, otherwise fall back to local file system
   if (isBlobConfigured) {
+    console.log(`[Upload] Using Vercel Blob storage for: ${fileName}`);
     try {
       // Convert file to buffer for reliable Blob upload
       const buffer = Buffer.from(await file.arrayBuffer());
+      console.log(`[Upload] Buffer size: ${buffer.length} bytes`);
 
       // Upload to Vercel Blob
       const blob = await put(fileName, buffer, {
@@ -77,6 +81,7 @@ export const POST = withErrorHandler(async (request: Request) => {
         addRandomSuffix: false,
       });
 
+      console.log(`[Upload] Success! Blob URL: ${blob.url}`);
       return NextResponse.json({
         ok: true,
         fileName,
@@ -87,8 +92,12 @@ export const POST = withErrorHandler(async (request: Request) => {
       });
     } catch (error) {
       // Detailed Blob storage error
+      console.error(`[Upload] Blob storage error:`, error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[Upload] Error message: ${errorMessage}`);
+
       return ApiErrors.internalError(
-        "Blob storage upload failed",
+        `Blob storage error: ${errorMessage}`,
         error instanceof Error ? error : new Error(String(error))
       );
     }
