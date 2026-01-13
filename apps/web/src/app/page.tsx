@@ -54,8 +54,8 @@ export default function Home() {
               >
                 How to Use
               </Link>
-              <ThemeToggle />
               <UserMenu />
+              <ThemeToggle />
             </div>
           </div>
         </header>
