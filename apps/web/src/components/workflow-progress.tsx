@@ -62,16 +62,6 @@ export function WorkflowProgress() {
     return "incomplete";
   };
 
-  const getCurrentStepIndex = () => {
-    const statuses = Object.values(workflowStatus);
-    const lastCompleteIndex = statuses.findIndex(
-      (s) => s === "incomplete" || s === "not_started",
-    );
-    return lastCompleteIndex === -1 ? steps.length - 1 : lastCompleteIndex;
-  };
-
-  const currentStepIndex = getCurrentStepIndex();
-
   return (
     <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-6">
       <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
@@ -81,7 +71,6 @@ export function WorkflowProgress() {
       <div className="mt-4 grid gap-3 sm:grid-cols-4">
         {steps.map((step, index) => {
           const status = getStepStatus(step.id);
-          const isActive = index === currentStepIndex;
 
           return (
             <div

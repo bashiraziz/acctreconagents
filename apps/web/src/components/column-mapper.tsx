@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CanonicalField,
   canonicalBalanceFields,
@@ -11,9 +11,8 @@ import { useColumnMappingStore } from "@/store/columnMappingStore";
 import { suggestColumnMappings } from "@/lib/parseFile";
 import { createReconciliationPayload } from "@/lib/transformData";
 import { useSession } from "@/lib/auth-client";
-import type { ColumnMapping, FileType } from "@/types/reconciliation";
+import type { ColumnMapping, FileType, UploadedFile } from "@/types/reconciliation";
 
-const allFields = [...canonicalBalanceFields, ...transactionFields];
 
 export function ColumnMapper() {
   const [activeTab, setActiveTab] = useState<"gl" | "subledger" | "transactions">("gl");
@@ -327,7 +326,7 @@ function MappingTab({
   onMappingChange,
 }: {
   fileType: FileType;
-  file: any;
+  file: UploadedFile | null;
   mapping: ColumnMapping;
   fields: CanonicalField[];
   onAutoSuggest: () => void;
@@ -472,7 +471,7 @@ function MappingTab({
         <h4 className="text-sm font-semibold text-slate-300">Current Mappings</h4>
         <div className="mt-2 space-y-1 text-xs">
           {Object.entries(mapping)
-            .filter(([_, value]) => value)
+            .filter(([, value]) => value)
             .map(([key, value]) => (
               <div key={key} className="flex items-center justify-between theme-text-muted">
                 <span>{key}</span>
@@ -480,7 +479,7 @@ function MappingTab({
                 <span className="font-mono theme-text">{value}</span>
               </div>
             ))}
-          {Object.entries(mapping).filter(([_, value]) => value).length === 0 && (
+          {Object.entries(mapping).filter(([, value]) => value).length === 0 && (
             <p className="text-slate-500">No mappings set yet</p>
           )}
         </div>

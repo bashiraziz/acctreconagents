@@ -1,5 +1,5 @@
 /**
- * CSV/TSV File parsing utility using PapaParse
+ * CSV/TSV/TXT parsing utility using PapaParse
  */
 
 import Papa from "papaparse";
@@ -13,7 +13,7 @@ export type ParseResult = {
 };
 
 /**
- * Parse a CSV or TSV file
+ * Parse a CSV, TSV, or TXT file
  */
 export async function parseCSVFile(
   file: File,
@@ -93,6 +93,7 @@ export function suggestColumnMappings(
   canonicalFields: string[],
 ): Record<string, string> {
   const suggestions: Record<string, string> = {};
+  const allowedFields = new Set(canonicalFields);
 
   // Common patterns for account code
   const accountPatterns = [
@@ -150,34 +151,49 @@ export function suggestColumnMappings(
 
   for (const header of headers) {
     // Try to match account_code
-    if (accountPatterns.some((pattern) => pattern.test(header))) {
+    if (
+      allowedFields.has("account_code") &&
+      accountPatterns.some((pattern) => pattern.test(header))
+    ) {
       suggestions.account_code = header;
     }
 
     // Try to match period
-    if (periodPatterns.some((pattern) => pattern.test(header))) {
+    if (allowedFields.has("period") && periodPatterns.some((pattern) => pattern.test(header))) {
       suggestions.period = header;
     }
 
     // Try to match amount
-    if (amountPatterns.some((pattern) => pattern.test(header))) {
+    if (
+      allowedFields.has("amount") &&
+      amountPatterns.some((pattern) => pattern.test(header))
+    ) {
       if (!suggestions.amount) {
         suggestions.amount = header;
       }
     }
 
     // Try to match currency
-    if (currencyPatterns.some((pattern) => pattern.test(header))) {
+    if (
+      allowedFields.has("currency") &&
+      currencyPatterns.some((pattern) => pattern.test(header))
+    ) {
       suggestions.currency = header;
     }
 
     // Try to match description
-    if (descriptionPatterns.some((pattern) => pattern.test(header))) {
+    if (
+      allowedFields.has("description") &&
+      descriptionPatterns.some((pattern) => pattern.test(header))
+    ) {
       suggestions.description = header;
     }
 
     // Try to match booked_at
-    if (bookedAtPatterns.some((pattern) => pattern.test(header))) {
+    if (
+      allowedFields.has("booked_at") &&
+      bookedAtPatterns.some((pattern) => pattern.test(header))
+    ) {
       suggestions.booked_at = header;
     }
   }

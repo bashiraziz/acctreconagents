@@ -171,7 +171,7 @@ export type ReconciliationResult = {
   activity: number;
   adjustments: number;
   notes: string[];
-  transactions: any[];
+  transactions: Transaction[];
 };
 
 export type RollForwardEntry = {
@@ -188,7 +188,7 @@ export type LocalToolOutput = {
   materiality: number;
   reconciliations: ReconciliationResult[];
   rollForward: RollForwardEntry[];
-  transactions: any[];
+  transactions: Transaction[];
 };
 
 export type OrchestratorResponse = {

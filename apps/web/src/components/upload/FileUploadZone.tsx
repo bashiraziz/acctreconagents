@@ -11,6 +11,7 @@ interface FileUploadZoneProps {
   label: string;
   description: string;
   accept: string;
+  multiple?: boolean;
   required?: boolean;
   onFiles: (files: FileList | null) => void;
 }
@@ -19,6 +20,7 @@ export function FileUploadZone({
   label,
   description,
   accept,
+  multiple = false,
   required = false,
   onFiles,
 }: FileUploadZoneProps) {
@@ -80,6 +82,7 @@ export function FileUploadZone({
           type="file"
           className="hidden"
           accept={accept}
+          multiple={multiple}
           onChange={(e) => onFiles(e.target.files)}
         />
       </label>

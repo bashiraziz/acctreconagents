@@ -15,6 +15,8 @@ class MockParser extends BaseAccountingParser {
   readonly description = 'Test parser'
 
   detect(headers: string[], firstRow: RawCSVRow): DetectionResult {
+    void headers
+    void firstRow
     return { confidence: 0.8, reason: 'Mock detection' }
   }
 

@@ -1,52 +1,82 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 export type Theme = "light" | "medium-dark" | "dark";
+const DEFAULT_THEME: Theme = "light";
+const THEME_STORAGE_KEY = "theme";
+const THEME_CHANGE_EVENT = "rowshni-theme-change";
 
-export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+function isTheme(value: string | null): value is Theme {
+  return value === "light" || value === "medium-dark" || value === "dark";
+}
 
-  useEffect(() => {
-    setMounted(true);
-    // Load theme from localStorage (only in browser)
-    if (typeof window !== "undefined") {
-      try {
-        const savedTheme = localStorage.getItem("theme") as Theme;
-        if (savedTheme && ["light", "medium-dark", "dark"].includes(savedTheme)) {
-          setTheme(savedTheme);
-          document.documentElement.setAttribute("data-theme", savedTheme);
-        }
-      } catch (error) {
-        // Silently ignore localStorage errors
-      }
-    }
-  }, []);
+function getThemeSnapshot(): Theme {
+  if (typeof window === "undefined") {
+    return DEFAULT_THEME;
+  }
 
-  const changeTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-    if (typeof window !== "undefined") {
-      // Always set the theme attribute (works even if localStorage is blocked)
-      document.documentElement.setAttribute("data-theme", newTheme);
+  try {
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return isTheme(savedTheme) ? savedTheme : DEFAULT_THEME;
+  } catch {
+    return DEFAULT_THEME;
+  }
+}
 
-      // Try to save to localStorage for persistence (optional)
-      try {
-        localStorage.setItem("theme", newTheme);
-      } catch (error) {
-        // Silently ignore localStorage errors - theme works but won't persist across sessions
-      }
+function subscribeToThemeChanges(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleStorage = (event: StorageEvent) => {
+    if (!event.key || event.key === THEME_STORAGE_KEY) {
+      onStoreChange();
     }
   };
 
-  if (!mounted) {
-    return null; // Avoid hydration mismatch
+  const handleThemeChange = () => {
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(THEME_CHANGE_EVENT, handleThemeChange);
+
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(THEME_CHANGE_EVENT, handleThemeChange);
+  };
+}
+
+function updateTheme(theme: Theme) {
+  if (typeof window === "undefined") {
+    return;
   }
+
+  document.documentElement.setAttribute("data-theme", theme);
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // localStorage is optional; keep theme applied even if persistence fails
+  }
+  window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+}
+
+export function ThemeToggle() {
+  const theme = useSyncExternalStore(
+    subscribeToThemeChanges,
+    getThemeSnapshot,
+    () => DEFAULT_THEME
+  );
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   return (
     <div className="flex items-center gap-1 rounded border theme-border theme-card p-1">
       <button
-        onClick={() => changeTheme("light")}
+        onClick={() => updateTheme("light")}
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "light"
             ? "bg-gray-900 text-white"
@@ -57,7 +87,7 @@ export function ThemeToggle() {
         Light
       </button>
       <button
-        onClick={() => changeTheme("medium-dark")}
+        onClick={() => updateTheme("medium-dark")}
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "medium-dark"
             ? "bg-gray-900 text-white"
@@ -68,7 +98,7 @@ export function ThemeToggle() {
         Medium
       </button>
       <button
-        onClick={() => changeTheme("dark")}
+        onClick={() => updateTheme("dark")}
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
           theme === "dark"
             ? "bg-gray-900 text-white"

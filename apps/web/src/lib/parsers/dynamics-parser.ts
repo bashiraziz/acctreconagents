@@ -16,6 +16,7 @@ export class DynamicsParser extends BaseAccountingParser {
    * Detect Dynamics format by looking for Ledger Account with dimensions
    */
   detect(headers: string[], firstRow: RawCSVRow): DetectionResult {
+    void firstRow;
     const hasLedgerAccount = this.hasHeaders(headers, [
       "ledger account",
       "main account"

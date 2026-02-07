@@ -16,6 +16,8 @@ export class GenericParser extends BaseAccountingParser {
    * Generic parser has low confidence - only used as fallback
    */
   detect(headers: string[], firstRow: RawCSVRow): DetectionResult {
+    void headers;
+    void firstRow;
     // Always return low confidence - this is a fallback parser
     return {
       confidence: 0.1,

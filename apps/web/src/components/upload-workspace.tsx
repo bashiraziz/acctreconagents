@@ -7,14 +7,12 @@
 
 import { useFileUploadStore } from "@/store/fileUploadStore";
 import { FileTypeUploadZone } from "./upload/FileTypeUploadZone";
+import { FileUploadZone } from "./upload/FileUploadZone";
 import { useFileUpload, type UploadRecord } from "./upload/useFileUpload";
 
-const ACCEPTED_CSV =
-  ".csv,.tsv,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-const ACCEPTED_CSV_OR_PDF =
-  ".csv,.tsv,.xls,.xlsx,.pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf";
-const ACCEPTED_SUPPORTING =
-  ".pdf,.doc,.docx,.ppt,.pptx,.csv,.xls,.xlsx,.txt,image/*";
+const ACCEPTED_DELIMITED =
+  ".csv,.tsv,.txt,text/csv,text/plain,text/tab-separated-values";
+const ACCEPTED_SUPPORTING = ACCEPTED_DELIMITED;
 
 export function UploadWorkspace() {
   // File upload store (migrated from old reconciliationStore)
@@ -48,7 +46,7 @@ export function UploadWorkspace() {
         <div>
           <h2 className="text-lg font-semibold theme-text">Upload Files</h2>
           <p className="mt-1 text-sm theme-text-muted">
-            Upload your GL balance, subledger balance, and transaction files (CSV format).
+            Upload your GL balance, subledger balance, and transaction files (CSV/TSV/TXT format).
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -77,8 +75,8 @@ export function UploadWorkspace() {
         <FileTypeUploadZone
           fileType="gl_balance"
           label="GL Trial Balance"
-          description="CSV or PDF - Period auto-detected from filename"
-          accept={ACCEPTED_CSV_OR_PDF}
+          description="CSV/TSV/TXT - Period auto-detected from filename"
+          accept={ACCEPTED_DELIMITED}
           uploadedFile={uploadedFiles.glBalance}
           uploadRecord={glUploadRecord}
           onFiles={(files) => handleStructuredFiles(files, "gl_balance", (file) => setUploadedFile("gl_balance", file))}
@@ -95,8 +93,8 @@ export function UploadWorkspace() {
         <FileTypeUploadZone
           fileType="subledger_balance"
           label="Subledger Balance (AP/AR Aging)"
-          description="CSV or PDF - Period auto-detected from filename"
-          accept={ACCEPTED_CSV_OR_PDF}
+          description="CSV/TSV/TXT - Period auto-detected from filename"
+          accept={ACCEPTED_DELIMITED}
           uploadedFile={uploadedFiles.subledgerBalance}
           uploadRecord={subledgerUploadRecord}
           onFiles={(files) =>
@@ -117,8 +115,8 @@ export function UploadWorkspace() {
         <FileTypeUploadZone
           fileType="transactions"
           label="Transaction Detail"
-          description="Optional: Transaction-level detail for variance investigation"
-          accept={ACCEPTED_CSV}
+          description="Optional: Transaction-level detail for variance investigation (CSV/TSV/TXT)"
+          accept={ACCEPTED_DELIMITED}
           uploadedFile={uploadedFiles.transactions}
           uploadRecord={transactionsUploadRecord}
           onFiles={(files) =>
@@ -129,6 +127,15 @@ export function UploadWorkspace() {
             removeUploadByFileType("transactions");
           }}
           required={false}
+        />
+
+        <FileUploadZone
+          label="Supporting Files"
+          description="Optional: Upload supporting CSV/TSV/TXT files (multiple files allowed)."
+          accept={ACCEPTED_SUPPORTING}
+          required={false}
+          multiple
+          onFiles={handleSupportingFiles}
         />
       </div>
 

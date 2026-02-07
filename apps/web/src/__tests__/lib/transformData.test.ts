@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { applyMapping, transformBalances } from '@/lib/transformData'
-import type { RawCSVRow, ParsedCSVRow } from '@/types/csv'
+import type { RawCSVRow } from '@/types/csv'
 import type { ColumnMapping, UploadedFile } from '@/types/reconciliation'
 
 describe('transformData', () => {

@@ -2,7 +2,7 @@
  * React Query hook for fetching and caching rate limit status
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { QueryClient, useQuery } from '@tanstack/react-query';
 
 export interface RateLimitStatus {
   authenticated: boolean;
@@ -30,7 +30,7 @@ async function fetchRateLimitStatus(): Promise<RateLimitStatus> {
  *
  * Features:
  * - Caches data for 30 seconds (staleTime)
- * - Auto-refreshes every 60 seconds (refetchInterval)
+ * - Auto-refreshes every 5 minutes (refetchInterval)
  * - Retries failed requests 3 times
  * - Background updates don't block UI
  *
@@ -55,7 +55,7 @@ export function useRateLimitStatus() {
     queryKey: ['rateLimitStatus'],
     queryFn: fetchRateLimitStatus,
     staleTime: 30000, // Consider data fresh for 30 seconds
-    refetchInterval: 60000, // Refresh every 60 seconds
+    refetchInterval: 300000, // Refresh every 5 minutes
     refetchOnWindowFocus: true, // Refresh when user returns to tab
     retry: 3, // Retry failed requests up to 3 times
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
@@ -81,7 +81,7 @@ export function useRateLimitStatus() {
  * }
  * ```
  */
-export async function prefetchRateLimitStatus(queryClient: any) {
+export async function prefetchRateLimitStatus(queryClient: QueryClient) {
   await queryClient.prefetchQuery({
     queryKey: ['rateLimitStatus'],
     queryFn: fetchRateLimitStatus,

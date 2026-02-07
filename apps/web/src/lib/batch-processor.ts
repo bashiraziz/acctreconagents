@@ -149,7 +149,6 @@ export async function processParallelBatches<T, R>(
   const results: R[] = new Array(items.length);
 
   let completedBatches = 0;
-  const totalBatches = chunks.length;
 
   // Process chunks with concurrency limit
   for (let i = 0; i < chunks.length; i += maxConcurrency) {

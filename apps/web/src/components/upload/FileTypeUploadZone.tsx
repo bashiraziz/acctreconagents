@@ -7,7 +7,7 @@
 
 import { FileUploadZone } from "./FileUploadZone";
 import { FileMetadataForm } from "./FileMetadataForm";
-import type { FileType, AccountingSystem } from "@/types/reconciliation";
+import type { FileType, AccountingSystem, UploadedFile } from "@/types/reconciliation";
 import type { UploadRecord } from "./useFileUpload";
 
 interface FileTypeUploadZoneProps {
@@ -15,7 +15,7 @@ interface FileTypeUploadZoneProps {
   label: string;
   description: string;
   accept: string;
-  uploadedFile: any;
+  uploadedFile: UploadedFile | null;
   uploadRecord?: UploadRecord;
   onFiles: (files: FileList | null) => void;
   onRemove: () => void;

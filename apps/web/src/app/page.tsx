@@ -136,7 +136,7 @@ function AboutPanel() {
     <section className="theme-card theme-border border p-6">
       <h3 className="text-base font-semibold theme-text">About Rowshni</h3>
       <p className="mt-2 text-sm theme-text-muted">
-        <span className="font-medium text-amber-500">Rowshni</span> means "light".
+        <span className="font-medium text-amber-500">Rowshni</span> means &quot;light&quot;.
         We illuminate your reconciliations with AI-powered insights, bringing clarity to complex financial data.
       </p>
 
@@ -167,7 +167,7 @@ function AboutPanel() {
             </summary>
             <div className="mt-2 space-y-2 text-xs theme-text-muted">
               <p>
-                Spec-Kit contracts are structured JSON schemas that define the "source of truth"
+                Spec-Kit contracts are structured JSON schemas that define the &quot;source of truth&quot;
                 for data validation and system behavior.
               </p>
               <p className="font-medium theme-text">They define:</p>

@@ -16,6 +16,7 @@ export class SAPParser extends BaseAccountingParser {
    * Detect SAP format by looking for Company Code and G/L Account columns
    */
   detect(headers: string[], firstRow: RawCSVRow): DetectionResult {
+    void firstRow;
     const hasCompanyCode = this.hasHeaders(headers, [
       "company code",
       "co cd",

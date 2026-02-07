@@ -1,42 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-interface RateLimitInfo {
-  authenticated: boolean;
-  limit: number;
-  remaining: number;
-  reset: string;
-  window: string;
-}
+import { useRateLimitStatus } from "@/hooks/useRateLimitStatus";
 
 export function RateLimitStatus() {
-  const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchRateLimitStatus() {
-      try {
-        const response = await fetch("/api/rate-limit");
-        if (response.ok) {
-          const data = await response.json();
-          setRateLimitInfo(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch rate limit status:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchRateLimitStatus();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchRateLimitStatus, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data: rateLimitInfo, isLoading } = useRateLimitStatus();
 
   // Don't show anything if loading or no data
-  if (loading || !rateLimitInfo) {
+  if (isLoading || !rateLimitInfo) {
     return null;
   }
 

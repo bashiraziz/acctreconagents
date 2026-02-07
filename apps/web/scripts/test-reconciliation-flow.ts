@@ -6,8 +6,13 @@
 import fs from 'fs';
 import path from 'path';
 
-const BASE_URL = 'http://localhost:3100';
 const ORCHESTRATOR_URL = 'http://localhost:4100';
+
+type CSVRow = Record<string, string>;
+type ReconciliationStatus = 'balanced' | 'material_variance' | 'immaterial_variance';
+type ReconciliationResult = {
+  status?: ReconciliationStatus | string;
+};
 
 async function testReconciliationFlow() {
   console.log('🧪 Testing End-to-End Reconciliation Flow\n');
@@ -39,9 +44,9 @@ async function testReconciliationFlow() {
   const parseCSV = (csv: string) => {
     const lines = csv.trim().split('\n');
     const headers = lines[0].split(',').map(h => h.trim());
-    return lines.slice(1).map(line => {
+    return lines.slice(1).map((line): CSVRow => {
       const values = line.split(',').map(v => v.trim());
-      return headers.reduce((obj: any, header, i) => {
+      return headers.reduce<CSVRow>((obj, header, i) => {
         obj[header] = values[i];
         return obj;
       }, {});
@@ -86,7 +91,7 @@ async function testReconciliationFlow() {
       throw new Error('No reconciliations array in response');
     }
 
-    const reconciliations = result.reconciliations;
+    const reconciliations = result.reconciliations as ReconciliationResult[];
     console.log(`   ✅ Found ${reconciliations.length} reconciled accounts`);
 
     // Check for expected fields
@@ -100,9 +105,9 @@ async function testReconciliationFlow() {
     console.log('   ✅ All required fields present\n');
 
     // Check reconciliation logic
-    const balancedCount = reconciliations.filter((r: any) => r.status === 'balanced').length;
-    const materialCount = reconciliations.filter((r: any) => r.status === 'material_variance').length;
-    const immaterialCount = reconciliations.filter((r: any) => r.status === 'immaterial_variance').length;
+    const balancedCount = reconciliations.filter((r) => r.status === 'balanced').length;
+    const materialCount = reconciliations.filter((r) => r.status === 'material_variance').length;
+    const immaterialCount = reconciliations.filter((r) => r.status === 'immaterial_variance').length;
 
     console.log('   Reconciliation Summary:');
     console.log(`   - Balanced: ${balancedCount}`);

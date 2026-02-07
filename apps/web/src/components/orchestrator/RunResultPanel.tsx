@@ -5,7 +5,7 @@
  * Displays reconciliation results including AI agent outputs
  */
 
-import type { OrchestratorResponse, GeminiAgentStatus } from "@/types/reconciliation";
+import type { OrchestratorResponse, GeminiAgentStatus, Investigation } from "@/types/reconciliation";
 
 interface RunResultPanelProps {
   result: OrchestratorResponse;
@@ -16,7 +16,7 @@ export function RunResultPanel({ result }: RunResultPanelProps) {
   const hasRateLimitIssue: boolean =
     result.geminiAgents && result.geminiAgents.status
       ? Object.values(result.geminiAgents.status).some(
-          (s: any) => s.usedFallback && s.error?.includes("429")
+          (s: GeminiAgentStatus) => s.usedFallback && s.error?.includes("429")
         )
       : false;
 
@@ -217,7 +217,7 @@ export function RunResultPanel({ result }: RunResultPanelProps) {
               </div>
               <div className="mt-3 space-y-3">
                 {result.geminiAgents.investigation?.investigations?.map(
-                  (inv: any, i: number) => (
+                  (inv: Investigation, i: number) => (
                     <div key={i} className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
                       <p className="font-semibold text-sm theme-text">
                         Account: {inv.account} (Variance: ${inv.variance?.toFixed(2)})

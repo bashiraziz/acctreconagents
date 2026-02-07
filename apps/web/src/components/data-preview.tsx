@@ -6,7 +6,8 @@
 "use client";
 
 import { useFileUploadStore } from "@/store/fileUploadStore";
-import type { ReconciliationPayload } from "@/types/reconciliation";
+
+type PreviewRow = Record<string, unknown>;
 
 export function DataPreview() {
   const reconciliationData = useFileUploadStore(
@@ -102,7 +103,7 @@ function PreviewTable({
   totalRows,
 }: {
   title: string;
-  data: any[];
+  data: PreviewRow[];
   totalRows: number;
 }) {
   if (data.length === 0) {
@@ -154,7 +155,7 @@ function PreviewTable({
   );
 }
 
-function formatCellValue(value: any): string {
+function formatCellValue(value: unknown): string {
   if (value === null || value === undefined) {
     return "-";
   }

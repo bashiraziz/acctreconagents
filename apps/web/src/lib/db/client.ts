@@ -208,7 +208,7 @@ export async function saveReconciliationHistory(
   periods: string[],
   status: "success" | "failed" | "partial",
   summary: string,
-  resultData?: any,
+  resultData?: unknown,
 ): Promise<ReconciliationHistory> {
   const id = `history_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
@@ -281,7 +281,7 @@ export async function getReconciliationHistory(
 export async function getReconciliationDetail(
   userId: string,
   runId: string,
-): Promise<any | null> {
+): Promise<unknown | null> {
   try {
     const result = await sql`
       SELECT result_data FROM reconciliation_history

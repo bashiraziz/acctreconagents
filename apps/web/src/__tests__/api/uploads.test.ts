@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { POST } from '@/app/api/uploads/route'
-import { promises as fs } from 'node:fs'
 
 // Mock file system operations
 vi.mock('node:fs', () => ({
@@ -49,7 +48,7 @@ describe('/api/uploads', () => {
     })
 
     it('should reject file exceeding size limit', async () => {
-      const largeBuffer = new Uint8Array(51 * 1024 * 1024) // 51MB
+      const largeBuffer = new Uint8Array(21 * 1024 * 1024) // 21MB
       const largeFile = new File([largeBuffer], 'large.csv', { type: 'text/csv' })
 
       const formData = new FormData()
@@ -362,7 +361,7 @@ describe('/api/uploads', () => {
     })
 
     it('should handle maximum size file', async () => {
-      const maxBuffer = new Uint8Array(50 * 1024 * 1024) // Exactly 50MB
+      const maxBuffer = new Uint8Array(20 * 1024 * 1024) // Exactly 20MB
       const maxFile = new File([maxBuffer], 'max.csv', { type: 'text/csv' })
 
       const formData = new FormData()

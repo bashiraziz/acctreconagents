@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { parseCSVFile } from "@/lib/parseFile";
-import type { FileType } from "@/types/reconciliation";
+import type { FileType, UploadedFile } from "@/types/reconciliation";
 
 export interface UploadRecord {
   id: string;
@@ -78,7 +78,7 @@ export function useFileUpload() {
   const handleStructuredFiles = async (
     files: FileList | null,
     fileType: FileType,
-    onFileSet: (file: any) => void
+    onFileSet: (file: UploadedFile) => void
   ) => {
     if (!files?.length) return;
 
@@ -196,8 +196,14 @@ export function useFileUpload() {
   const handleSupportingFiles = async (files: FileList | null) => {
     if (!files?.length) return;
 
-    const pendingRecords: UploadRecord[] = Array.from(files).map((file) => ({
-      id: `${Date.now()}-${file.name}`,
+    const timestamp = Date.now();
+    const fileEntries = Array.from(files).map((file, index) => ({
+      id: `${timestamp}-${index}-${file.name}`,
+      file,
+    }));
+
+    const pendingRecords: UploadRecord[] = fileEntries.map(({ id, file }) => ({
+      id,
       name: file.name,
       channel: "supporting",
       size: file.size,
@@ -208,14 +214,13 @@ export function useFileUpload() {
 
     // Upload each file
     await Promise.all(
-      pendingRecords.map(async (record) => {
-        const file = Array.from(files).find((f) => `${Date.now()}-${f.name}` === record.id);
-        if (!file) return;
+      fileEntries.map(async ({ id, file }) => {
+        const recordId = id;
 
         try {
           setUploads((records) =>
             records.map((entry) =>
-              entry.id === record.id ? { ...entry, status: "uploading" } : entry
+              entry.id === recordId ? { ...entry, status: "uploading" } : entry
             )
           );
 
@@ -239,7 +244,7 @@ export function useFileUpload() {
 
           setUploads((records) =>
             records.map((entry) =>
-              entry.id === record.id
+              entry.id === recordId
                 ? {
                     ...entry,
                     status: "ready",
@@ -251,7 +256,7 @@ export function useFileUpload() {
         } catch (error) {
           setUploads((records) =>
             records.map((entry) =>
-              entry.id === record.id
+              entry.id === recordId
                 ? {
                     ...entry,
                     status: "error",

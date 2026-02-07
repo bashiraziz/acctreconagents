@@ -1,4 +1,4 @@
-# Rowshni - User Guide
+﻿# Rowshni - User Guide
 
 **Welcome to Rowshni!** (meaning "light")
 
@@ -21,15 +21,15 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 
 ## What Rowshni Does
 
-**Rowshni** automatically reconciles your **General Ledger (GL) balances** with your **subledger details** (like AP aging reports or AR invoices) and identifies variances—shedding light on discrepancies and illuminating the path to balanced books.
+**Rowshni** automatically reconciles your **General Ledger (GL) balances** with your **subledger details** (like AP aging reports or AR invoices) and identifies variancesâ€”shedding light on discrepancies and illuminating the path to balanced books.
 
 **Benefits:**
-- ✨ **Illuminates hidden variances** - AI-powered detection with zero manual work
-- 🔍 **Brings clarity to complex data** - See what others miss
-- 💡 **Lights the way to resolution** - Smart insights and recommendations
-- 📊 **Multi-period visibility** - Track reconciliations across accounting periods
-- ⚖️ **Audit-ready reports** - Professional documentation with AI analysis
-- 🎯 **Smart sign conventions** - Automatically handles credit/debit balances
+- âœ¨ **Illuminates hidden variances** - AI-powered detection with zero manual work
+- ðŸ” **Brings clarity to complex data** - See what others miss
+- ðŸ’¡ **Lights the way to resolution** - Smart insights and recommendations
+- ðŸ“Š **Multi-period visibility** - Track reconciliations across accounting periods
+- âš–ï¸ **Audit-ready reports** - Professional documentation with AI analysis
+- ðŸŽ¯ **Smart sign conventions** - Automatically handles credit/debit balances
 
 **Who is this for?**
 - Accountants performing monthly/quarterly close
@@ -45,27 +45,27 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 
 **Live URL:** https://www.rowshni.xyz
 
-**Local Development:** http://localhost:3100 (if running locally)
+**Local Development:** http://localhost:3000 (default). If 3000 is busy, the dev server falls back to 3100, then 3200.
 
-> 💡 **Pronunciation:** ROHSH-nee
+> ðŸ’¡ **Pronunciation:** ROHSH-nee
 
 ### What You'll Need
 
-1. **GL Balance File** (CSV format)
+1. **GL Balance File** (CSV/TSV/TXT format)
    - Contains your general ledger account balances
    - Must include: account code, period, amount
 
-2. **Subledger Balance File** (CSV format)
+2. **Subledger Balance File** (CSV/TSV/TXT format)
    - Contains detailed transactions (invoices, payments, etc.)
    - Must include: account code, period, amount
 
-3. **(Optional) Transaction File** (CSV format)
+3. **(Optional) Transaction File** (CSV/TSV/TXT format)
    - Journal entries and GL transactions
    - Helps explain timing differences
 
 ### Supported File Formats
 
-**CSV files only** - exported from:
+**CSV/TSV/TXT files** - exported from:
 - Unanet
 - SAP
 - Oracle Financials
@@ -73,7 +73,7 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 - NetSuite (with specialized parser for multi-currency and dimensional data)
 - Costpoint (with specialized parser for debit/credit columns)
 - Microsoft Dynamics
-- Any accounting system that exports to CSV
+- Any accounting system that exports delimited text files
 
 **PDF files** - Can be converted to CSV using the PDF-to-CSV extractor:
 - GL reports, AP aging, trial balances from any system
@@ -81,7 +81,7 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 
 **File size limit:** 20 MB per file
 
-**💡 System-Specific Parsers:** Rowshni includes Claude skills that automatically detect and parse format-specific data from QuickBooks, Costpoint, and NetSuite exports, handling account code extraction, sign conventions, and dimensional aggregation.
+**ðŸ’¡ System-Specific Parsers:** Rowshni includes Claude skills that automatically detect and parse format-specific data from QuickBooks, Costpoint, and NetSuite exports, handling account code extraction, sign conventions, and dimensional aggregation.
 
 ---
 
@@ -93,7 +93,7 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
    - Choose "GL Trial Balance", "Subledger Balance", or "Transactions"
 
 2. **Upload File**
-   - Click "Choose File" or drag and drop your CSV
+   - Click "Choose File" or drag and drop your file (CSV/TSV/TXT)
    - File uploads instantly
    - You'll see a preview of the data
 
@@ -106,7 +106,7 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
      - **NetSuite / Oracle**: For files with multi-currency or dimensional data
      - **SAP ERP**: Reserved for SAP-specific formats
      - **Generic / Other**: Universal CSV parser (works with any system)
-   - **💡 Tip**: Leave it on "Auto-detect" unless you know your specific system
+   - **ðŸ’¡ Tip**: Leave it on "Auto-detect" unless you know your specific system
    - The app will automatically handle account code extraction, sign conventions, and format-specific parsing
 
 4. **Fill in Metadata (if needed)**
@@ -127,7 +127,7 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
    - Upload subledger balance file (with metadata if needed)
    - (Optional) Upload transactions file
 
-**✅ Progress indicator** shows which files you've uploaded.
+**âœ… Progress indicator** shows which files you've uploaded.
 
 ---
 
@@ -142,32 +142,32 @@ The app needs to know which columns in your CSV contain the account code, period
 
 1. **GL Balance Columns**
    ```
-   Account Code    → Select column with account numbers (e.g., "20100")
+   Account Code    â†’ Select column with account numbers (e.g., "20100")
                       OR provide in metadata if all rows are same account
-   Account Name    → Select column with account names (optional)
-   Period          → Select column with period (e.g., "2025-10")
+   Account Name    â†’ Select column with account names (optional)
+   Period          â†’ Select column with period (e.g., "2025-10")
                       OR provide in metadata if all rows are same period
-   Amount          → Select column with dollar amounts
-   Currency        → (Optional) OR provide in metadata
+   Amount          â†’ Select column with dollar amounts
+   Currency        â†’ (Optional) OR provide in metadata
    ```
 
 2. **Subledger Balance Columns**
    ```
-   Account Code    → Must match GL account codes
+   Account Code    â†’ Must match GL account codes
                       OR provide in metadata if all rows are same account
-   Period          → Must match GL period format
+   Period          â†’ Must match GL period format
                       OR provide in metadata
-   Amount          → Invoice/transaction amounts
-   Currency        → (Optional) OR provide in metadata
-   Vendor/Customer → (Optional) For better reporting
-   Invoice Number  → (Optional) For traceability
+   Amount          â†’ Invoice/transaction amounts
+   Currency        â†’ (Optional) OR provide in metadata
+   Vendor/Customer â†’ (Optional) For better reporting
+   Invoice Number  â†’ (Optional) For traceability
    ```
 
 3. **Transaction Columns** (if uploaded)
    ```
-   Account Code    → GL account
-   Booked Date     → When posted to GL
-   Debit/Credit    → Or single "Amount" column
+   Account Code    â†’ GL account
+   Booked Date     â†’ When posted to GL
+   Debit/Credit    â†’ Or single "Amount" column
    ```
 
 **Missing field indicators:**
@@ -175,16 +175,16 @@ The app needs to know which columns in your CSV contain the account code, period
   - "GL Missing: Account Code, Period"
   - Hint: You can fill these in via metadata instead of mapping columns
 
-**💡 Tip:** The app remembers your mappings for next time!
+**ðŸ’¡ Tip:** The app remembers your mappings for next time!
 
 ---
 
 ### Step 3: Preview Your Data
 
 After mapping, click **"Preview Data"** to see:
-- ✅ How many GL accounts were loaded
-- ✅ How many subledger records were loaded
-- ✅ Sample of the transformed data
+- âœ… How many GL accounts were loaded
+- âœ… How many subledger records were loaded
+- âœ… Sample of the transformed data
 
 **Check for:**
 - Account codes match between GL and subledger
@@ -206,28 +206,28 @@ After mapping, click **"Preview Data"** to see:
 2. **Enter Analysis Prompt**
    - Provide instructions for the AI agents
    - **Account filtering options**:
-     - **Specific accounts**: "Reconcile account 200" → reconciles only account 200
-     - **Multiple accounts**: "Reconcile accounts 1000, 2000, and 3000" → reconciles those three
-     - **All GL accounts**: "Reconcile all accounts" → reconciles every GL account (even without subledger data)
+     - **Specific accounts**: "Reconcile account 200" â†’ reconciles only account 200
+     - **Multiple accounts**: "Reconcile accounts 1000, 2000, and 3000" â†’ reconciles those three
+     - **All GL accounts**: "Reconcile all accounts" â†’ reconciles every GL account (even without subledger data)
      - **Default** (just "Reconcile"): Automatically reconciles only accounts present in BOTH GL and subledger
    - General instructions work too:
      - Example: "Reconcile inventory for October close"
      - Example: "Focus on material variances above $1,000"
 
-   **💡 Smart Default**: If you don't specify accounts, the system automatically reconciles only accounts that exist in both your GL and subledger files. This prevents false variances for GL accounts that don't have supporting detail.
+   **ðŸ’¡ Smart Default**: If you don't specify accounts, the system automatically reconciles only accounts that exist in both your GL and subledger files. This prevents false variances for GL accounts that don't have supporting detail.
 
-3. **Click "Illuminate ✨"**
+3. **Click "Illuminate âœ¨"**
    - Rowshni's AI agents start analyzing your data
    - Progress shown in real-time with a glowing progress indicator
-   - You'll see which agent is currently working (Data Validation → Analysis → Investigation → Report)
+   - You'll see which agent is currently working (Data Validation â†’ Analysis â†’ Investigation â†’ Report)
 
 4. **Watch the Timeline**
    ```
-   ✅ Spec Validation     - Data validated
-   ⏳ Data Validation Agent - Validating data quality
-   ⏳ Reconciliation Analyst Agent - Analyzing variances
-   ⏳ Variance Investigator Agent - Investigating material variances
-   ⏳ Report Generator Agent - Creating final report
+   âœ… Spec Validation     - Data validated
+   â³ Data Validation Agent - Validating data quality
+   â³ Reconciliation Analyst Agent - Analyzing variances
+   â³ Variance Investigator Agent - Investigating material variances
+   â³ Report Generator Agent - Creating final report
    ```
 
 5. **Wait for Completion** (usually 10-30 seconds)
@@ -248,16 +248,16 @@ GL Balance:        -$1,185,000.00
 Subledger Balance: -$1,185,000.00
 Variance:          $0.00
 
-Status: ✅ BALANCED
+Status: âœ… BALANCED
 ```
 
 ### Status Types
 
 | Status | Meaning | Action Needed |
 |--------|---------|---------------|
-| **✅ Balanced** | GL = Subledger (variance < $0.01) | None - reconciliation complete |
-| **⚠️ Immaterial Variance** | Variance below your materiality threshold | Review but likely acceptable |
-| **❌ Material Variance** | Variance ≥ your materiality threshold | **Investigation required** |
+| **âœ… Balanced** | GL = Subledger (variance < $0.01) | None - reconciliation complete |
+| **âš ï¸ Immaterial Variance** | Variance below your materiality threshold | Review but likely acceptable |
+| **âŒ Material Variance** | Variance â‰¥ your materiality threshold | **Investigation required** |
 
 **Note:** The threshold that determines "Material" vs "Immaterial" is set by you in Step 4 (default $50).
 
@@ -303,9 +303,9 @@ Gemini provides:
 ### Export Your Report
 
 After reconciliation completes, you can export the report:
-- **📋 Copy** - Copy report to clipboard
-- **📄 MD** - Download as Markdown (.md file)
-- **📝 TXT** - Download as plain text (.txt file)
+- **ðŸ“‹ Copy** - Copy report to clipboard
+- **ðŸ“„ MD** - Download as Markdown (.md file)
+- **ðŸ“ TXT** - Download as plain text (.txt file)
 
 All numbers in reports are rounded to 2 decimal places for accounting precision.
 
@@ -314,21 +314,26 @@ All numbers in reports are rounded to 2 decimal places for accounting precision.
 ## Rate Limits
 
 **Anonymous users** are limited to:
-- **5 reconciliations per hour**
-- **8 reconciliations per 2 hours**
-- **10 reconciliations per 3 hours**
+- **30 reconciliations per hour**
+- **50 reconciliations per 2 hours**
+- **70 reconciliations per 3 hours**
+
+**Authenticated users** get doubled limits:
+- **60 reconciliations per hour**
+- **100 reconciliations per 2 hours**
+- **140 reconciliations per 3 hours**
 
 **Your remaining usage** is shown at the top of the page:
 
 ```
-┌─────────────────────────────────┐
-│ 5 reconciliations remaining     │
-│ per hour for anonymous users    │
-│ Resets in 45 minutes            │
-└─────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 30 reconciliations remaining     â”‚
+â”‚ per hour for anonymous users    â”‚
+â”‚ Resets in 45 minutes            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-**💡 Tip:** If you hit the limit, wait for the timer to reset or sign in for unlimited access (when available).
+**ðŸ’¡ Tip:** If you hit the limit, wait for the timer to reset or sign in to get doubled limits.
 
 ### AI Analysis Quotas
 
@@ -383,11 +388,11 @@ Use your own free Google Gemini API key:
    - **Files**: gl_balance.csv, subledger_balance.csv, transactions.csv
 
 **What makes these scenarios realistic:**
-- ✅ Proper sign conventions (negative for liabilities)
-- ✅ Realistic vendor names and invoice numbers
-- ✅ Actual accounting periods (YYYY-MM format)
-- ✅ Account codes with descriptive names
-- ✅ Documented expected results for each scenario
+- âœ… Proper sign conventions (negative for liabilities)
+- âœ… Realistic vendor names and invoice numbers
+- âœ… Actual accounting periods (YYYY-MM format)
+- âœ… Account codes with descriptive names
+- âœ… Documented expected results for each scenario
 
 **How to use:** Download all 3 files for a scenario, upload them to the app, and run the reconciliation to see how the AI agents analyze different situations.
 
@@ -437,11 +442,11 @@ Use your own free Google Gemini API key:
 - Split into multiple reconciliations by period
 
 ### "Rate limit exceeded"
-**Problem:** You've used all 5 reconciliations in the last hour
+**Problem:** You've used all 30 reconciliations in the last hour
 
 **Fix:**
 - Wait for the timer to reset (shown on screen)
-- Or sign in for unlimited access (when available)
+- Or sign in to get doubled limits
 
 ---
 
@@ -455,9 +460,9 @@ Use your own free Google Gemini API key:
 - This prevents false variances for GL accounts without supporting detail
 
 **Account Filtering Options:**
-- **Specific accounts**: "Reconcile account 200" → reconciles only that account
-- **Multiple accounts**: "Reconcile accounts 1000, 2000, and 3000" → reconciles those three
-- **All GL accounts**: "Reconcile all accounts" → forces reconciliation of every GL account (even those without subledger data)
+- **Specific accounts**: "Reconcile account 200" â†’ reconciles only that account
+- **Multiple accounts**: "Reconcile accounts 1000, 2000, and 3000" â†’ reconciles those three
+- **All GL accounts**: "Reconcile all accounts" â†’ forces reconciliation of every GL account (even those without subledger data)
 
 **Example:** If your GL has accounts [100, 200, 300] but your subledger only has data for account [200], the default behavior reconciles only account 200. To force reconciliation of all three GL accounts (showing variances for 100 and 300), say "Reconcile all accounts".
 
@@ -486,9 +491,9 @@ Use your own free Google Gemini API key:
 
 ### Q: Can I save my reconciliation results?
 **A:** Yes! Use the export buttons at the top of the report:
-- **📋 Copy** - Copy the full report to your clipboard
-- **📄 MD** - Download as Markdown file (opens in any text editor)
-- **📝 TXT** - Download as plain text file
+- **ðŸ“‹ Copy** - Copy the full report to your clipboard
+- **ðŸ“„ MD** - Download as Markdown file (opens in any text editor)
+- **ðŸ“ TXT** - Download as plain text file
 - Reports are named with the date (e.g., `reconciliation-report-2025-12-26.md`)
 - You can also take screenshots for quick reference
 
@@ -508,20 +513,20 @@ Use your own free Google Gemini API key:
 - Large enterprise (> $50M): $1,000-$10,000
 - Audit reconciliation: Lower threshold for critical accounts
 
-**💡 Tip:** Start with the default ($50) and adjust based on results. You can always re-run with a different threshold.
+**ðŸ’¡ Tip:** Start with the default ($50) and adjust based on results. You can always re-run with a different threshold.
 
 ### Q: Can I schedule automated reconciliations?
 **A:** Not yet - this is a manual, on-demand tool. Automated scheduling is on the roadmap.
 
 ### Q: What accounting systems are supported?
-**A:** Any system that exports to CSV. Rowshni includes specialized parsers for:
-- ✅ **QuickBooks** (Desktop & Online) - Automatic parsing of parenthetical account codes
-- ✅ **Costpoint / Deltek** - Handles Debit/Credit columns with proper sign conventions
-- ✅ **NetSuite / Oracle Financials** - Multi-currency and dimensional data support
-- ✅ **SAP** (reserved for future enhancements)
-- ✅ **Generic / Other**: Microsoft Dynamics, Sage Intacct, Xero, custom systems
+**A:** Any system that exports CSV/TSV/TXT files. Rowshni includes specialized parsers for:
+- âœ… **QuickBooks** (Desktop & Online) - Automatic parsing of parenthetical account codes
+- âœ… **Costpoint / Deltek** - Handles Debit/Credit columns with proper sign conventions
+- âœ… **NetSuite / Oracle Financials** - Multi-currency and dimensional data support
+- âœ… **SAP** (reserved for future enhancements)
+- âœ… **Generic / Other**: Microsoft Dynamics, Sage Intacct, Xero, custom systems
 
-**💡 During upload**, select your accounting system from the dropdown, or use "Auto-detect" to let the app figure it out automatically. The app will apply system-specific parsing for better accuracy.
+**ðŸ’¡ During upload**, select your accounting system from the dropdown, or use "Auto-detect" to let the app figure it out automatically. The app will apply system-specific parsing for better accuracy.
 
 ---
 
@@ -537,7 +542,7 @@ Use your own free Google Gemini API key:
 
 ---
 
-**Let Rowshni shed light on your ledger! ✨**
+**Let Rowshni shed light on your ledger! âœ¨**
 
 ---
 
@@ -548,20 +553,21 @@ Use your own free Google Gemini API key:
 ## Recent Updates (December 2025)
 
 **New Features:**
-- ✨ **Metadata support**: Provide account code, period, or currency as metadata instead of mapping columns
-- 🔄 **Sign reversal**: Checkbox to reverse signs for different accounting system conventions
-- 🎯 **Smart account filtering**:
+- âœ¨ **Metadata support**: Provide account code, period, or currency as metadata instead of mapping columns
+- ðŸ”„ **Sign reversal**: Checkbox to reverse signs for different accounting system conventions
+- ðŸŽ¯ **Smart account filtering**:
   - Default: Automatically reconciles only accounts in BOTH GL and subledger (prevents false variances)
-  - Specific: "Reconcile account 200" → reconciles only that account
-  - Override: "Reconcile all accounts" → forces all GL accounts even without subledger data
-- 📊 **Flexible CSV parsing**: Handles both text and numbers, commas (1,234.56), and parentheses for negatives (95.50)
-- 🤖 **Claude Skills Integration**: System-specific parsers for QuickBooks, Costpoint, and NetSuite
+  - Specific: "Reconcile account 200" â†’ reconciles only that account
+  - Override: "Reconcile all accounts" â†’ forces all GL accounts even without subledger data
+- ðŸ“Š **Flexible CSV parsing**: Handles both text and numbers, commas (1,234.56), and parentheses for negatives (95.50)
+- ðŸ¤– **Claude Skills Integration**: System-specific parsers for QuickBooks, Costpoint, and NetSuite
   - **UI selector**: Choose your accounting system during file upload (or use auto-detect)
   - Automatically handles parenthetical account codes, debit/credit columns, multi-currency
   - PDF-to-CSV conversion for financial reports
   - Comprehensive automated testing (10 scenarios, all passing)
-- 📥 **Report export**: Copy, download as Markdown, or download as text
-- 💬 **Better error messages**: User-friendly validation messages and missing field indicators
-- 🔢 **Accounting precision**: All numbers rounded to 2 decimal places
+- ðŸ“¥ **Report export**: Copy, download as Markdown, or download as text
+- ðŸ’¬ **Better error messages**: User-friendly validation messages and missing field indicators
+- ðŸ”¢ **Accounting precision**: All numbers rounded to 2 decimal places
 
 *Last updated: December 27, 2025*
+

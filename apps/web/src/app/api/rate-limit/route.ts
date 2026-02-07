@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getRateLimitStatus } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
 import { auth } from "@/lib/auth";
-import { withErrorHandler, ApiErrors } from "@/lib/api-error";
+import { withErrorHandler } from "@/lib/api-error";
 
 /**
  * GET /api/rate-limit

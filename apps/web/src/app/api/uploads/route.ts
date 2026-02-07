@@ -7,11 +7,13 @@ import { withErrorHandler, ApiErrors } from "@/lib/api-error";
 const storageDir = path.join(process.cwd(), ".uploads");
 
 // File upload constraints
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_MIME_TYPES = [
   'text/csv',
+  'text/tab-separated-values',
   'text/plain',
   'application/vnd.ms-excel',
+  'application/tab-separated-values',
   'application/csv',
   'application/octet-stream', // Some browsers send this for CSV files
   '', // Empty MIME type (some browsers don't set it)
@@ -46,11 +48,11 @@ export const POST = withErrorHandler(async (request: Request) => {
 
   // Validate file extension (primary check)
   const fileExtension = file.name.split('.').pop()?.toLowerCase();
-  if (!['csv', 'txt'].includes(fileExtension || '')) {
+  if (!['csv', 'tsv', 'txt'].includes(fileExtension || '')) {
     return ApiErrors.badRequest(
       "Invalid file extension",
-      "Only .csv and .txt files are allowed",
-      ["Rename your file to have a .csv or .txt extension"]
+      "Only .csv, .tsv, and .txt files are allowed",
+      ["Rename your file to have a .csv, .tsv, or .txt extension"]
     );
   }
 
@@ -58,8 +60,8 @@ export const POST = withErrorHandler(async (request: Request) => {
   if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
     return ApiErrors.badRequest(
       "Invalid file type",
-      `Only CSV files are allowed. Received: ${file.type}`,
-      ["Upload a CSV or TXT file", "Ensure the file has the correct MIME type"]
+      `Only CSV/TSV/TXT files are allowed. Received: ${file.type}`,
+      ["Upload a CSV, TSV, or TXT file", "Ensure the file has the correct MIME type"]
     );
   }
 

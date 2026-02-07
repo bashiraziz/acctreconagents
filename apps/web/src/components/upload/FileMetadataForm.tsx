@@ -5,7 +5,6 @@
  * Form inputs for file metadata (account code, period, currency, etc.)
  */
 
-import { useState, useEffect } from "react";
 import { AccountingSystemSelector } from "./AccountingSystemSelector";
 import type { AccountingSystem, FileType } from "@/types/reconciliation";
 
@@ -31,42 +30,18 @@ export function FileMetadataForm({
   onMetadataChange,
   onAccountingSystemChange,
 }: FileMetadataFormProps) {
-  const [localAccountCode, setLocalAccountCode] = useState(metadata.accountCode || "");
-  const [localPeriod, setLocalPeriod] = useState(metadata.period || "");
-  const [localCurrency, setLocalCurrency] = useState(metadata.currency || "USD");
-  const [localReverseSign, setLocalReverseSign] = useState(metadata.reverseSign || false);
-  const [localAccountingSystem, setLocalAccountingSystem] = useState<AccountingSystem>(accountingSystem);
-
   const isSubledger = fileType === "subledger_balance";
-  const isGL = fileType === "gl_balance";
-
-  // Sync with parent metadata changes
-  useEffect(() => {
-    if (metadata.accountCode !== undefined) setLocalAccountCode(metadata.accountCode);
-    if (metadata.period !== undefined) setLocalPeriod(metadata.period);
-    if (metadata.currency !== undefined) setLocalCurrency(metadata.currency);
-    if (metadata.reverseSign !== undefined) setLocalReverseSign(metadata.reverseSign);
-  }, [metadata]);
-
-  // Handle metadata updates
-  const handleMetadataUpdate = () => {
-    onMetadataChange({
-      accountCode: localAccountCode || undefined,
-      period: localPeriod || undefined,
-      currency: localCurrency || undefined,
-      reverseSign: localReverseSign,
-    });
-  };
+  const accountCode = metadata.accountCode ?? "";
+  const period = metadata.period ?? "";
+  const currency = metadata.currency ?? "USD";
+  const reverseSign = metadata.reverseSign ?? false;
 
   return (
     <div className="mt-4 border-t border-emerald-500/20 pt-4">
       {/* Accounting System Selector */}
       <AccountingSystemSelector
-        value={localAccountingSystem}
-        onChange={(system) => {
-          setLocalAccountingSystem(system);
-          onAccountingSystemChange(system);
-        }}
+        value={accountingSystem}
+        onChange={onAccountingSystemChange}
         className="mb-4"
       />
 
@@ -82,9 +57,13 @@ export function FileMetadataForm({
             <input
               type="text"
               placeholder="e.g., 2000"
-              value={localAccountCode}
-              onChange={(e) => setLocalAccountCode(e.target.value)}
-              onBlur={handleMetadataUpdate}
+              value={accountCode}
+              onChange={(e) =>
+                onMetadataChange({
+                  ...metadata,
+                  accountCode: e.target.value || undefined,
+                })
+              }
               className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 placeholder-emerald-300/30 focus:border-emerald-400 focus:outline-none"
             />
             <p className="mt-1 text-xs text-emerald-300/50">
@@ -102,9 +81,13 @@ export function FileMetadataForm({
           <input
             type="text"
             placeholder="e.g., 2025-12"
-            value={localPeriod}
-            onChange={(e) => setLocalPeriod(e.target.value)}
-            onBlur={handleMetadataUpdate}
+            value={period}
+            onChange={(e) =>
+              onMetadataChange({
+                ...metadata,
+                period: e.target.value || undefined,
+              })
+            }
             className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 placeholder-emerald-300/30 focus:border-emerald-400 focus:outline-none"
           />
           <p className="mt-1 text-xs text-emerald-300/50">
@@ -120,9 +103,13 @@ export function FileMetadataForm({
           <input
             type="text"
             placeholder="USD"
-            value={localCurrency}
-            onChange={(e) => setLocalCurrency(e.target.value)}
-            onBlur={handleMetadataUpdate}
+            value={currency}
+            onChange={(e) =>
+              onMetadataChange({
+                ...metadata,
+                currency: e.target.value || undefined,
+              })
+            }
             className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 placeholder-emerald-300/30 focus:border-emerald-400 focus:outline-none"
           />
           <p className="mt-1 text-xs text-emerald-300/50">
@@ -135,13 +122,10 @@ export function FileMetadataForm({
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={localReverseSign}
+              checked={reverseSign}
               onChange={(e) => {
-                setLocalReverseSign(e.target.checked);
                 onMetadataChange({
-                  accountCode: localAccountCode || undefined,
-                  period: localPeriod || undefined,
-                  currency: localCurrency || undefined,
+                  ...metadata,
                   reverseSign: e.target.checked,
                 });
               }}

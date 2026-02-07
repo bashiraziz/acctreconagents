@@ -16,6 +16,7 @@ export class XeroParser extends BaseAccountingParser {
    * Detect Xero format by looking for Account Code + Debit + Credit pattern
    */
   detect(headers: string[], firstRow: RawCSVRow): DetectionResult {
+    void firstRow;
     const hasAccountCode = this.hasHeaders(headers, ["account code", "code"]);
     const hasDebit = this.hasHeaders(headers, ["debit"]);
     const hasCredit = this.hasHeaders(headers, ["credit"]);

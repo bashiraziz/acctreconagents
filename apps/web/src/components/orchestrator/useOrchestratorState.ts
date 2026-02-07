@@ -3,7 +3,7 @@
  * Custom hook for managing orchestrator console state and logic
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useFileUploadStore } from "@/store/fileUploadStore";
 import { useAgentRunStore } from "@/store/agentRunStore";
 import { useUserPreferencesStore } from "@/store/userPreferencesStore";
@@ -255,15 +255,15 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
 
       setResult(data as OrchestratorResponse);
       setError(null);
-    } catch (err: any) {
-      if (err.name === "AbortError") {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
         console.log("Agent run was cancelled");
         return;
       }
 
       setError({
         message: "Failed to run agents",
-        detail: err.message || "An unexpected error occurred",
+        detail: err instanceof Error ? err.message : "An unexpected error occurred",
         help: ["Check your internet connection", "Try again in a few moments"],
       });
     } finally {

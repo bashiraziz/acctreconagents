@@ -16,6 +16,7 @@ export class NetSuiteParser extends BaseAccountingParser {
    * Detect NetSuite format by looking for dimensional columns and base currency
    */
   detect(headers: string[], firstRow: RawCSVRow): DetectionResult {
+    void firstRow;
     const hasDimensional = this.hasHeaders(headers, [
       "subsidiary",
       "department",

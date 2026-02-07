@@ -48,12 +48,15 @@ export default function SignInPage() {
         }
       }
 
-      // Only proceed if no errors
       router.push("/");
       router.refresh();
     } catch (err) {
       console.error("Authentication error:", err);
-      setError(err instanceof Error ? err.message : "Authentication failed. Please check your credentials and try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Authentication failed. Please check your credentials and try again."
+      );
       setIsSubmitting(false);
     }
   };
@@ -120,7 +123,7 @@ export default function SignInPage() {
                   setForm((prev) => ({ ...prev, password: event.target.value }))
                 }
                 className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
-                placeholder="••••••••"
+                placeholder="********"
               />
             </label>
 
@@ -150,7 +153,7 @@ export default function SignInPage() {
                 onClick={() => setMode("sign-up")}
                 className="font-semibold text-sky-300 hover:text-sky-200"
               >
-                Don't have an account? Sign up
+                Don&apos;t have an account? Sign up
               </button>
             ) : (
               <button

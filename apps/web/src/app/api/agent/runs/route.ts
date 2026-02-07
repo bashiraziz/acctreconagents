@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
 import { auth } from "@/lib/auth";
-import { apiError, ApiErrors } from "@/lib/api-error";
+import { ApiErrors } from "@/lib/api-error";
 
 const DEFAULT_ORCHESTRATOR_URL = "http://127.0.0.1:4100";
 const orchestratorUrl =

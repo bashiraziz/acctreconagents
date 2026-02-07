@@ -3,6 +3,20 @@
  * Tracks key operations and sends data to analytics
  */
 
+type VercelAnalyticsEventPayload = {
+  name: string;
+  data: {
+    metric: string;
+    duration: number;
+  };
+};
+
+declare global {
+  interface Window {
+    va?: (event: "event", payload: VercelAnalyticsEventPayload) => void;
+  }
+}
+
 /**
  * Measure the execution time of an async function
  * Automatically logs performance and optionally sends to analytics
@@ -195,9 +209,9 @@ function trackPerformanceMetric(metricName: string, value: number): void {
   // }
 
   // Send to Vercel Analytics (custom event)
-  if (typeof window !== 'undefined' && (window as any).va) {
+  if (typeof window !== 'undefined' && window.va) {
     try {
-      (window as any).va('event', {
+      window.va('event', {
         name: 'performance_metric',
         data: {
           metric: metricName,
@@ -256,7 +270,7 @@ export function trackWebVitals(): void {
  * }
  * ```
  */
-export function reportError(error: Error | string, context?: Record<string, any>): void {
+export function reportError(error: Error | string, context?: Record<string, unknown>): void {
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
     console.error('[Error]', error, context);

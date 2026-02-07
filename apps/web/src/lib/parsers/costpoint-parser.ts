@@ -16,6 +16,7 @@ export class CostpointParser extends BaseAccountingParser {
    * Detect Costpoint format by looking for Debit and Credit columns
    */
   detect(headers: string[], firstRow: RawCSVRow): DetectionResult {
+    void firstRow;
     const hasDebit = this.hasHeaders(headers, ["debit", "debit amount"]);
     const hasCredit = this.hasHeaders(headers, ["credit", "credit amount"]);
 

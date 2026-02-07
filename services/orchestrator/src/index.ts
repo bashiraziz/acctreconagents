@@ -648,7 +648,12 @@ function extractAccountCodesFromPrompt(prompt: string): string[] | null {
   const matches = prompt.matchAll(/\b(?:account|acct)s?\s+([0-9,\s]+(?:and\s+[0-9]+)?)/gi);
 
   for (const match of matches) {
-    const codes = match[1]
+    const rawCodes = match[1];
+    if (!rawCodes) {
+      continue;
+    }
+
+    const codes = rawCodes
       .split(/[,\s]+and\s+|[,\s]+/)
       .map(code => code.trim())
       .filter(code => /^\d+$/.test(code));
