@@ -11,6 +11,9 @@ const SCENARIO_NAMES: Record<string, string> = {
   "03-timing-differences": "Timing Differences (Period Cutoff)",
   "04-roll-forward-multi-period": "Multi-Period Roll-Forward",
   "05-missing-subledger-data": "Missing Subledger Data",
+  "12-unbalanced-missing-invoices": "Unbalanced - Missing Invoices",
+  "13-unbalanced-amount-mismatch": "Unbalanced - Amount Mismatch",
+  "14-unbalanced-timing-cutoff": "Unbalanced - Timing Cutoff",
 };
 
 export async function GET() {
