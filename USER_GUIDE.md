@@ -24,12 +24,12 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 **Rowshni** automatically reconciles your **General Ledger (GL) balances** with your **subledger details** (like AP aging reports or AR invoices) and identifies variancesâ€”shedding light on discrepancies and illuminating the path to balanced books.
 
 **Benefits:**
-- âœ¨ **Illuminates hidden variances** - AI-powered detection with zero manual work
-- ðŸ” **Brings clarity to complex data** - See what others miss
-- ðŸ’¡ **Lights the way to resolution** - Smart insights and recommendations
-- ðŸ“Š **Multi-period visibility** - Track reconciliations across accounting periods
-- âš–ï¸ **Audit-ready reports** - Professional documentation with AI analysis
-- ðŸŽ¯ **Smart sign conventions** - Automatically handles credit/debit balances
+- **Illuminates hidden variances** – AI-powered detection with zero manual work
+- **Brings clarity to complex data** – See what others miss
+- **Lights the way to resolution** – Smart insights and recommendations
+- **Multi-period visibility** – Track reconciliations across accounting periods
+- **Audit-ready reports** – Professional documentation with AI analysis
+- **Smart sign conventions** – Automatically handles credit/debit balances
 
 **Who is this for?**
 - Accountants performing monthly/quarterly close

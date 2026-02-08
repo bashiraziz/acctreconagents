@@ -37,13 +37,13 @@ export function SampleDataPanel() {
   }, []);
 
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-950/60 p-6">
+    <section className="rounded-3xl border border-slate-800 bg-slate-950/60 p-5 sm:p-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-300">Sample data</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white">Download test scenario files</h3>
-          <p className="mt-1 text-sm text-slate-400">
-            Realistic reconciliation scenarios with proper accounting data. Each scenario tests specific use cases like balanced reconciliations, variances, timing differences, and multi-period analysis.
+          <p className="ui-kicker text-emerald-300">Sample data</p>
+          <h3 className="ui-title mt-1 text-white">Download test scenario files</h3>
+          <p className="ui-copy mt-1 text-slate-400">
+            Realistic reconciliation scenarios for balanced cases, variances, cutoff timing differences, and multi-period analysis.
           </p>
         </div>
         <button
@@ -55,7 +55,7 @@ export function SampleDataPanel() {
         </button>
       </header>
       {!open ? null : loading ? (
-        <p className="mt-4 text-sm text-slate-400">Loading mock data-</p>
+        <p className="mt-4 text-sm text-slate-400">Loading sample files...</p>
       ) : error ? (
         <p className="mt-4 text-sm text-rose-300">{error}</p>
       ) : (

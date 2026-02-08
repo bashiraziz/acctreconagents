@@ -1,15 +1,18 @@
-"use client";
+﻿"use client";
 
 /**
  * Orchestrator Console - Main Component
- * Refactored into smaller, focused components for better maintainability
+ * Coordinates form input, run state, progress, and output display.
  */
 
 import { useRef } from "react";
 import { specMetadata } from "@/lib/spec";
 import { AgentProgressIndicator } from "./orchestrator/AgentProgressIndicator";
 import { ErrorDisplay } from "./orchestrator/ErrorDisplay";
-import { OrchestratorForm, type OrchestratorFormHandle } from "./orchestrator/OrchestratorForm";
+import {
+  OrchestratorForm,
+  type OrchestratorFormHandle,
+} from "./orchestrator/OrchestratorForm";
 import { RunResultPanel } from "./orchestrator/RunResultPanel";
 import { useOrchestratorState, AGENT_STEPS } from "./orchestrator/useOrchestratorState";
 
@@ -17,7 +20,6 @@ export function OrchestratorConsole() {
   const formRef = useRef<OrchestratorFormHandle>(null);
 
   const {
-    // State
     prompt,
     loading,
     result,
@@ -27,8 +29,6 @@ export function OrchestratorConsole() {
     materialityThreshold,
     reconciliationData,
     isRunning,
-
-    // Actions
     setPrompt,
     setMaterialityThreshold,
     runAgents,
@@ -37,29 +37,28 @@ export function OrchestratorConsole() {
   } = useOrchestratorState(formRef);
 
   return (
-    <section className="theme-card">
-      {/* Header */}
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-gradient-to-br from-amber-500 to-yellow-500 text-lg">
-            ✨
-          </div>
-          <h2 className="mt-2 text-2xl font-semibold theme-text">
+    <section className="ui-panel">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <p className="ui-kicker text-amber-400">
+            AI Reconciliation
+          </p>
+          <h2 className="ui-title mt-1">
             Multi-agent console
           </h2>
-          <p className="mt-1 text-sm theme-text-muted">
-            Launch Gemini AI agents for reconciliation analysis, bound by Spec-Kit
-            schema v{specMetadata.version}.
+          <p className="ui-copy mt-1">
+            Run validation, analysis, investigation, and report generation using schema v{specMetadata.version}.
           </p>
+        </div>
+        <div className="rounded-full border theme-border theme-muted px-3 py-1 text-xs theme-text-muted">
+          4 agents
         </div>
       </header>
 
-      {/* Agent Progress Indicator */}
       {loading && (
         <AgentProgressIndicator currentStep={currentAgentStep} steps={AGENT_STEPS} />
       )}
 
-      {/* Form */}
       <OrchestratorForm
         ref={formRef}
         prompt={prompt}
@@ -75,21 +74,20 @@ export function OrchestratorConsole() {
         hasData={!!reconciliationData}
       />
 
-      {/* Data Status */}
       {!reconciliationData && (
-        <div className="mt-4 rounded border theme-border theme-muted p-4 text-sm theme-text">
+        <div className="mt-4 rounded-xl border theme-border theme-muted p-4 text-sm theme-text">
           <p className="font-semibold">No data ready</p>
-          <p className="mt-1 theme-text">
-            Upload files and apply column mappings before running agents.
+          <p className="mt-1 theme-text-muted">
+            Upload files and apply mappings before running agents.
           </p>
         </div>
       )}
 
       {reconciliationData && !result && !error && (
-        <div className="mt-4 rounded border theme-border theme-card p-4 text-sm theme-text">
-          <p className="font-semibold">Data ready to reconcile</p>
-          <p className="mt-1 theme-text">
-            {reconciliationData.glBalances.length} GL balances,{" "}
+        <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm">
+          <p className="font-semibold text-emerald-100">Data ready to reconcile</p>
+          <p className="mt-1 text-emerald-200/90">
+            {reconciliationData.glBalances.length} GL balances, {" "}
             {reconciliationData.subledgerBalances.length} subledger balances
             {reconciliationData.transactions &&
               `, ${reconciliationData.transactions.length} transactions`}
@@ -97,10 +95,7 @@ export function OrchestratorConsole() {
         </div>
       )}
 
-      {/* Error Display */}
       {error && <ErrorDisplay error={error} />}
-
-      {/* Results Display */}
       {result && <RunResultPanel result={result} />}
     </section>
   );

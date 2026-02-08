@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Data preview component
  * Shows first few rows of transformed data
  */
@@ -16,11 +16,11 @@ export function DataPreview() {
 
   if (!reconciliationData) {
     return (
-      <div className="theme-card theme-border border p-6">
-        <h3 className="text-sm font-semibold uppercase tracking-wider theme-text-muted">
+      <div className="ui-panel">
+        <h3 className="ui-kicker">
           Data Preview
         </h3>
-        <p className="mt-4 text-center text-sm theme-text-muted">
+        <p className="mt-4 text-center ui-copy">
           Upload and map your files to see a preview
         </p>
       </div>
@@ -28,10 +28,13 @@ export function DataPreview() {
   }
 
   return (
-    <div className="theme-card theme-border border p-6">
-      <h3 className="text-sm font-semibold uppercase tracking-wider theme-text-muted">
+    <div className="ui-panel">
+      <h3 className="ui-kicker">
         Data Preview
       </h3>
+      <p className="ui-copy mt-2">
+        Review transformed records before launching agent runs.
+      </p>
 
       <div className="mt-4 space-y-6">
         {/* GL Balances */}
@@ -64,19 +67,19 @@ export function DataPreview() {
           )}
 
         {/* Summary */}
-        <div className="rounded border theme-border theme-muted p-4">
+        <div className="rounded-xl border theme-border theme-muted p-4">
           <p className="text-sm font-semibold theme-text">Ready to reconcile</p>
-          <div className="mt-2 flex flex-wrap gap-4 text-xs theme-text-muted">
+          <div className="mt-2 flex flex-wrap gap-2 text-xs theme-text-muted">
             <span>
               {reconciliationData.glBalances.length} GL balance{reconciliationData.glBalances.length !== 1 ? "s" : ""}
             </span>
-            <span>•</span>
+            <span>|</span>
             <span>
               {reconciliationData.subledgerBalances.length} subledger balance{reconciliationData.subledgerBalances.length !== 1 ? "s" : ""}
             </span>
             {reconciliationData.transactions && reconciliationData.transactions.length > 0 && (
               <>
-                <span>•</span>
+                <span>|</span>
                 <span>
                   {reconciliationData.transactions.length} transaction{reconciliationData.transactions.length !== 1 ? "s" : ""}
                 </span>
@@ -84,7 +87,7 @@ export function DataPreview() {
             )}
             {reconciliationData.orderedPeriods && reconciliationData.orderedPeriods.length > 0 && (
               <>
-                <span>•</span>
+                <span>|</span>
                 <span>
                   {reconciliationData.orderedPeriods.length} period{reconciliationData.orderedPeriods.length !== 1 ? "s" : ""}
                 </span>
@@ -121,8 +124,8 @@ function PreviewTable({
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded border theme-border">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-xl border theme-border">
+        <table className="w-full min-w-max text-sm">
           <thead>
             <tr className="border-b theme-border theme-muted">
               {columns.map((col) => (
@@ -174,3 +177,5 @@ function formatCellValue(value: unknown): string {
 
   return String(value);
 }
+
+

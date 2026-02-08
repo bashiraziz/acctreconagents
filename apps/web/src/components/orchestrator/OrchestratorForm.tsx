@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * Orchestrator Form Component
@@ -46,12 +46,11 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
       isLoading,
       hasData,
     },
-    ref
+    ref,
   ) {
     const promptRef = useRef<HTMLTextAreaElement>(null);
     const materialityRef = useRef<HTMLInputElement>(null);
 
-    // Expose focus methods to parent
     useImperativeHandle(ref, () => ({
       focusPrompt: () => {
         if (promptRef.current) {
@@ -69,7 +68,6 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
 
     return (
       <div className="mt-4 space-y-4">
-        {/* Analysis Prompt */}
         <label className="text-xs font-medium uppercase theme-text-muted">
           Analysis Prompt
           <textarea
@@ -94,9 +92,8 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
           )}
         </label>
 
-        {/* Materiality Threshold */}
-        <div className="flex items-center gap-4">
-          <label className="flex-1 text-xs font-medium uppercase theme-text-muted">
+        <div className="grid gap-4 md:grid-cols-[1fr_1.2fr]">
+          <label className="text-xs font-medium uppercase theme-text-muted">
             Materiality Threshold
             <div className="mt-2 flex items-center gap-2">
               <span className="text-sm theme-text">$</span>
@@ -128,22 +125,20 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
             )}
           </label>
 
-          {/* Help Text */}
-          <div className="flex-1 text-xs theme-text-muted">
-            <p className="font-medium uppercase theme-text-muted mb-2">What is this?</p>
-            <p>
-              Variances above this amount are flagged as material and require investigation.
-              Lower values = stricter reconciliation.
+          <div className="rounded-xl border theme-border theme-muted p-3 text-xs theme-text-muted">
+            <p className="font-medium uppercase text-[11px] theme-text">How threshold works</p>
+            <p className="mt-2">
+              Variances above this amount are flagged as material and need follow-up.
+              Lower values increase sensitivity.
             </p>
             {materialityThreshold === 0 && (
               <p className="mt-2 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-200">
-                ⚠️ Threshold of $0 means ALL variances (even $0.01) will be flagged as material.
+                Threshold 0 means every variance, even 0.01, is marked material.
               </p>
             )}
           </div>
         </div>
 
-        {/* Run/Stop Button */}
         <div className="flex justify-end pt-2">
           {isRunning ? (
             <button
@@ -160,11 +155,11 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
               disabled={!hasData || isLoading}
               className="rounded bg-gradient-to-r from-amber-500 to-yellow-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:from-amber-600 hover:to-yellow-600 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400"
             >
-              {isLoading ? "Illuminating... ✨" : "Illuminate ✨"}
+              {isLoading ? "Illuminating..." : "Illuminate"}
             </button>
           )}
         </div>
       </div>
     );
-  }
+  },
 );

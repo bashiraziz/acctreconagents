@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Workflow progress indicator
- * Shows user progress through: Upload → Map → Preview → Run
+ * Shows user progress through: Upload -> Map -> Preview -> Run
  */
 
 "use client";
@@ -10,7 +10,7 @@ import { useWorkflowStore } from "@/store/workflowStore";
 type Step = {
   id: string;
   label: string;
-  icon: string;
+  step: string;
   description: string;
 };
 
@@ -18,25 +18,25 @@ const steps: Step[] = [
   {
     id: "upload",
     label: "Upload Files",
-    icon: "📁",
+    step: "1",
     description: "Upload GL, subledger, and transaction data",
   },
   {
     id: "map",
     label: "Map Columns",
-    icon: "🔗",
+    step: "2",
     description: "Map your CSV columns to canonical fields",
   },
   {
     id: "preview",
     label: "Preview Data",
-    icon: "👁️",
+    step: "3",
     description: "Review transformed data before running",
   },
   {
     id: "run",
     label: "Run Agents",
-    icon: "🤖",
+    step: "4",
     description: "Execute reconciliation with AI agents",
   },
 ];
@@ -44,7 +44,9 @@ const steps: Step[] = [
 export function WorkflowProgress() {
   const workflowStatus = useWorkflowStore((state) => state.status);
 
-  const getStepStatus = (stepId: string): "complete" | "active" | "pending" | "incomplete" => {
+  const getStepStatus = (
+    stepId: string,
+  ): "complete" | "active" | "pending" | "incomplete" => {
     const status = workflowStatus[stepId as keyof typeof workflowStatus];
 
     if (status === "complete") {
@@ -63,12 +65,15 @@ export function WorkflowProgress() {
   };
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-6">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
+    <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-5 sm:p-6">
+      <h3 className="ui-kicker text-slate-300">
         Workflow Progress
       </h3>
+      <p className="ui-copy mt-2 text-slate-400">
+        Follow the sequence below to move from raw files to final reconciliation output.
+      </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {steps.map((step, index) => {
           const status = getStepStatus(step.id);
 
@@ -86,21 +91,20 @@ export function WorkflowProgress() {
                 }
               `}
             >
-              {/* Step Number & Icon */}
               <div className="flex items-center gap-3">
                 <div
                   className={`
-                    flex h-10 w-10 items-center justify-center rounded-full text-xl
+                    flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold
                     ${
                       status === "complete"
-                        ? "bg-emerald-500/20 text-emerald-400"
+                        ? "bg-emerald-500/20 text-emerald-300"
                         : status === "active"
-                          ? "bg-sky-500/20 text-sky-400"
-                          : "bg-slate-800 text-slate-500"
+                          ? "bg-sky-500/20 text-sky-300"
+                          : "bg-slate-800 text-slate-400"
                     }
                   `}
                 >
-                  {status === "complete" ? "✓" : step.icon}
+                  {status === "complete" ? "OK" : step.step}
                 </div>
 
                 <div className="flex-1">
@@ -120,16 +124,13 @@ export function WorkflowProgress() {
                       {step.label}
                     </p>
                     {status === "complete" && (
-                      <span className="text-xs text-emerald-400">●</span>
+                      <span className="text-xs text-emerald-400">Done</span>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {step.description}
-                  </p>
+                  <p className="mt-1 text-xs text-slate-500">{step.description}</p>
                 </div>
               </div>
 
-              {/* Status Badge */}
               <div className="mt-3">
                 <span
                   className={`
@@ -151,7 +152,6 @@ export function WorkflowProgress() {
                 </span>
               </div>
 
-              {/* Connection Line (except last step) */}
               {index < steps.length - 1 && (
                 <div
                   className={`

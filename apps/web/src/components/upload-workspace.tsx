@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * Upload Workspace - Main Component
@@ -41,15 +41,16 @@ export function UploadWorkspace() {
   const transactionsUploadRecord = uploads.find((r) => r.fileType === "transactions");
 
   return (
-    <section className="theme-card theme-border border p-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold theme-text">Upload Files</h2>
-          <p className="mt-1 text-sm theme-text-muted">
+    <section className="ui-panel">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <p className="ui-kicker">Step 1</p>
+          <h2 className="ui-title mt-1">Upload Files</h2>
+          <p className="ui-copy mt-1">
             Upload your GL balance, subledger balance, and transaction files (CSV/TSV/TXT format).
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="rounded border theme-border theme-muted px-3 py-1 text-xs theme-text-muted">
             Max 20MB
           </div>
@@ -169,15 +170,15 @@ function UploadList({ label, uploads }: { label: string; uploads: UploadRecord[]
                   <span>{(upload.size / 1024).toFixed(1)} KB</span>
                   {upload.fileType && (
                     <>
-                      <span>•</span>
+                      <span>|</span>
                       <span className="capitalize">{upload.fileType.replace("_", " ")}</span>
                     </>
                   )}
                   {upload.rowCount && upload.columnCount && (
                     <>
-                      <span>•</span>
+                      <span>|</span>
                       <span>
-                        {upload.rowCount} rows × {upload.columnCount} cols
+                        {upload.rowCount} rows x {upload.columnCount} cols
                       </span>
                     </>
                   )}
@@ -204,3 +205,5 @@ function UploadList({ label, uploads }: { label: string; uploads: UploadRecord[]
     </div>
   );
 }
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import {
@@ -173,49 +173,49 @@ export function ColumnMapper() {
   const subledgerMissing = getMissingFields("subledger_balance");
 
   return (
-    <section className="rounded-3xl border theme-border bg-slate-950/60 p-6">
-      <header className="flex items-start justify-between gap-4">
+    <section className="rounded-3xl border theme-border bg-slate-950/60 p-5 sm:p-6">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-300">
+          <p className="ui-kicker">
             Column Mapping
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
+          <h2 className="ui-title mt-1">
             Map your columns
           </h2>
-          <p className="mt-1 text-sm theme-text-muted">
-            Map CSV columns to canonical fields. Auto-suggest is available for quick setup.
+          <p className="ui-copy mt-1">
+            Map source columns to canonical fields. You can auto-suggest and then adjust only the mismatches.
           </p>
         </div>
       </header>
 
       {/* Tabs */}
-      <div className="mt-6 flex gap-2 border-b theme-border">
+      <div className="mt-6 flex flex-wrap gap-2 border-b theme-border pb-2">
         <button
           onClick={() => setActiveTab("gl")}
-          className={`px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
             activeTab === "gl"
-              ? "border-b-2 border-gray-900 theme-text"
-              : "theme-text-muted hover:theme-text"
+              ? "theme-card theme-text"
+              : "theme-text-muted hover:theme-text hover:theme-muted"
           }`}
         >
           GL Balance ({glCompletion}%)
         </button>
         <button
           onClick={() => setActiveTab("subledger")}
-          className={`px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
             activeTab === "subledger"
-              ? "border-b-2 border-gray-900 theme-text"
-              : "theme-text-muted hover:theme-text"
+              ? "theme-card theme-text"
+              : "theme-text-muted hover:theme-text hover:theme-muted"
           }`}
         >
           Subledger ({subledgerCompletion}%)
         </button>
         <button
           onClick={() => setActiveTab("transactions")}
-          className={`px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
             activeTab === "transactions"
-              ? "border-b-2 border-gray-900 theme-text"
-              : "theme-text-muted hover:theme-text"
+              ? "theme-card theme-text"
+              : "theme-text-muted hover:theme-text hover:theme-muted"
           }`}
         >
           Transactions ({transactionsCompletion}%)
@@ -275,11 +275,11 @@ export function ColumnMapper() {
 
       {/* Apply Button */}
       <div className="mt-6 rounded-2xl border border-sky-800/40 bg-sky-500/10 p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1">
             <p className="font-semibold text-sky-100">
               {canApply
-                ? "✓ Ready to apply mappings"
+                ? "Ready to apply mappings"
                 : "Complete required mappings to continue"}
             </p>
             {!canApply && (glMissing.length > 0 || subledgerMissing.length > 0) && (
@@ -307,7 +307,7 @@ export function ColumnMapper() {
           <button
             onClick={handleApplyMappings}
             disabled={!canApply}
-            className="ml-4 rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+            className="rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 sm:ml-4"
           >
             Apply Mappings
           </button>
@@ -379,7 +379,7 @@ function MappingTab({
   return (
     <div className="space-y-6">
       {/* Auto-Suggest Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-slate-300">
             Detected {file.headers.length} columns in {file.name}
@@ -392,7 +392,7 @@ function MappingTab({
           onClick={onAutoSuggest}
           className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400"
         >
-          🪄 Auto-Suggest Mappings
+          Auto-Suggest Mappings
         </button>
       </div>
 
@@ -475,7 +475,7 @@ function MappingTab({
             .map(([key, value]) => (
               <div key={key} className="flex items-center justify-between theme-text-muted">
                 <span>{key}</span>
-                <span>→</span>
+                <span>{"->"}</span>
                 <span className="font-mono theme-text">{value}</span>
               </div>
             ))}
@@ -487,3 +487,4 @@ function MappingTab({
     </div>
   );
 }
+

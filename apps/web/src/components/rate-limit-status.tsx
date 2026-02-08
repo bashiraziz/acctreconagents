@@ -32,13 +32,13 @@ export function RateLimitStatus() {
   }
 
   return (
-    <div className={`rounded-2xl border ${borderColor} ${bgColor} p-4`}>
+    <div className={`rounded-2xl border ${borderColor} ${bgColor} p-3 sm:p-4`}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-base font-semibold text-white">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold text-white sm:text-base">
             {remaining}
           </div>
-          <div>
+          <div className="min-w-0">
             <p className={`text-sm font-semibold ${statusColor}`}>
               {remaining === 0 ? "Rate limit reached" : `${remaining} reconciliation${remaining !== 1 ? "s" : ""} remaining`}
             </p>
@@ -50,7 +50,7 @@ export function RateLimitStatus() {
           </div>
         </div>
         {remaining > 0 && (
-          <div className="h-2 w-24 flex-shrink-0 overflow-hidden rounded-full bg-slate-800">
+          <div className="h-2 w-20 flex-shrink-0 overflow-hidden rounded-full bg-slate-800 sm:w-24">
             <div
               className={`h-full transition-all ${
                 remaining <= 2 ? "bg-rose-500" : remaining <= 3 ? "bg-amber-500" : "bg-emerald-500"

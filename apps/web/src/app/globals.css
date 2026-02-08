@@ -84,3 +84,44 @@ body {
   color: var(--accent);
   transition: color 0.3s ease;
 }
+
+/* Shared UI rhythm tokens */
+.ui-panel {
+  border-radius: 1.5rem;
+  border: 1px solid var(--card-border);
+  background-color: var(--card);
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .ui-panel {
+    padding: 1.5rem;
+  }
+}
+
+.ui-kicker {
+  color: var(--muted-text);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.ui-title {
+  color: var(--foreground);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .ui-title {
+    font-size: 1.5rem;
+  }
+}
+
+.ui-copy {
+  color: var(--muted-text);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}

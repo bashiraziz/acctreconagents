@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 import { ColumnMapper } from "@/components/column-mapper";
 import { OrchestratorConsole } from "@/components/orchestrator-console";
@@ -14,27 +14,41 @@ import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/s
 export default function Home() {
   return (
     <div className="min-h-screen theme-bg">
-      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 lg:px-10">
+      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
         {/* Header with User Menu */}
-        <header className="theme-card theme-border border-b p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold theme-text">
+        <header className="theme-card theme-border rounded-3xl border p-5 sm:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold theme-text sm:text-3xl">
                 Rowshni
               </h1>
-              <p className="mt-1 text-lg font-medium text-amber-500">
+              <p className="mt-1 text-base font-medium text-amber-500 sm:text-lg">
                 Shedding light on your ledger
               </p>
-              <p className="mt-2 max-w-3xl text-sm theme-text-muted">
-                AI-powered reconciliation that illuminates variances, detects errors, and brings clarity to your month-end close.
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed theme-text-muted">
+                AI-powered reconciliation for month-end close. Upload files, map fields, review transformed data, and run agents.
               </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+                  1. Upload
+                </span>
+                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+                  2. Map
+                </span>
+                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+                  3. Preview
+                </span>
+                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+                  4. Reconcile
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 href="https://github.com/bashiraziz/acctreconagents"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border theme-border theme-card px-3 py-2 text-sm font-medium theme-text hover:theme-muted transition-colors"
+                className="inline-flex items-center rounded-lg border theme-border theme-card px-3 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
                 title="View on GitHub"
               >
                 <svg
@@ -45,14 +59,15 @@ export default function Home() {
                 >
                   <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
                 </svg>
+                <span className="ml-2 hidden sm:inline">GitHub</span>
               </Link>
               <Link
-                href="https://github.com/bashiraziz/acctreconagents/blob/master/USER_GUIDE.md"
+                href="https://github.com/bashiraziz/acctreconagents/blob/main/USER_GUIDE.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border theme-border theme-card px-4 py-2 text-sm font-medium theme-text hover:theme-muted transition-colors"
+                className="rounded-lg border theme-border theme-card px-4 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
               >
-                How to Use
+                User Guide
               </Link>
               <UserMenu />
               <ThemeToggle />
@@ -77,7 +92,7 @@ export default function Home() {
           </div>
 
           {/* Right Column - Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <SampleDataPanel />
             <AboutPanel />
           </div>
@@ -106,9 +121,9 @@ export default function Home() {
                 </svg>
                 View on GitHub
               </Link>
-              <span className="text-sm theme-text-muted">•</span>
+              <span className="text-sm theme-text-muted">|</span>
               <Link
-                href="https://github.com/bashiraziz/acctreconagents/blob/master/USER_GUIDE.md"
+                href="https://github.com/bashiraziz/acctreconagents/blob/main/USER_GUIDE.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-medium theme-text hover:text-amber-500 transition-colors"
@@ -133,9 +148,9 @@ function SpecPill({ label, value }: { label: string; value: string }) {
 
 function AboutPanel() {
   return (
-    <section className="theme-card theme-border border p-6">
-      <h3 className="text-base font-semibold theme-text">About Rowshni</h3>
-      <p className="mt-2 text-sm theme-text-muted">
+    <section className="ui-panel">
+      <h3 className="ui-title">About Rowshni</h3>
+      <p className="ui-copy mt-2">
         <span className="font-medium text-amber-500">Rowshni</span> means &quot;light&quot;.
         We illuminate your reconciliations with AI-powered insights, bringing clarity to complex financial data.
       </p>
@@ -155,9 +170,10 @@ function AboutPanel() {
           </div>
           <ul className="list-disc space-y-1 pl-5">
             <li>Next.js 16 web application</li>
-            <li>Fastify orchestrator service</li>
+            <li>Fastify orchestrator service (OpenAI, Claude, Gemini modes)</li>
             <li>Spec-Kit contracts for data validation</li>
-            <li>Gemini 2.0 Flash (free tier) for AI agents</li>
+            <li>Gemini 2.0 Flash (default free-tier 4-agent pipeline)</li>
+            <li>Claude skills subagents for mapping and variance investigation</li>
             <li>Anonymous mode with browser localStorage</li>
           </ul>
 
@@ -191,17 +207,17 @@ function AboutPanel() {
                 process your data.
               </p>
               <p className="pt-1 text-[11px] italic">
-                Contract version {specMetadata.version} • {canonicalBalanceFields.length + transactionFields.length} fields total
+                Contract version {specMetadata.version} | {canonicalBalanceFields.length + transactionFields.length} fields total
               </p>
             </div>
           </details>
 
           <div className="rounded border theme-border theme-muted p-3">
             <p className="text-sm font-medium theme-text">
-              Free AI Agents
+              AI Runtime
             </p>
             <p className="mt-1 text-xs theme-text-muted">
-              Uses Gemini 2.0 Flash free tier (1500 runs/day). Cost: $0 per reconciliation.
+              Default: Gemini 2.0 Flash free tier. Optional OpenAI agents and Claude skills run when configured.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -210,14 +226,14 @@ function AboutPanel() {
               className="text-xs font-medium theme-text underline hover:text-amber-500 transition-colors"
               target="_blank"
             >
-              View README →
+              {"View README ->"}
             </Link>
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/master/specs/reconciliation.speckit.json"
               className="text-xs font-medium theme-text underline hover:text-amber-500 transition-colors"
               target="_blank"
             >
-              View Spec →
+              {"View Spec ->"}
             </Link>
           </div>
         </div>
@@ -292,3 +308,5 @@ function AboutPanel() {
     </section>
   );
 }
+
+
