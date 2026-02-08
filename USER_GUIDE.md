@@ -534,7 +534,7 @@ Use your own free Google Gemini API key:
 
 **Issues or questions?**
 - Report bugs: https://github.com/bashiraziz/acctreconagents/issues
-- Email support: (add your email here)
+- Email support: bashiraziz@gmail.com
 
 **Want to learn more about the reconciliation logic?**
 - See: `specs/reconciliation-logic.md` for detailed algorithm documentation
