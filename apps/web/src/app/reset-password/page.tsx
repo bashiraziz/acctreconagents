@@ -2,12 +2,12 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { requestPasswordReset, resetPassword } from "@/lib/auth-client";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -200,5 +200,13 @@ export default function ResetPasswordPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen theme-bg" />}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
