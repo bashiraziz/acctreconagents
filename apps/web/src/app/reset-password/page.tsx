@@ -2,15 +2,16 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { requestPasswordReset, resetPassword } from "@/lib/auth-client";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
-  const [errorParam, setErrorParam] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const errorParam = searchParams.get("error");
   const isResetMode = Boolean(token);
 
   const [email, setEmail] = useState("");
@@ -26,12 +27,6 @@ export default function ResetPasswordPage() {
       : messageTone === "success"
         ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-100"
         : "border-slate-700 bg-slate-900/60 text-slate-100";
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setToken(params.get("token"));
-    setErrorParam(params.get("error"));
-  }, []);
 
   const handleRequestReset = async (event: FormEvent) => {
     event.preventDefault();

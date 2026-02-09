@@ -19,7 +19,8 @@
       }
     ],
     "types": [
-      "@openai/chatkit"
+      "@openai/chatkit",
+      "node"
     ],
     "paths": {
       "@/*": ["./src/*"]

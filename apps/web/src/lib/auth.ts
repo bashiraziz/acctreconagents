@@ -31,7 +31,9 @@ export const auth = betterAuth({
   database,
   emailAndPassword: {
     enabled: true,
-    sendResetPassword: async ({ user, url }, request) => {
+    sendResetPassword: async (data, _request?: Request) => {
+      void _request;
+      const { user, url } = data;
       if (!resend) {
         console.warn("RESEND_API_KEY is not configured; skipping reset email.");
         return;
