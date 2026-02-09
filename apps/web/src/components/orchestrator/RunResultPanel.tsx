@@ -19,9 +19,28 @@ export function RunResultPanel({ result }: RunResultPanelProps) {
           (s: GeminiAgentStatus) => s.usedFallback && s.error?.includes("429")
         )
       : false;
+  const firstAgentError =
+    result.geminiAgents && result.geminiAgents.status
+      ? Object.values(result.geminiAgents.status)
+          .map((s) => s.error)
+          .find((error): error is string => Boolean(error))
+      : undefined;
+  const friendlyAgentError = firstAgentError
+    ? toUserFriendlyAgentError(firstAgentError)
+    : null;
 
   return (
     <div className="mt-6 space-y-4">
+      {friendlyAgentError && (
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
+          <p className="font-semibold text-amber-100">
+            {friendlyAgentError.title}
+          </p>
+          <p className="mt-1 text-sm text-amber-200/80">
+            {friendlyAgentError.message}
+          </p>
+        </div>
+      )}
       {/* Rate Limit Warning */}
       {hasRateLimitIssue && (
         <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
@@ -329,7 +348,7 @@ export function RunResultPanel({ result }: RunResultPanelProps) {
               <div className="mt-3">
                 <div className="whitespace-pre-wrap text-sm theme-text/90">
                   {typeof result.geminiAgents.report === 'string'
-                    ? result.geminiAgents.report
+                    ? formatReportOutput(result.geminiAgents.report)
                     : JSON.stringify(result.geminiAgents.report, null, 2)}
                 </div>
               </div>
@@ -374,9 +393,9 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
         {status.error && (
           <span
             className="rounded-full bg-rose-500/20 px-2 py-1 text-xs font-medium text-rose-300"
-            title={status.error}
+            title={toUserFriendlyAgentError(status.error).message}
           >
-            Rate Limit
+            {toUserFriendlyAgentError(status.error).badge}
           </span>
         )}
       </div>
@@ -388,4 +407,48 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
       Unknown
     </span>
   );
+}
+
+function toUserFriendlyAgentError(error: string) {
+  const normalized = error.toLowerCase();
+  if (normalized.includes("429") || normalized.includes("rate limit") || normalized.includes("quota")) {
+    return {
+      title: "AI analysis temporarily limited",
+      message:
+        "The AI provider rate-limited this request. The reconciliation still ran, but some insights are limited. Try again later or add your own Gemini API key.",
+      badge: "Rate limit",
+    };
+  }
+  if (normalized.includes("timeout")) {
+    return {
+      title: "AI request timed out",
+      message: "The AI provider did not respond in time. You can retry the run or try again in a few minutes.",
+      badge: "Timeout",
+    };
+  }
+  if (
+    normalized.includes("enotfound") ||
+    normalized.includes("econnrefused") ||
+    normalized.includes("econnreset")
+  ) {
+    return {
+      title: "AI service connection failed",
+      message: "We could not reach the AI service. Check network connectivity and try again.",
+      badge: "Connection",
+    };
+  }
+  return {
+    title: "AI analysis encountered an error",
+    message:
+      "Some AI steps failed, but the reconciliation still completed. You can retry the run for a full report.",
+    badge: "Error",
+  };
+}
+
+function formatReportOutput(report: string) {
+  const lower = report.toLowerCase();
+  if (lower.includes("unable to generate full report")) {
+    return "The report could not be generated due to an upstream AI error. The reconciliation completed, but the report is incomplete. Try again later or provide your own Gemini API key for higher reliability.";
+  }
+  return report;
 }
