@@ -1,0 +1,89 @@
+{
+  
+  "name": "acctrecon-cleanroom",
+  "version": "0.1.0",
+  "summary": "Agentic reconciliation workspace that ingests GL/subledger data, maps heterogeneous headers, and coordinates AI subagents.",
+  "actors": [
+    {
+      "name": "operations_analyst",
+      "goals": [
+        "Upload GL + subledger trial balances, transaction detail, and supporting documents.",
+        "Map foreign column headers to the canonical schema required by the reconciliation engine."
+      ]
+    },
+    {
+      "name": "agentic_conductor",
+      "goals": [
+        "Invoke OpenAI Agents SDK supervisor/reviewer roles with reconciliation + insight tools.",
+        "Dispatch Claude Skills subagents when column mappings or explanations need refinement.",
+        "Call Gemini for narrative summaries and roll-forward storytelling."
+      ]
+    }
+  ],
+  "dataModels": [
+    {
+      "name": "canonical_balance",
+      "description": "Normalized balance row used across GL + subledger inputs.",
+      "fields": [
+        { "name": "account_code", "type": "string", "required": true },
+        { "name": "period", "type": "string", "format": "YYYY-MM", "required": true },
+        { "name": "currency", "type": "string", "required": false },
+        { "name": "amount", "type": "number", "required": true }
+      ]
+    },
+    {
+      "name": "transaction_line",
+      "description": "Normalized transaction activity supporting the balances.",
+      "fields": [
+        { "name": "account_code", "type": "string", "required": true },
+        { "name": "booked_at", "type": "date", "required": true },
+        { "name": "debit", "type": "number", "required": false },
+        { "name": "credit", "type": "number", "required": false },
+        { "name": "amount", "type": "number", "required": false },
+        { "name": "narrative", "type": "string", "required": false },
+        { "name": "source_period", "type": "string", "required": false }
+      ]
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "reconciliation_tool",
+      "type": "function",
+      "summary": "Tool signature available to OpenAI Agents and Claude subagents.",
+      "input": {
+        "gl_balances": "canonical_balance[]",
+        "subledger_balances": "canonical_balance[]",
+        "transactions": "transaction_line[]",
+        "ordered_periods": "string[]",
+        "activity_by_period": "Record<string, number>",
+        "adjustments_by_period": "Record<string, number | undefined>"
+      },
+      "output": {
+        "reconciliations": "array",
+        "roll_forward": "object",
+        "insights": "string"
+      }
+    }
+  ],
+  "workflows": [
+    {
+      "name": "upload_and_map",
+      "steps": [
+        "Collect GL/subledger CSV, Excel, or PDF extracts via the Next.js Upload Workspace.",
+        "Extract schema metadata for each upload (column headers, sample rows).",
+        "Apply saved column mapping template or prompt user to map headers.",
+        "Persist the normalized payload inside the orchestration service."
+      ]
+    },
+    {
+      "name": "agentic_reconciliation",
+      "steps": [
+        "Supervisor agent (OpenAI Agents SDK) validates payload against Spec-Kit schema.",
+        "Claude Skills `column_mapper` and `variance_investigator` run when supervisor flags uncertainty.",
+        "Supervisor triggers reconciliation tool endpoint hosted by orchestrator service.",
+        "Gemini generates narrative commentary, appended to ChatKit thread.",
+        "Reviewer agent summarizes and streams the answer back through ChatKit."
+      ]
+    }
+  ]
+}

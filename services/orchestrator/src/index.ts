@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
-import spec from "../../../specs/reconciliation.speckit.json" with { type: "json" };
+import spec from "../specs/reconciliation.speckit.json" with { type: "json" };
 import { runGeminiAgentPipeline } from "./agents/gemini-agents.js";
 
 const __filename = fileURLToPath(import.meta.url);
