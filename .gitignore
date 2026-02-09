@@ -36,3 +36,4 @@ out/
 # Build outputs
 *.log
 .DS_Store
+.vercel
