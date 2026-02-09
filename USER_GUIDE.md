@@ -452,6 +452,9 @@ Use your own free Google Gemini API key:
 
 ## FAQ
 
+### Q: I forgot my password. What should I do?
+**A:** Use the "Forgot your password?" link on the sign-in page. We'll email a reset link to the address on file. If you no longer have access to that email, contact support.
+
 ### Q: Can I reconcile multiple accounts at once?
 **A:** Yes! Upload a GL file with multiple accounts and a subledger file with detail. The system intelligently determines which accounts to reconcile:
 

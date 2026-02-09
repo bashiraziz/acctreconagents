@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, signUp, useSession } from "@/lib/auth-client";
 
@@ -146,7 +147,12 @@ export default function SignInPage() {
             </button>
           </form>
 
-          <div className="mt-4 text-center text-sm text-slate-400">
+          <div className="mt-4 flex flex-col items-center gap-3 text-sm text-slate-400">
+            {mode === "sign-in" ? (
+              <Link href="/reset-password" className="font-semibold text-sky-300 hover:text-sky-200">
+                Forgot your password?
+              </Link>
+            ) : null}
             {mode === "sign-in" ? (
               <button
                 type="button"
