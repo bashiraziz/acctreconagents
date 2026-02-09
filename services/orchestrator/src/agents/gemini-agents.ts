@@ -434,8 +434,24 @@ async function runReportAgent(
     model: getGeminiModel(),
     generationConfig: {
       temperature: 0.5,
+      maxOutputTokens: 1200,
     },
   });
+
+  const reconciliationSummary = localOutput.reconciliations.map(
+    ({ transactions, notes, ...rest }) => ({
+      ...rest,
+      notes: Array.isArray(notes) ? notes.slice(0, 3) : notes,
+      transactionCount: Array.isArray(transactions) ? transactions.length : 0,
+    })
+  );
+  const periods = Array.from(
+    new Set(
+      localOutput.reconciliations
+        .map((rec) => rec.period)
+        .filter((period) => period && period !== "unspecified")
+    )
+  );
 
   const prompt = `You are a report writer creating audit-ready reconciliation documentation for an AI-POWERED AUTOMATED RECONCILIATION SYSTEM.
 
@@ -447,7 +463,10 @@ Create a comprehensive reconciliation report based on:
 USER REQUEST: ${input.userPrompt}
 
 RECONCILIATION DATA (PRIMARY SOURCE OF TRUTH):
-${JSON.stringify(localOutput.reconciliations, null, 2)}
+${JSON.stringify(reconciliationSummary, null, 2)}
+
+REPORTING PERIODS:
+${periods.length > 0 ? periods.join(", ") : "unspecified"}
 
 VALIDATION RESULTS:
 ${JSON.stringify(validationResult, null, 2)}
@@ -468,6 +487,8 @@ CRITICAL INSTRUCTIONS:
 - DO NOT recommend automation or AI implementation - this IS an automated AI system
 - Focus recommendations on BUSINESS ACTIONS (adjusting entries, contacting vendors, reviewing transactions)
 - Avoid generic or obvious recommendations that add no value
+- Do NOT invent dates or periods. If periods are "unspecified", omit dates entirely.
+- Do NOT dump raw JSON or large tables. Keep output concise and readable.
 
 Create a professional markdown report with:
 1. Executive Summary (2-3 sentences)
@@ -477,7 +498,8 @@ Create a professional markdown report with:
 5. Recommended Actions (ONLY if there are actual issues requiring business action)
 6. Conclusion
 
-Format in clean markdown suitable for audit documentation.`;
+Format in clean markdown suitable for audit documentation.
+Target length: 300-600 words.`;
 
   try {
     const { result, retryCount } = await retryWithBackoff(
