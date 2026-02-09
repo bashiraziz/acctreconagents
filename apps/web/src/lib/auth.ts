@@ -37,33 +37,38 @@ export const auth = betterAuth({
         return;
       }
 
-      const emailPromise = resend.emails.send({
-        from: resendFromEmail,
-        to: user.email,
-        subject: "Reset your Rowshni password",
-        text: [
-          `Hi ${user.name || "there"},`,
-          "",
-          "We received a request to reset your Rowshni password.",
-          "Use the link below to set a new password:",
-          url,
-          "",
-          "If you did not request this, you can ignore this email.",
-        ].join("\n"),
-        html: [
-          `<p>Hi ${user.name || "there"},</p>`,
-          "<p>We received a request to reset your Rowshni password.</p>",
-          `<p><a href="${url}">Reset your password</a></p>`,
-          "<p>If you did not request this, you can ignore this email.</p>",
-        ].join(""),
-      });
+      try {
+        const result = await resend.emails.send({
+          from: resendFromEmail,
+          to: user.email,
+          subject: "Reset your Rowshni password",
+          text: [
+            `Hi ${user.name || "there"},`,
+            "",
+            "We received a request to reset your Rowshni password.",
+            "Use the link below to set a new password:",
+            url,
+            "",
+            "If you did not request this, you can ignore this email.",
+          ].join("\n"),
+          html: [
+            `<p>Hi ${user.name || "there"},</p>`,
+            "<p>We received a request to reset your Rowshni password.</p>",
+            `<p><a href="${url}">Reset your password</a></p>`,
+            "<p>If you did not request this, you can ignore this email.</p>",
+          ].join(""),
+        });
 
-      const maybeWaitUntil = (request as { waitUntil?: (promise: Promise<unknown>) => void })
-        .waitUntil;
-      if (maybeWaitUntil) {
-        maybeWaitUntil(emailPromise);
-      } else {
-        void emailPromise;
+        if ("error" in result && result.error) {
+          console.error("Resend reset email failed:", result.error);
+        } else {
+          console.info("Resend reset email sent:", {
+            id: "data" in result ? result.data?.id : undefined,
+            to: user.email,
+          });
+        }
+      } catch (error) {
+        console.error("Resend reset email exception:", error);
       }
     },
   },
