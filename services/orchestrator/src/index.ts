@@ -29,6 +29,10 @@ await fastify.register(cors, {
   credentials: true,
 });
 
+fastify.get("/", async () => {
+  return { status: "ok" };
+});
+
 const balanceSchema = z.object({
   account_code: z.string(),
   period: z.string().optional().default(""),
