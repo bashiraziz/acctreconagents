@@ -18,6 +18,14 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [messageTone, setMessageTone] = useState<"info" | "success" | "error">("info");
+
+  const messageClass =
+    messageTone === "error"
+      ? "border-rose-500/40 bg-rose-500/10 text-rose-100"
+      : messageTone === "success"
+        ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-100"
+        : "border-slate-700 bg-slate-900/60 text-slate-100";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -35,10 +43,12 @@ export default function ResetPasswordPage() {
       const { error } = await requestPasswordReset({ email, redirectTo });
       if (error) {
         setMessage(error.message || "Unable to request a reset link. Please try again.");
+        setMessageTone("error");
         setStatus("idle");
         return;
       }
       setMessage("If the email is registered, a reset link has been sent.");
+      setMessageTone("success");
       setStatus("success");
     } catch (err) {
       setMessage(
@@ -46,6 +56,7 @@ export default function ResetPasswordPage() {
           ? err.message
           : "Unable to request a reset link. Please try again."
       );
+      setMessageTone("error");
       setStatus("idle");
     }
   };
@@ -56,6 +67,7 @@ export default function ResetPasswordPage() {
 
     if (newPassword !== confirmPassword) {
       setMessage("Passwords do not match.");
+      setMessageTone("error");
       return;
     }
 
@@ -66,10 +78,12 @@ export default function ResetPasswordPage() {
       const { error } = await resetPassword({ token, newPassword });
       if (error) {
         setMessage(error.message || "Unable to reset password. Please try again.");
+        setMessageTone("error");
         setStatus("idle");
         return;
       }
       setMessage("Password updated. You can now sign in.");
+      setMessageTone("success");
       setStatus("success");
       router.push("/sign-in");
       router.refresh();
@@ -77,6 +91,7 @@ export default function ResetPasswordPage() {
       setMessage(
         err instanceof Error ? err.message : "Unable to reset password. Please try again."
       );
+      setMessageTone("error");
       setStatus("idle");
     }
   };
@@ -137,7 +152,7 @@ export default function ResetPasswordPage() {
               </label>
 
               {message && (
-                <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm text-slate-100">
+                <div className={`rounded-xl border p-3 text-sm ${messageClass}`}>
                   {message}
                 </div>
               )}
@@ -167,7 +182,7 @@ export default function ResetPasswordPage() {
               </label>
 
               {message && (
-                <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm text-slate-100">
+                <div className={`rounded-xl border p-3 text-sm ${messageClass}`}>
                   {message}
                 </div>
               )}

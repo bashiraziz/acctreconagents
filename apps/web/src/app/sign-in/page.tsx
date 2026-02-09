@@ -66,9 +66,17 @@ export default function SignInPage() {
     <div className="min-h-screen theme-bg">
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10">
         <header className="theme-card theme-border border-b p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-300">
-            Account Access
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-300">
+              Account Access
+            </p>
+            <Link
+              href="/"
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 transition hover:text-slate-200"
+            >
+              Back to home
+            </Link>
+          </div>
           <h1 className="mt-2 text-3xl font-semibold theme-text">
             {mode === "sign-in" ? "Welcome back" : "Create your account"}
           </h1>

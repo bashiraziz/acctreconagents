@@ -433,6 +433,15 @@ Use your own free Google Gemini API key:
 - Common scenario: GL shows credit as -10,768.63, subledger shows 10,768.63
 - Check the box for the file that needs sign reversal
 
+### "I did not receive a reset email"
+**Problem:** No password reset email arrives after requesting one
+
+**Fix:**
+- Confirm you used an email address that already has a Rowshni account
+- Check spam or junk folders
+- Request a new reset link from **Sign in → Forgot your password?**
+- If the email still does not arrive, contact support
+
 ### "Upload failed - file too large"
 **Problem:** File exceeds 20 MB limit
 
