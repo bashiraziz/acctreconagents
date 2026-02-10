@@ -208,7 +208,11 @@ After mapping, click **"Preview Data"** to see:
    - The selection applies to this run only (overrides the default organization)
    - Anonymous users won't see this dropdown
 
-3. **Enter Analysis Prompt**
+3. **Simple Mode (Optional)**
+   - Use the Simple toggle in the header to reduce colors and visual noise
+   - This does not change calculations or results, only the display
+
+4. **Enter Analysis Prompt**
    - Provide instructions for the AI agents
    - **Account filtering options**:
      - **Specific accounts**: "Reconcile account 200" → reconciles only account 200
@@ -221,12 +225,12 @@ After mapping, click **"Preview Data"** to see:
 
    **Smart Default**: If you don't specify accounts, the system automatically reconciles only accounts that exist in both your GL and subledger files. This prevents false variances for GL accounts that don't have supporting detail.
 
-4. **Click "Illuminate ✨"**
+5. **Click "Illuminate ✨"**
    - Rowshni's AI agents start analyzing your data
    - Progress shown in real-time with a glowing progress indicator
    - You'll see which agent is currently working (Data Validation → Analysis → Investigation → Report)
 
-5. **Watch the Timeline**
+6. **Watch the Timeline**
    ```
    ✔ Spec Validation     - Data validated
    ▶ Data Validation Agent - Validating data quality
@@ -235,7 +239,7 @@ After mapping, click **"Preview Data"** to see:
    ▶ Report Generator Agent - Creating final report
    ```
 
-6. **Wait for Completion** (usually 10-30 seconds)
+7. **Wait for Completion** (usually 10-30 seconds)
 
 ---
 
@@ -578,6 +582,7 @@ Use your own free Google Gemini API key:
 - **Organization Settings**: Add multiple organizations, pick a default, and select per run
 - **Report header fields**: Organization (if set), Reporting Period (Month YYYY), Report Generated On (today)
 - **Report resilience**: If AI output is incomplete, the system generates a fallback report from reconciliation data
+- **Simple Mode**: Toggle a reduced-color UI for less visual noise
 
 *Last updated: February 10, 2026*
 

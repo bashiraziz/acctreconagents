@@ -9,6 +9,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { DataPreview } from "@/components/data-preview";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SimpleModeToggle } from "@/components/simple-mode-toggle";
 import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/spec";
 
 export default function Home() {
@@ -70,6 +71,7 @@ export default function Home() {
                 User Guide
               </Link>
               <UserMenu />
+              <SimpleModeToggle />
               <ThemeToggle />
             </div>
           </div>

@@ -49,6 +49,32 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Simple mode reduces visual noise (neutral palette + minimal accents) */
+[data-simple-mode="true"] {
+  --accent: var(--foreground);
+}
+
+[data-simple-mode="true"] .ui-kicker {
+  letter-spacing: 0.08em;
+}
+
+[data-simple-mode="true"] .theme-muted {
+  background-color: rgba(148, 163, 184, 0.08);
+}
+
+[data-simple-mode="true"] .theme-border {
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+[data-simple-mode="true"] .theme-text-muted {
+  color: #94a3b8;
+}
+
+[data-simple-mode="true"] a,
+[data-simple-mode="true"] button {
+  color: inherit;
+}
+
 /* Theme utility classes */
 .theme-bg {
   background-color: var(--background);
