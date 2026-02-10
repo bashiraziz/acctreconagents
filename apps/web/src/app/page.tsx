@@ -243,7 +243,9 @@ function AboutPanel() {
         <summary className="cursor-pointer text-sm font-medium theme-text">
           Data Model
         </summary>
-        <p className="mt-2 text-sm theme-text-muted">{specMetadata.summary}</p>
+        <p className="mt-2 text-sm theme-text-muted">
+          {specMetadata.summary} Reports include Organization (if set), Reporting Period, and Report Generated On.
+        </p>
         <div className="mt-4 space-y-4">
           <div>
             <p className="text-xs font-medium uppercase theme-text-muted">Balance Fields</p>
