@@ -125,6 +125,7 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
   const [error, setError] = useState<AgentError | null>(null);
   const [currentAgentStep, setCurrentAgentStep] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isRetryingReport, setIsRetryingReport] = useState(false);
 
   // New domain-specific stores
   const reconciliationData = useFileUploadStore((state) => state.reconciliationData);
@@ -279,6 +280,59 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
     setCurrentAgentStep(0);
   };
 
+  const retryReport = async () => {
+    if (!result || !result.geminiAgents) return;
+
+    setIsRetryingReport(true);
+    try {
+      const response = await fetch("/api/agent/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userPrompt: prompt,
+          toolOutput: result.toolOutput,
+          validationResult: result.geminiAgents.validation,
+          analysisResult: result.geminiAgents.analysis,
+          investigationResult: result.geminiAgents.investigation,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError({
+          message: "Failed to regenerate report",
+          detail: data?.message ?? "Report retry failed. Please try again.",
+          help: ["Try again in a few moments", "Verify your Gemini API key is valid"],
+        });
+        return;
+      }
+
+      setResult((prev) => {
+        if (!prev?.geminiAgents) return prev;
+        return {
+          ...prev,
+          geminiAgents: {
+            ...prev.geminiAgents,
+            report: data.report ?? prev.geminiAgents.report,
+            status: {
+              ...prev.geminiAgents.status,
+              report: data.status ?? prev.geminiAgents.status.report,
+            },
+          },
+        };
+      });
+    } catch (err) {
+      setError({
+        message: "Failed to regenerate report",
+        detail: err instanceof Error ? err.message : "Report retry failed.",
+        help: ["Try again in a few moments"],
+      });
+    } finally {
+      setIsRetryingReport(false);
+    }
+  };
+
   return {
     // State
     prompt,
@@ -296,6 +350,8 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
     setMaterialityThreshold,
     runAgents,
     handleStop,
+    retryReport,
+    isRetryingReport,
     handleFieldErrorClear,
   };
 }

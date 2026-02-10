@@ -9,9 +9,11 @@ import type { OrchestratorResponse, GeminiAgentStatus, Investigation } from "@/t
 
 interface RunResultPanelProps {
   result: OrchestratorResponse;
+  onRetryReport?: () => void;
+  isRetryingReport?: boolean;
 }
 
-export function RunResultPanel({ result }: RunResultPanelProps) {
+export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunResultPanelProps) {
   // Check if any Gemini agents hit rate limits
   const hasRateLimitIssue: boolean =
     result.geminiAgents && result.geminiAgents.status
@@ -28,6 +30,10 @@ export function RunResultPanel({ result }: RunResultPanelProps) {
   const friendlyAgentError = firstAgentError
     ? toUserFriendlyAgentError(firstAgentError)
     : null;
+  const reportDurationMs = result.geminiAgents?.status?.report?.durationMs;
+  const canRetryReport =
+    Boolean(result.geminiAgents?.status?.report) &&
+    !result.geminiAgents?.status?.report?.success;
 
   return (
     <div className="mt-6 space-y-4">
@@ -342,9 +348,24 @@ export function RunResultPanel({ result }: RunResultPanelProps) {
                   >
                     📝 TXT
                   </button>
+                  {canRetryReport && onRetryReport && (
+                    <button
+                      onClick={onRetryReport}
+                      disabled={isRetryingReport}
+                      className="rounded-lg bg-amber-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:bg-amber-900/60"
+                      title="Retry report generation"
+                    >
+                      {isRetryingReport ? "Retrying..." : "Retry"}
+                    </button>
+                  )}
                   <GeminiAgentStatusBadge status={result.geminiAgents.status?.report} />
                 </div>
               </div>
+              {reportDurationMs && (
+                <p className="mt-2 text-xs theme-text-muted">
+                  Report generated in {(reportDurationMs / 1000).toFixed(1)}s.
+                </p>
+              )}
               <div className="mt-3">
                 <div className="whitespace-pre-wrap text-sm theme-text/90">
                   {typeof result.geminiAgents.report === 'string'

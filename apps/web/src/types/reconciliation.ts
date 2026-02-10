@@ -134,6 +134,7 @@ export type GeminiAgentStatus = {
   retryCount?: number;
   usedFallback: boolean;
   error?: string;
+  durationMs?: number;
 };
 
 export type GeminiAgentResults = {

@@ -33,6 +33,8 @@ export function OrchestratorConsole() {
     setMaterialityThreshold,
     runAgents,
     handleStop,
+    retryReport,
+    isRetryingReport,
     handleFieldErrorClear,
   } = useOrchestratorState(formRef);
 
@@ -96,7 +98,13 @@ export function OrchestratorConsole() {
       )}
 
       {error && <ErrorDisplay error={error} />}
-      {result && <RunResultPanel result={result} />}
+      {result && (
+        <RunResultPanel
+          result={result}
+          onRetryReport={retryReport}
+          isRetryingReport={isRetryingReport}
+        />
+      )}
     </section>
   );
 }

@@ -114,6 +114,7 @@ export type GeminiAgentStatus = {
   retryCount?: number;
   usedFallback: boolean;
   error?: string;
+  durationMs?: number;
 };
 
 export type GeminiAgentResults = {
@@ -415,7 +416,7 @@ For each material variance, provide investigation results in JSON format:
 // Agent 4: Report Generator Agent
 // ============================================
 
-async function runReportAgent(
+export async function runReportAgent(
   input: RunInput,
   localOutput: LocalToolOutput,
   validationResult: any,
@@ -434,7 +435,7 @@ async function runReportAgent(
     model: getGeminiModel(),
     generationConfig: {
       temperature: 0.5,
-      maxOutputTokens: 1200,
+      maxOutputTokens: 800,
     },
   });
 
@@ -452,6 +453,7 @@ async function runReportAgent(
         .filter((period) => period && period !== "unspecified")
     )
   );
+  const reportingPeriodLabel = formatReportingPeriod(periods);
 
   const prompt = `You are a report writer creating audit-ready reconciliation documentation for an AI-POWERED AUTOMATED RECONCILIATION SYSTEM.
 
@@ -499,7 +501,8 @@ Create a professional markdown report with:
 6. Conclusion
 
 Format in clean markdown suitable for audit documentation.
-Target length: 300-600 words.`;
+Target length: 300-600 words.
+If you include "Reporting Period", write it as Month YYYY (example: October 2025).`;
 
   try {
     const { result, retryCount } = await retryWithBackoff(
@@ -510,14 +513,18 @@ Target length: 300-600 words.`;
       2, // maxRetries
       "Report Agent"
     );
+    const normalizedReport =
+      reportingPeriodLabel
+        ? patchReportingPeriod(result, reportingPeriodLabel)
+        : result;
     return {
-      data: result,
+      data: normalizedReport,
       status: { success: true, retryCount, usedFallback: false },
     };
   } catch (error: any) {
     console.error("Report Agent failed:", error);
-    return {
-      data: `# Reconciliation Report
+  return {
+    data: `# Reconciliation Report
 
 ## Error
 Unable to generate full report due to technical error.
@@ -531,6 +538,42 @@ Processed ${localOutput.reconciliations.length} accounts with materiality thresh
       },
     };
   }
+}
+
+function formatReportingPeriod(periods: string[]) {
+  if (periods.length === 0) return null;
+  const normalized = periods
+    .map((period) => period.trim())
+    .filter(Boolean)
+    .map((period) => period.slice(0, 7));
+
+  const formatted = normalized
+    .map(toMonthYear)
+    .filter((label): label is string => Boolean(label));
+
+  if (formatted.length === 0) return null;
+  if (formatted.length === 1) return formatted[0];
+  return `${formatted[0]} – ${formatted[formatted.length - 1]}`;
+}
+
+function toMonthYear(period: string) {
+  const match = period.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!year || month < 1 || month > 12) return null;
+  const monthName = new Date(year, month - 1, 1).toLocaleString("en-US", {
+    month: "long",
+  });
+  return `${monthName} ${year}`;
+}
+
+function patchReportingPeriod(report: string, label: string) {
+  const pattern = /(Reporting Period:\s*)(.*)/i;
+  if (pattern.test(report)) {
+    return report.replace(pattern, `$1${label}`);
+  }
+  return report;
 }
 
 // ============================================
@@ -561,9 +604,13 @@ export async function runGeminiAgentPipeline(
   try {
     // Agent 1: Data Validation
     console.log("  → Agent 1: Data Validation");
+    const validationStart = Date.now();
     const validationResult = await runValidationAgent(input, localOutput);
     results.validation = validationResult.data;
-    results.status.validation = validationResult.status;
+    results.status.validation = {
+      ...validationResult.status,
+      durationMs: Date.now() - validationStart,
+    };
     console.log("     Result:", validationResult.status.success ? "✓ Success" : "⚠ Fallback");
     if (validationResult.status.retryCount) {
       console.log(`     Retries: ${validationResult.status.retryCount}`);
@@ -571,13 +618,17 @@ export async function runGeminiAgentPipeline(
 
     // Agent 2: Reconciliation Analysis
     console.log("  → Agent 2: Reconciliation Analysis");
+    const analysisStart = Date.now();
     const analysisResult = await runAnalysisAgent(
       input,
       localOutput,
       results.validation,
     );
     results.analysis = analysisResult.data;
-    results.status.analysis = analysisResult.status;
+    results.status.analysis = {
+      ...analysisResult.status,
+      durationMs: Date.now() - analysisStart,
+    };
     console.log("     Result:", analysisResult.status.success ? "✓ Success" : "⚠ Fallback");
     if (analysisResult.status.retryCount) {
       console.log(`     Retries: ${analysisResult.status.retryCount}`);
@@ -585,13 +636,17 @@ export async function runGeminiAgentPipeline(
 
     // Agent 3: Variance Investigation (conditional)
     console.log("  → Agent 3: Variance Investigation");
+    const investigationStart = Date.now();
     const investigationResult = await runInvestigatorAgent(
       input,
       localOutput,
       results.analysis,
     );
     results.investigation = investigationResult.data;
-    results.status.investigation = investigationResult.status;
+    results.status.investigation = {
+      ...investigationResult.status,
+      durationMs: Date.now() - investigationStart,
+    };
     console.log("     Result:", investigationResult.status.success ? "✓ Success" : "⚠ Fallback");
     if (investigationResult.status.retryCount) {
       console.log(`     Retries: ${investigationResult.status.retryCount}`);
@@ -599,6 +654,7 @@ export async function runGeminiAgentPipeline(
 
     // Agent 4: Report Generation
     console.log("  → Agent 4: Report Generation");
+    const reportStart = Date.now();
     const reportResult = await runReportAgent(
       input,
       localOutput,
@@ -607,7 +663,10 @@ export async function runGeminiAgentPipeline(
       results.investigation,
     );
     results.report = reportResult.data;
-    results.status.report = reportResult.status;
+    results.status.report = {
+      ...reportResult.status,
+      durationMs: Date.now() - reportStart,
+    };
     console.log("     Result:", reportResult.status.success ? "✓ Success" : "⚠ Fallback");
     if (reportResult.status.retryCount) {
       console.log(`     Retries: ${reportResult.status.retryCount}`);

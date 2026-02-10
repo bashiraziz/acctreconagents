@@ -9,7 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import spec from "../specs/reconciliation.speckit.json" with { type: "json" };
-import { runGeminiAgentPipeline } from "./agents/gemini-agents.js";
+import { runGeminiAgentPipeline, runReportAgent } from "./agents/gemini-agents.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,6 +64,21 @@ const runSchema = z.object({
   userPrompt: z.string().min(1),
   payload: payloadSchema,
   materialityThreshold: z.number().min(0).optional(),
+});
+
+const localToolOutputSchema = z.object({
+  materiality: z.number(),
+  reconciliations: z.array(z.any()),
+  rollForward: z.array(z.any()),
+  transactions: z.array(z.any()),
+});
+
+const reportSchema = z.object({
+  userPrompt: z.string().min(1),
+  toolOutput: localToolOutputSchema,
+  validationResult: z.any().optional(),
+  analysisResult: z.any().optional(),
+  investigationResult: z.any().optional(),
 });
 
 type RunInput = z.infer<typeof runSchema>;
@@ -196,6 +211,30 @@ fastify.post("/agent/runs", async (request, reply) => {
 
   const orchestrated = await orchestrateRun(parsed.data);
   return reply.send(orchestrated);
+});
+
+fastify.post("/agent/report", async (request, reply) => {
+  const parsed = reportSchema.safeParse(request.body);
+  if (!parsed.success) {
+    return reply.status(400).send({
+      message: "Unable to process report request. Please check the payload.",
+      errors: parsed.error.issues.map((err) => `Field "${err.path.join(".")}": ${err.message}`),
+    });
+  }
+
+  const { userPrompt, toolOutput, validationResult, analysisResult, investigationResult } = parsed.data;
+  const reportResult = await runReportAgent(
+    { userPrompt, payload: {} },
+    toolOutput,
+    validationResult ?? null,
+    analysisResult ?? null,
+    investigationResult ?? null
+  );
+
+  return reply.send({
+    report: reportResult.data,
+    status: reportResult.status,
+  });
 });
 
 async function orchestrateRun(input: RunInput) {
