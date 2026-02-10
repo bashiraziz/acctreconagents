@@ -7,6 +7,7 @@ import type {
   UserMapping,
   UserAccount,
   ReconciliationHistory,
+  UserOrganization,
   ColumnMapping,
   FileType,
 } from "@/types/reconciliation";
@@ -194,6 +195,223 @@ export async function deleteUserAccount(
   } catch (error) {
     console.error("Database error in deleteUserAccount:", error);
     throw new Error(`Failed to delete user account: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+// ============================================
+// User Organizations CRUD
+// ============================================
+
+export async function getUserOrganizations(
+  userId: string,
+): Promise<UserOrganization[]> {
+  try {
+    const result = await sql`
+      SELECT * FROM user_organizations
+      WHERE user_id = ${userId}
+      ORDER BY is_default DESC, created_at ASC;
+    `;
+
+    if (!result.rows) {
+      return [];
+    }
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      isDefault: row.is_default,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  } catch (error) {
+    console.error("Database error in getUserOrganizations:", error);
+    throw new Error(`Failed to get user organizations: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+export async function getDefaultUserOrganization(
+  userId: string,
+): Promise<UserOrganization | null> {
+  try {
+    const result = await sql`
+      SELECT * FROM user_organizations
+      WHERE user_id = ${userId} AND is_default = true
+      LIMIT 1;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      isDefault: row.is_default,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  } catch (error) {
+    console.error("Database error in getDefaultUserOrganization:", error);
+    throw new Error(`Failed to get default organization: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+export async function createUserOrganization(
+  userId: string,
+  name: string,
+  makeDefault: boolean = false,
+): Promise<UserOrganization> {
+  const id = `org_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  try {
+    const existing = await sql`
+      SELECT COUNT(*)::int AS count FROM user_organizations
+      WHERE user_id = ${userId};
+    `;
+    const existingCount = existing.rows?.[0]?.count ?? 0;
+    const shouldDefault = makeDefault || existingCount === 0;
+
+    if (shouldDefault) {
+      await sql`
+        UPDATE user_organizations
+        SET is_default = false, updated_at = NOW()
+        WHERE user_id = ${userId};
+      `;
+    }
+
+    const result = await sql`
+      INSERT INTO user_organizations (id, user_id, name, is_default, created_at, updated_at)
+      VALUES (${id}, ${userId}, ${name}, ${shouldDefault}, NOW(), NOW())
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to create organization - no rows returned");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      isDefault: row.is_default,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  } catch (error) {
+    console.error("Database error in createUserOrganization:", error);
+    throw new Error(`Failed to create organization: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+export async function renameUserOrganization(
+  userId: string,
+  organizationId: string,
+  name: string,
+): Promise<UserOrganization> {
+  try {
+    const result = await sql`
+      UPDATE user_organizations
+      SET name = ${name}, updated_at = NOW()
+      WHERE user_id = ${userId} AND id = ${organizationId}
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Organization not found");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      isDefault: row.is_default,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  } catch (error) {
+    console.error("Database error in renameUserOrganization:", error);
+    throw new Error(`Failed to rename organization: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+export async function setDefaultUserOrganization(
+  userId: string,
+  organizationId: string,
+): Promise<UserOrganization> {
+  try {
+    await sql`
+      UPDATE user_organizations
+      SET is_default = false, updated_at = NOW()
+      WHERE user_id = ${userId};
+    `;
+
+    const result = await sql`
+      UPDATE user_organizations
+      SET is_default = true, updated_at = NOW()
+      WHERE user_id = ${userId} AND id = ${organizationId}
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Organization not found");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      isDefault: row.is_default,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  } catch (error) {
+    console.error("Database error in setDefaultUserOrganization:", error);
+    throw new Error(`Failed to set default organization: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+export async function deleteUserOrganization(
+  userId: string,
+  organizationId: string,
+): Promise<void> {
+  try {
+    const current = await sql`
+      SELECT is_default FROM user_organizations
+      WHERE user_id = ${userId} AND id = ${organizationId}
+      LIMIT 1;
+    `;
+    const wasDefault = current.rows?.[0]?.is_default ?? false;
+
+    await sql`
+      DELETE FROM user_organizations
+      WHERE user_id = ${userId} AND id = ${organizationId};
+    `;
+
+    if (wasDefault) {
+      const fallback = await sql`
+        SELECT id FROM user_organizations
+        WHERE user_id = ${userId}
+        ORDER BY created_at ASC
+        LIMIT 1;
+      `;
+      const fallbackId = fallback.rows?.[0]?.id;
+      if (fallbackId) {
+        await sql`
+          UPDATE user_organizations
+          SET is_default = true, updated_at = NOW()
+          WHERE user_id = ${userId} AND id = ${fallbackId};
+        `;
+      }
+    }
+  } catch (error) {
+    console.error("Database error in deleteUserOrganization:", error);
+    throw new Error(`Failed to delete organization: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 

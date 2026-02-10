@@ -3,6 +3,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/get-client-ip";
 import { auth } from "@/lib/auth";
 import { ApiErrors } from "@/lib/api-error";
+import { getDefaultUserOrganization } from "@/lib/db/client";
 
 const DEFAULT_ORCHESTRATOR_URL = "http://127.0.0.1:4100";
 const orchestratorUrl =
@@ -74,7 +75,18 @@ export async function POST(request: Request) {
 
     // Process the request
     const payload = await request.json();
-    const response = await forwardToOrchestrator(payload);
+    let organizationName: string | undefined;
+    if (session?.user) {
+      try {
+        const organization = await getDefaultUserOrganization(session.user.id);
+        organizationName = organization?.name ?? undefined;
+      } catch (orgError) {
+        console.warn("Organization lookup failed, continuing without org name:", orgError);
+      }
+    }
+    const response = await forwardToOrchestrator(
+      organizationName ? { ...payload, organizationName } : payload
+    );
     const data = await response.json();
 
     // Add rate limit headers to successful responses

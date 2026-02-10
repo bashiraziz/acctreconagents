@@ -107,6 +107,7 @@ type LocalToolOutput = {
 type RunInput = {
   userPrompt: string;
   payload: any;
+  organizationName?: string;
 };
 
 export type GeminiAgentStatus = {
@@ -453,6 +454,12 @@ export async function runReportAgent(
         .filter((period) => period && period !== "unspecified")
     )
   );
+  const organizationName =
+    typeof input.organizationName === "string"
+      ? input.organizationName.trim()
+      : typeof input.payload?.organizationName === "string"
+        ? input.payload.organizationName.trim()
+        : null;
   const reportingPeriodLabel = formatReportingPeriod(periods);
   const reportGeneratedOnLabel = formatReportGeneratedOn();
 
@@ -492,6 +499,7 @@ CRITICAL INSTRUCTIONS:
 - Avoid generic or obvious recommendations that add no value
 - Do NOT invent dates or periods. If periods are "unspecified", omit dates entirely.
 - Do NOT dump raw JSON or large tables. Keep output concise and readable.
+${organizationName ? `- Include a line "**Organization:** ${organizationName}" above the report title.` : ""}
 
 Create a professional markdown report with:
 1. Executive Summary (2-3 sentences)
@@ -516,9 +524,16 @@ Use "Report Generated On: YYYY-MM-DD" for the current date (today).`;
       "Report Agent"
     );
     const normalizedReport = normalizeReportMetadata(
-      result,
+      ensureReportCompleteness(
+        result,
+        localOutput,
+        reportingPeriodLabel,
+        reportGeneratedOnLabel,
+        organizationName
+      ),
       reportingPeriodLabel,
-      reportGeneratedOnLabel
+      reportGeneratedOnLabel,
+      organizationName
     );
     return {
       data: normalizedReport,
@@ -595,10 +610,30 @@ function patchReportGeneratedOn(report: string, label: string) {
   return report;
 }
 
+function patchOrganization(report: string, organizationName: string) {
+  const orgLine = `**Organization:** ${organizationName}`;
+  const lines = report.split("\n");
+  const existingIndex = lines.findIndex((line) => /organization\s*:/i.test(line));
+  if (existingIndex >= 0) {
+    lines[existingIndex] = orgLine;
+    return lines.join("\n");
+  }
+
+  const headingIndex = lines.findIndex((line) => line.trim().startsWith("#"));
+  if (headingIndex >= 0) {
+    const prefix = headingIndex === 0 ? [orgLine, ""] : [orgLine, ""];
+    lines.splice(headingIndex, 0, ...prefix);
+    return lines.join("\n");
+  }
+
+  return `${orgLine}\n\n${report}`;
+}
+
 function normalizeReportMetadata(
   report: string,
   periodLabel: string | null,
-  reportGeneratedOnLabel: string | null
+  reportGeneratedOnLabel: string | null,
+  organizationName: string | null
 ) {
   let updated = report;
   if (periodLabel) {
@@ -607,7 +642,103 @@ function normalizeReportMetadata(
   if (reportGeneratedOnLabel) {
     updated = patchReportGeneratedOn(updated, reportGeneratedOnLabel);
   }
+  if (organizationName) {
+    updated = patchOrganization(updated, organizationName);
+  }
   return updated;
+}
+
+function ensureReportCompleteness(
+  report: string,
+  localOutput: LocalToolOutput,
+  periodLabel: string | null,
+  reportGeneratedOnLabel: string | null,
+  organizationName: string | null
+) {
+  const trimmed = report.trim();
+  const lower = trimmed.toLowerCase();
+  const tooShort = trimmed.length < 200;
+  const hasSummary = lower.includes("executive summary");
+  const hasStatus = lower.includes("reconciliation status");
+
+  if (!tooShort && (hasSummary || hasStatus)) {
+    return report;
+  }
+
+  return buildFallbackReport(
+    localOutput,
+    periodLabel,
+    reportGeneratedOnLabel,
+    organizationName
+  );
+}
+
+function buildFallbackReport(
+  localOutput: LocalToolOutput,
+  periodLabel: string | null,
+  reportGeneratedOnLabel: string | null,
+  organizationName: string | null
+) {
+  const reconciliations = localOutput.reconciliations ?? [];
+  const total = reconciliations.length;
+  const balanced = reconciliations.filter((r) => r.status === "balanced").length;
+  const material = reconciliations.filter((r) => r.status === "material_variance").length;
+  const immaterial = reconciliations.filter((r) => r.status === "immaterial_variance").length;
+
+  const lines: string[] = [];
+  if (organizationName) {
+    lines.push(`**Organization:** ${organizationName}`);
+    lines.push("");
+  }
+
+  lines.push("# Reconciliation Report");
+  lines.push("");
+  if (periodLabel) {
+    lines.push(`**Reporting Period:** ${periodLabel}`);
+  }
+  if (reportGeneratedOnLabel) {
+    lines.push(`**Report Generated On:** ${reportGeneratedOnLabel}`);
+  }
+  lines.push("");
+  lines.push("## Executive Summary");
+  lines.push(
+    `Processed ${total} account period(s). ${balanced} balanced, ${immaterial} immaterial variances, ${material} material variances.`
+  );
+  lines.push("");
+  lines.push("## Reconciliation Status");
+  lines.push(
+    material > 0
+      ? `Material variances require follow-up on ${material} account period(s).`
+      : "All material variances cleared. Remaining variances are immaterial or zero."
+  );
+  lines.push("");
+  if (material > 0) {
+    lines.push("## Material Variances");
+    lines.push(
+      reconciliations
+        .filter((r) => r.status === "material_variance")
+        .slice(0, 10)
+        .map(
+          (r) =>
+            `- Account ${r.account} (${r.period}): variance ${Number(r.variance).toFixed(2)}`
+        )
+        .join("\n")
+    );
+    lines.push("");
+  }
+  lines.push("## Recommended Actions");
+  lines.push(
+    material > 0
+      ? "Investigate material variances, review supporting transactions, and post adjustments as needed."
+      : "No material variances detected. Continue routine monitoring and close the period."
+  );
+  lines.push("");
+  lines.push("## Conclusion");
+  lines.push(
+    "This report was generated automatically by Rowshni. Review material variances and supporting data before final close."
+  );
+
+  return lines.join("\n");
 }
 
 // ============================================

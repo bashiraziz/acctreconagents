@@ -237,6 +237,15 @@ export type ReconciliationHistory = {
   createdAt: string;
 };
 
+export type UserOrganization = {
+  id: string;
+  userId: string;
+  name: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // ============================================
 // UI State Types
 // ============================================

@@ -63,6 +63,7 @@ const payloadSchema = z.object({
 const runSchema = z.object({
   userPrompt: z.string().min(1),
   payload: payloadSchema,
+  organizationName: z.string().min(1).optional(),
   materialityThreshold: z.number().min(0).optional(),
 });
 
@@ -79,6 +80,7 @@ const reportSchema = z.object({
   validationResult: z.any().optional(),
   analysisResult: z.any().optional(),
   investigationResult: z.any().optional(),
+  organizationName: z.string().min(1).optional(),
 });
 
 type RunInput = z.infer<typeof runSchema>;
@@ -222,9 +224,16 @@ fastify.post("/agent/report", async (request, reply) => {
     });
   }
 
-  const { userPrompt, toolOutput, validationResult, analysisResult, investigationResult } = parsed.data;
+  const {
+    userPrompt,
+    toolOutput,
+    validationResult,
+    analysisResult,
+    investigationResult,
+    organizationName,
+  } = parsed.data;
   const reportResult = await runReportAgent(
-    { userPrompt, payload: {} },
+    { userPrompt, payload: {}, organizationName },
     toolOutput,
     validationResult ?? null,
     analysisResult ?? null,

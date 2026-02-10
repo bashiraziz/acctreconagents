@@ -38,6 +38,12 @@ export function UserMenu() {
       <div className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-900 dark:text-slate-100">
         {displayName}
       </div>
+      <Link
+        href="/settings"
+        className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+      >
+        Settings
+      </Link>
       <button
         onClick={async () => {
           resetAllStores(); // Clear all store state before signing out
