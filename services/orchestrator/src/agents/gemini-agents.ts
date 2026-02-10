@@ -454,6 +454,7 @@ export async function runReportAgent(
     )
   );
   const reportingPeriodLabel = formatReportingPeriod(periods);
+  const reportingDateLabel = formatReportingDate(periods);
 
   const prompt = `You are a report writer creating audit-ready reconciliation documentation for an AI-POWERED AUTOMATED RECONCILIATION SYSTEM.
 
@@ -513,10 +514,11 @@ If you include "Reporting Period", write it as Month YYYY (example: October 2025
       2, // maxRetries
       "Report Agent"
     );
-    const normalizedReport =
-      reportingPeriodLabel
-        ? patchReportingPeriod(result, reportingPeriodLabel)
-        : result;
+    const normalizedReport = normalizeReportMetadata(
+      result,
+      reportingPeriodLabel,
+      reportingDateLabel
+    );
     return {
       data: normalizedReport,
       status: { success: true, retryCount, usedFallback: false },
@@ -574,6 +576,46 @@ function patchReportingPeriod(report: string, label: string) {
     return report.replace(pattern, `$1${label}`);
   }
   return report;
+}
+
+function formatReportingDate(periods: string[]) {
+  if (periods.length === 0) return null;
+  const normalized = periods
+    .map((period) => period.trim())
+    .filter(Boolean)
+    .map((period) => period.slice(0, 7));
+  const last = normalized[normalized.length - 1];
+  if (!last) return null;
+  const match = last.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!year || month < 1 || month > 12) return null;
+  const lastDay = new Date(year, month, 0).getDate();
+  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+}
+
+function patchReportDate(report: string, label: string) {
+  const pattern = /(Date:\s*)(.*)/i;
+  if (pattern.test(report)) {
+    return report.replace(pattern, `$1${label}`);
+  }
+  return report;
+}
+
+function normalizeReportMetadata(
+  report: string,
+  periodLabel: string | null,
+  dateLabel: string | null
+) {
+  let updated = report;
+  if (periodLabel) {
+    updated = patchReportingPeriod(updated, periodLabel);
+  }
+  if (dateLabel) {
+    updated = patchReportDate(updated, dateLabel);
+  }
+  return updated;
 }
 
 // ============================================
