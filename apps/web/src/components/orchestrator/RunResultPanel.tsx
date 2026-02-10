@@ -116,19 +116,19 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                 <span className="font-semibold capitalize">
                   {entry.stage.replace(/_/g, " ")}
                 </span>
-                <span
-                  className={`text-xs font-medium uppercase ${
-                    entry.status === "completed"
-                      ? "text-emerald-400"
-                      : entry.status === "failed"
-                        ? "text-rose-400"
-                        : entry.status === "in_progress"
-                          ? "text-sky-400"
-                          : "theme-text-muted"
-                  }`}
-                >
-                  {entry.status}
-                </span>
+                  <span
+                    className={`text-xs font-medium uppercase ${
+                      entry.status === "completed"
+                        ? "text-amber-300"
+                        : entry.status === "failed"
+                          ? "text-rose-400"
+                          : entry.status === "in_progress"
+                            ? "text-amber-200"
+                            : "theme-text-muted"
+                    }`}
+                  >
+                    {entry.status}
+                  </span>
               </div>
               <p className="mt-1 text-xs theme-text-muted">{entry.detail}</p>
               <p className="text-[10px] text-slate-500">
@@ -174,7 +174,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
               </div>
               {result.geminiAgents.validation.warnings && result.geminiAgents.validation.warnings.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-xs font-semibold uppercase text-blue-300">Warnings</p>
+                  <p className="text-xs font-semibold uppercase text-slate-300">Warnings</p>
                   <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
                     {result.geminiAgents.validation.warnings.map((w: string, i: number) => (
                       <li key={i}>{w}</li>
@@ -200,10 +200,10 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
                       result.geminiAgents.analysis.riskLevel === "high"
-                        ? "bg-gray-900/20 text-rose-300"
+                        ? "bg-rose-500/20 text-rose-300"
                         : result.geminiAgents.analysis.riskLevel === "medium"
                           ? "bg-amber-500/20 text-amber-300"
-                          : "bg-emerald-500/20 text-emerald-300"
+                          : "bg-slate-800 text-slate-300"
                     }`}
                   >
                     {result.geminiAgents.analysis.riskLevel}
@@ -218,7 +218,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
               </div>
               {result.geminiAgents.analysis.patterns && result.geminiAgents.analysis.patterns.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-xs font-semibold uppercase text-purple-300">
+                  <p className="text-xs font-semibold uppercase text-slate-300">
                     Patterns Detected
                   </p>
                   <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
@@ -243,13 +243,13 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
               <div className="mt-3 space-y-3">
                 {result.geminiAgents.investigation?.investigations?.map(
                   (inv: Investigation, i: number) => (
-                    <div key={i} className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
+                    <div key={i} className="rounded-xl border theme-border theme-muted p-3">
                       <p className="font-semibold text-sm theme-text">
                         Account: {inv.account} (Variance: ${inv.variance?.toFixed(2)})
                       </p>
                       {inv.possibleCauses && inv.possibleCauses.length > 0 && (
                         <div className="mt-2">
-                          <p className="text-xs font-semibold uppercase text-orange-300">
+                          <p className="text-xs font-semibold uppercase text-slate-300">
                             Possible Causes
                           </p>
                           <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
@@ -261,7 +261,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       )}
                       {inv.suggestedActions && inv.suggestedActions.length > 0 && (
                         <div className="mt-2">
-                          <p className="text-xs font-semibold uppercase text-orange-300">
+                          <p className="text-xs font-semibold uppercase text-slate-300">
                             Suggested Actions
                           </p>
                           <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
@@ -303,7 +303,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                         console.error("Failed to copy:", err);
                       }
                     }}
-                    className="rounded-lg bg-purple-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-purple-500"
+                    className="rounded-lg bg-amber-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-amber-500"
                     title="Copy to Clipboard"
                   >
                     Copy
@@ -323,7 +323,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       document.body.removeChild(a);
                       URL.revokeObjectURL(url);
                     }}
-                    className="rounded-lg bg-emerald-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-emerald-500"
+                    className="rounded-lg bg-amber-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-amber-500"
                     title="Download as Markdown"
                   >
                     MD
@@ -343,7 +343,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       document.body.removeChild(a);
                       URL.revokeObjectURL(url);
                     }}
-                    className="rounded-lg bg-sky-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-sky-500"
+                    className="rounded-lg bg-amber-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-amber-500"
                     title="Download as Text"
                   >
                     TXT
@@ -393,13 +393,13 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
   if (status.success) {
     return (
       <div className="flex items-center gap-2">
-        <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-300">
+        <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
           AI Success
         </span>
         {(status.retryCount ?? 0) > 0 && (
-          <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
-            {status.retryCount} {status.retryCount === 1 ? 'retry' : 'retries'}
-          </span>
+                    <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
+                      {status.retryCount} {status.retryCount === 1 ? 'retry' : 'retries'}
+                    </span>
         )}
       </div>
     );
@@ -408,7 +408,7 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
   if (status.usedFallback) {
     return (
       <div className="flex items-center gap-2">
-        <span className="rounded-full bg-orange-500/20 px-2 py-1 text-xs font-medium text-orange-300">
+        <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
           Fallback
         </span>
         {status.error && (

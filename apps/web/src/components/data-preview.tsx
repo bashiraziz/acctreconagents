@@ -78,7 +78,7 @@ export function DataPreview() {
             <span
               className={`rounded-full px-2 py-1 text-xs font-semibold ${
                 issueCounts.total === 0
-                  ? "bg-emerald-500/20 text-emerald-200"
+                  ? "bg-slate-800 text-slate-200"
                   : "bg-amber-500/20 text-amber-200"
               }`}
             >
