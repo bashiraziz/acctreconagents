@@ -80,7 +80,7 @@ export function SimpleModeToggle() {
             ? "bg-gray-900 text-white"
             : "theme-text-muted hover:opacity-70"
         }`}
-        title="Standard mode"
+        title="Standard mode (full color theme)"
       >
         Standard
       </button>
@@ -91,7 +91,7 @@ export function SimpleModeToggle() {
             ? "bg-gray-900 text-white"
             : "theme-text-muted hover:opacity-70"
         }`}
-        title="Simple mode"
+        title="Simple mode (reduced color)"
       >
         Simple
       </button>
