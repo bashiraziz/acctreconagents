@@ -6,6 +6,7 @@
  */
 
 import { useRef, forwardRef, useImperativeHandle } from "react";
+import type { UserOrganization } from "@/types/reconciliation";
 
 export interface OrchestratorFormData {
   prompt: string;
@@ -17,6 +18,10 @@ export interface OrchestratorFormProps {
   onPromptChange: (value: string) => void;
   materialityThreshold: number;
   onMaterialityChange: (value: number) => void;
+  organizations: UserOrganization[];
+  selectedOrganizationId: string;
+  onOrganizationChange: (id: string) => void;
+  isOrganizationsLoading: boolean;
   fieldErrors: Record<string, string>;
   onFieldErrorClear: (field: string) => void;
   onRun: () => void;
@@ -38,6 +43,10 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
       onPromptChange,
       materialityThreshold,
       onMaterialityChange,
+      organizations,
+      selectedOrganizationId,
+      onOrganizationChange,
+      isOrganizationsLoading,
       fieldErrors,
       onFieldErrorClear,
       onRun,
@@ -138,6 +147,29 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
             )}
           </div>
         </div>
+
+        {organizations.length > 0 && (
+          <div className="rounded-xl border theme-border theme-muted p-3">
+            <label className="text-xs font-medium uppercase theme-text-muted">
+              Organization
+              <select
+                className="mt-2 w-full rounded border px-3 py-2 text-sm theme-text focus:outline-none theme-border theme-card"
+                value={selectedOrganizationId}
+                onChange={(event) => onOrganizationChange(event.target.value)}
+                disabled={isOrganizationsLoading}
+              >
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}{org.isDefault ? " (default)" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="mt-2 text-xs theme-text-muted">
+              This selection prints above the report title for this run.
+            </p>
+          </div>
+        )}
 
         <div className="flex justify-end pt-2">
           {isRunning ? (

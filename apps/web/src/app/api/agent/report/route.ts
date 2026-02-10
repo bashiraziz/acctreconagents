@@ -73,8 +73,12 @@ export async function POST(request: Request) {
     }
 
     const payload = await request.json();
-    let organizationName: string | undefined;
-    if (session?.user) {
+    const payloadOrg =
+      typeof payload?.organizationName === "string"
+        ? payload.organizationName.trim()
+        : "";
+    let organizationName: string | undefined = payloadOrg || undefined;
+    if (!organizationName && session?.user) {
       try {
         const organization = await getDefaultUserOrganization(session.user.id);
         organizationName = organization?.name ?? undefined;

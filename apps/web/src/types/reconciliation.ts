@@ -81,6 +81,7 @@ export type ReconciliationPayload = {
   orderedPeriods?: string[];
   activityByPeriod?: Record<string, number>;
   adjustmentsByPeriod?: Record<string, number>;
+  organizationName?: string;
 };
 
 // ============================================

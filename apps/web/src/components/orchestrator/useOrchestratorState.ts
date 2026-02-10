@@ -3,11 +3,11 @@
  * Custom hook for managing orchestrator console state and logic
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useFileUploadStore } from "@/store/fileUploadStore";
 import { useAgentRunStore } from "@/store/agentRunStore";
 import { useUserPreferencesStore } from "@/store/userPreferencesStore";
-import type { OrchestratorResponse } from "@/types/reconciliation";
+import type { OrchestratorResponse, UserOrganization } from "@/types/reconciliation";
 import type { AgentError } from "./ErrorDisplay";
 import type { OrchestratorFormHandle } from "./OrchestratorForm";
 
@@ -126,6 +126,9 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
   const [currentAgentStep, setCurrentAgentStep] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isRetryingReport, setIsRetryingReport] = useState(false);
+  const [organizations, setOrganizations] = useState<UserOrganization[]>([]);
+  const [isOrganizationsLoading, setIsOrganizationsLoading] = useState(false);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState("");
 
   // New domain-specific stores
   const reconciliationData = useFileUploadStore((state) => state.reconciliationData);
@@ -144,6 +147,44 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
       setFieldErrors({});
     }
   }, [reconciliationData]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadOrganizations = async () => {
+      setIsOrganizationsLoading(true);
+      try {
+        const response = await fetch("/api/user/organizations");
+        if (response.status === 401) {
+          return;
+        }
+        const data = await response.json();
+        if (!response.ok) {
+          return;
+        }
+        const orgs = Array.isArray(data.organizations) ? data.organizations : [];
+        if (!isMounted) return;
+        setOrganizations(orgs);
+        const defaultOrg = orgs.find((org: UserOrganization) => org.isDefault);
+        const fallbackId = defaultOrg?.id ?? orgs[0]?.id ?? "";
+        setSelectedOrganizationId((prev) => prev || fallbackId);
+      } catch (error) {
+        console.warn("Failed to load organizations:", error);
+      } finally {
+        if (isMounted) {
+          setIsOrganizationsLoading(false);
+        }
+      }
+    };
+    void loadOrganizations();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const selectedOrganizationName = useMemo(() => {
+    if (!selectedOrganizationId) return undefined;
+    return organizations.find((org) => org.id === selectedOrganizationId)?.name;
+  }, [organizations, selectedOrganizationId]);
 
   // Simulate agent progress during loading
   useEffect(() => {
@@ -213,6 +254,7 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
           userPrompt: prompt,
           payload: reconciliationData,
           materialityThreshold,
+          organizationName: selectedOrganizationName,
         }),
         signal: abortController.signal,
       });
@@ -294,6 +336,7 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
           validationResult: result.geminiAgents.validation,
           analysisResult: result.geminiAgents.analysis,
           investigationResult: result.geminiAgents.investigation,
+          organizationName: selectedOrganizationName,
         }),
       });
 
@@ -344,10 +387,14 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
     materialityThreshold,
     reconciliationData,
     isRunning,
+    organizations,
+    selectedOrganizationId,
+    isOrganizationsLoading,
 
     // Actions
     setPrompt,
     setMaterialityThreshold,
+    setSelectedOrganizationId,
     runAgents,
     handleStop,
     retryReport,

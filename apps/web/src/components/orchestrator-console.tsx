@@ -29,8 +29,12 @@ export function OrchestratorConsole() {
     materialityThreshold,
     reconciliationData,
     isRunning,
+    organizations,
+    selectedOrganizationId,
+    isOrganizationsLoading,
     setPrompt,
     setMaterialityThreshold,
+    setSelectedOrganizationId,
     runAgents,
     handleStop,
     retryReport,
@@ -67,6 +71,10 @@ export function OrchestratorConsole() {
         onPromptChange={setPrompt}
         materialityThreshold={materialityThreshold}
         onMaterialityChange={setMaterialityThreshold}
+        organizations={organizations}
+        selectedOrganizationId={selectedOrganizationId}
+        onOrganizationChange={setSelectedOrganizationId}
+        isOrganizationsLoading={isOrganizationsLoading}
         fieldErrors={fieldErrors}
         onFieldErrorClear={handleFieldErrorClear}
         onRun={runAgents}
