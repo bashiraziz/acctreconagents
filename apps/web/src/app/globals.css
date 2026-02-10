@@ -52,6 +52,7 @@ body {
 /* Simple mode reduces visual noise (neutral palette + minimal accents) */
 [data-simple-mode="true"] {
   --accent: var(--foreground);
+  filter: saturate(0.35);
 }
 
 [data-simple-mode="true"] .ui-kicker {
