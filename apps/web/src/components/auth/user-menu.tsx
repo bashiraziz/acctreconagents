@@ -41,10 +41,7 @@ export function UserMenu() {
       >
         Settings
       </Link>
-      <div
-        className="max-w-[80px] truncate rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-900 dark:text-slate-100"
-        title={displayName}
-      >
+      <div className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-900 dark:text-slate-100">
         {displayName}
       </div>
       <button
