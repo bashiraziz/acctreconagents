@@ -609,11 +609,14 @@ function toMonthYear(period: string) {
 }
 
 function patchReportingPeriod(report: string, label: string) {
-  const pattern = /(Reporting Period:\s*)(.*)/i;
-  if (pattern.test(report)) {
-    return report.replace(pattern, `$1${label}`);
+  const lines = report.split("\n");
+  const lineIndex = lines.findIndex((line) =>
+    /reporting period/i.test(line)
+  );
+  if (lineIndex >= 0) {
+    lines[lineIndex] = `**Reporting Period:** ${label}`;
   }
-  return report;
+  return lines.join("\n");
 }
 
 function formatReportGeneratedOn() {
@@ -621,15 +624,19 @@ function formatReportGeneratedOn() {
 }
 
 function patchReportGeneratedOn(report: string, label: string) {
-  const pattern = /(Report Generated On:\s*)(.*)/i;
-  if (pattern.test(report)) {
-    return report.replace(pattern, `$1${label}`);
+  const lines = report.split("\n");
+  let lineIndex = lines.findIndex((line) =>
+    /report generated on/i.test(line)
+  );
+  if (lineIndex >= 0) {
+    lines[lineIndex] = `**Report Generated On:** ${label}`;
+    return lines.join("\n");
   }
-  const legacyDate = /(Date:\s*)(.*)/i;
-  if (legacyDate.test(report)) {
-    return report.replace(legacyDate, `Report Generated On: ${label}`);
+  lineIndex = lines.findIndex((line) => /date:/i.test(line));
+  if (lineIndex >= 0) {
+    lines[lineIndex] = `**Report Generated On:** ${label}`;
   }
-  return report;
+  return lines.join("\n");
 }
 
 function patchOrganization(report: string, organizationName: string) {
