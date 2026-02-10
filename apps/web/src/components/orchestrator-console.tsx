@@ -94,9 +94,9 @@ export function OrchestratorConsole() {
       )}
 
       {reconciliationData && !result && !error && (
-        <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
-          <p className="font-semibold text-amber-100">Data ready to reconcile</p>
-          <p className="mt-1 text-amber-200/90">
+        <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm">
+          <p className="font-semibold text-emerald-100">Data ready to reconcile</p>
+          <p className="mt-1 text-emerald-200/90">
             {reconciliationData.glBalances.length} GL balances, {" "}
             {reconciliationData.subledgerBalances.length} subledger balances
             {reconciliationData.transactions &&

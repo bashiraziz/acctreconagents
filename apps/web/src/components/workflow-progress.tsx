@@ -84,9 +84,9 @@ export function WorkflowProgress() {
                 relative rounded-2xl border p-4 transition
                 ${
                   status === "complete"
-                    ? "border-amber-500/40 bg-amber-500/10"
+                    ? "border-emerald-500/40 bg-emerald-500/10"
                     : status === "active"
-                      ? "border-amber-500/30 bg-amber-500/5"
+                      ? "border-sky-500/40 bg-sky-500/10"
                       : "border-slate-800 bg-slate-900/40"
                 }
               `}
@@ -97,9 +97,9 @@ export function WorkflowProgress() {
                     flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold
                     ${
                       status === "complete"
-                        ? "bg-amber-500/20 text-amber-300"
+                        ? "bg-emerald-500/20 text-emerald-300"
                         : status === "active"
-                          ? "bg-amber-500/10 text-amber-200"
+                          ? "bg-sky-500/20 text-sky-300"
                           : "bg-slate-800 text-slate-400"
                     }
                   `}
@@ -114,9 +114,9 @@ export function WorkflowProgress() {
                         text-sm font-semibold
                         ${
                           status === "complete"
-                            ? "text-amber-100"
+                            ? "text-emerald-100"
                             : status === "active"
-                              ? "text-amber-100"
+                              ? "text-sky-100"
                               : "text-slate-400"
                         }
                       `}
@@ -124,7 +124,7 @@ export function WorkflowProgress() {
                       {step.label}
                     </p>
                     {status === "complete" && (
-                      <span className="text-xs text-amber-300">Done</span>
+                      <span className="text-xs text-emerald-400">Done</span>
                     )}
                   </div>
                   <p className="mt-1 text-xs text-slate-500">{step.description}</p>
@@ -137,9 +137,9 @@ export function WorkflowProgress() {
                     rounded-full px-2 py-0.5 text-xs font-medium
                     ${
                       status === "complete"
-                        ? "bg-amber-500/20 text-amber-300"
+                        ? "bg-emerald-500/20 text-emerald-300"
                         : status === "active"
-                          ? "bg-amber-500/10 text-amber-200"
+                          ? "bg-sky-500/20 text-sky-300"
                           : "bg-slate-800 text-slate-500"
                     }
                   `}
@@ -156,7 +156,7 @@ export function WorkflowProgress() {
                 <div
                   className={`
                     absolute right-0 top-1/2 hidden h-0.5 w-full -translate-y-1/2 sm:block
-                    ${status === "complete" ? "bg-amber-500/40" : "bg-slate-800"}
+                    ${status === "complete" ? "bg-emerald-500/40" : "bg-slate-800"}
                   `}
                   style={{ width: "calc(100% + 0.75rem)", left: "100%" }}
                 />

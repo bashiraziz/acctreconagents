@@ -17,9 +17,9 @@ export function RateLimitStatus() {
   const lowThreshold = Math.max(2, Math.floor(limit * 0.1));
   const mediumThreshold = Math.max(lowThreshold + 1, Math.floor(limit * 0.2));
 
-  let statusColor = "text-amber-300";
-  let bgColor = "bg-amber-500/10";
-  let borderColor = "border-amber-500/30";
+  let statusColor = "text-emerald-400";
+  let bgColor = "bg-emerald-500/20";
+  let borderColor = "border-emerald-500/40";
 
   if (remaining <= lowThreshold) {
     statusColor = "text-rose-400";
@@ -53,7 +53,7 @@ export function RateLimitStatus() {
           <div className="h-2 w-20 flex-shrink-0 overflow-hidden rounded-full bg-slate-800 sm:w-24">
             <div
               className={`h-full transition-all ${
-                remaining <= 2 ? "bg-rose-500" : "bg-amber-500"
+                remaining <= 2 ? "bg-rose-500" : remaining <= 3 ? "bg-amber-500" : "bg-emerald-500"
               }`}
               style={{ width: `${percentage}%` }}
             />
@@ -63,4 +63,3 @@ export function RateLimitStatus() {
     </div>
   );
 }
-
