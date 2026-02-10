@@ -5,6 +5,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { useFileUploadStore } from "@/store/fileUploadStore";
 
 type PreviewRow = Record<string, unknown>;
@@ -13,6 +14,7 @@ export function DataPreview() {
   const reconciliationData = useFileUploadStore(
     (state) => state.reconciliationData,
   );
+  const [isVisible, setIsVisible] = useState(true);
 
   if (!reconciliationData) {
     return (
@@ -29,14 +31,26 @@ export function DataPreview() {
 
   return (
     <div className="ui-panel">
-      <h3 className="ui-kicker">
-        Data Preview
-      </h3>
-      <p className="ui-copy mt-2">
-        Review transformed records before launching agent runs.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="ui-kicker">
+            Data Preview
+          </h3>
+          <p className="ui-copy mt-2">
+            Review transformed records before launching agent runs.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsVisible((prev) => !prev)}
+          className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100 transition hover:bg-amber-500/20"
+        >
+          {isVisible ? "Hide preview" : "Show preview"}
+        </button>
+      </div>
 
-      <div className="mt-4 space-y-6">
+      {isVisible ? (
+        <div className="mt-4 space-y-6">
         {/* GL Balances */}
         {reconciliationData.glBalances && reconciliationData.glBalances.length > 0 && (
           <PreviewTable
@@ -95,7 +109,24 @@ export function DataPreview() {
             )}
           </div>
         </div>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setIsVisible(false)}
+            className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100 transition hover:bg-amber-500/20"
+          >
+            Hide preview
+          </button>
+        </div>
       </div>
+      ) : (
+        <div className="mt-4 rounded-xl border theme-border theme-muted p-4 text-sm theme-text">
+          <p className="font-semibold">Preview hidden</p>
+          <p className="mt-1 theme-text-muted">
+            Click “Show preview” to review the transformed records.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
