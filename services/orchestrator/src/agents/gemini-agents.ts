@@ -435,8 +435,9 @@ export async function runReportAgent(
   const model = client.getGenerativeModel({
     model: getGeminiModel(),
     generationConfig: {
-      temperature: 0.5,
-      maxOutputTokens: 800,
+      temperature: 0.4,
+      maxOutputTokens: 900,
+      responseMimeType: "application/json",
     },
   });
 
@@ -501,18 +502,21 @@ CRITICAL INSTRUCTIONS:
 - Do NOT dump raw JSON or large tables. Keep output concise and readable.
 ${organizationName ? `- Include a line "**Organization:** ${organizationName}" above the report title.` : ""}
 
-Create a professional markdown report with:
-1. Executive Summary (2-3 sentences)
-2. Reconciliation Status (balanced accounts vs variances) - Use the reconciliation data status
-3. Material Variances (ONLY if reconciliation data shows material=true) - with details
-4. Root Cause Analysis (ONLY for accounts with actual variances)
-5. Recommended Actions (ONLY if there are actual issues requiring business action)
-6. Conclusion
+Return a JSON object ONLY with the following keys:
+{
+  "executiveSummary": string,
+  "reconciliationStatus": string,
+  "materialVariances": string,
+  "rootCauseAnalysis": string,
+  "recommendedActions": string,
+  "conclusion": string
+}
 
-Format in clean markdown suitable for audit documentation.
-Target length: 300-600 words.
-If you include "Reporting Period", write it as Month YYYY (example: October 2025).
-Use "Report Generated On: YYYY-MM-DD" for the current date (today).`;
+Guidelines:
+- Use concise paragraphs or bullet points within each string.
+- If there are no material variances, set "materialVariances" to "None detected."
+- If there are no issues, set "rootCauseAnalysis" and "recommendedActions" to "No issues requiring action."
+- Do not include headings or markdown in the JSON values; only plain text.`;
 
   try {
     const { result, retryCount } = await retryWithBackoff(
@@ -523,9 +527,27 @@ Use "Report Generated On: YYYY-MM-DD" for the current date (today).`;
       2, // maxRetries
       "Report Agent"
     );
+    let templatedReport: string;
+    try {
+      const parsed = JSON.parse(result);
+      templatedReport = buildStandardReport({
+        organizationName,
+        reportingPeriodLabel,
+        reportGeneratedOnLabel,
+        sections: parsed as Record<string, string>,
+      });
+    } catch (parseError) {
+      console.warn("Report sections JSON parse failed, using fallback template:", parseError);
+      templatedReport = buildFallbackReport(
+        localOutput,
+        reportingPeriodLabel,
+        reportGeneratedOnLabel,
+        organizationName
+      );
+    }
     const normalizedReport = normalizeReportMetadata(
       ensureReportCompleteness(
-        result,
+        templatedReport,
         localOutput,
         reportingPeriodLabel,
         reportGeneratedOnLabel,
@@ -646,6 +668,61 @@ function normalizeReportMetadata(
     updated = patchOrganization(updated, organizationName);
   }
   return updated;
+}
+
+function buildStandardReport({
+  organizationName,
+  reportingPeriodLabel,
+  reportGeneratedOnLabel,
+  sections,
+}: {
+  organizationName: string | null;
+  reportingPeriodLabel: string | null;
+  reportGeneratedOnLabel: string | null;
+  sections: Record<string, string>;
+}) {
+  const safe = (value: unknown, fallback: string) =>
+    typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+
+  const lines: string[] = [];
+  if (organizationName) {
+    lines.push(`**Organization:** ${organizationName}`);
+    lines.push("");
+  }
+
+  lines.push("# Reconciliation Report");
+  if (reportingPeriodLabel) {
+    lines.push(`**Reporting Period:** ${reportingPeriodLabel}`);
+  }
+  if (reportGeneratedOnLabel) {
+    lines.push(`**Report Generated On:** ${reportGeneratedOnLabel}`);
+  }
+  lines.push("");
+
+  lines.push("## Executive Summary");
+  lines.push(safe(sections.executiveSummary, "Summary unavailable."));
+  lines.push("");
+
+  lines.push("## Reconciliation Status");
+  lines.push(safe(sections.reconciliationStatus, "Status unavailable."));
+  lines.push("");
+
+  lines.push("## Material Variances");
+  lines.push(safe(sections.materialVariances, "None detected."));
+  lines.push("");
+
+  lines.push("## Root Cause Analysis");
+  lines.push(safe(sections.rootCauseAnalysis, "No issues requiring action."));
+  lines.push("");
+
+  lines.push("## Recommended Actions");
+  lines.push(safe(sections.recommendedActions, "No issues requiring action."));
+  lines.push("");
+
+  lines.push("## Conclusion");
+  lines.push(safe(sections.conclusion, "Report generated automatically by Rowshni."));
+
+  return lines.join("\n");
 }
 
 function ensureReportCompleteness(

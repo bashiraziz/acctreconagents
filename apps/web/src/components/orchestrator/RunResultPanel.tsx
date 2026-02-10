@@ -104,7 +104,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
       {result.timeline && result.timeline.length > 0 && (
         <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
           <h3 className="text-sm font-semibold theme-text">
-            Timeline Â· {result.runId}
+            Timeline · {formatRunLabel(result.runId)}
           </h3>
           <ol className="mt-3 space-y-2 text-sm theme-text-muted">
             {result.timeline.map((entry) => (
@@ -473,3 +473,21 @@ function formatReportOutput(report: string) {
   }
   return report;
 }
+
+function formatRunLabel(runId: string) {
+  const match = runId.match(/\d{10,}/);
+  if (!match) {
+    return "Recent run";
+  }
+  const timestamp = Number(match[0]);
+  if (!Number.isFinite(timestamp)) {
+    return "Recent run";
+  }
+  const millis = timestamp < 1e12 ? timestamp * 1000 : timestamp;
+  const date = new Date(millis);
+  if (Number.isNaN(date.getTime())) {
+    return "Recent run";
+  }
+  return `Run on ${date.toLocaleString()}`;
+}
+

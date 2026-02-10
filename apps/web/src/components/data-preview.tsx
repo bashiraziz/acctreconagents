@@ -5,8 +5,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useFileUploadStore } from "@/store/fileUploadStore";
+import { validateReconciliationPayload } from "@/lib/validate-reconciliation";
 
 type PreviewRow = Record<string, unknown>;
 
@@ -15,6 +16,21 @@ export function DataPreview() {
     (state) => state.reconciliationData,
   );
   const [isVisible, setIsVisible] = useState(true);
+  const validation = useMemo(
+    () => validateReconciliationPayload(reconciliationData),
+    [reconciliationData]
+  );
+  const validationIssues = validation.issues;
+  const issueCounts = useMemo(() => {
+    return validationIssues.reduce(
+      (acc, issue) => {
+        acc.total += 1;
+        acc[issue.dataset] += 1;
+        return acc;
+      },
+      { total: 0, glBalances: 0, subledgerBalances: 0, transactions: 0 }
+    );
+  }, [validationIssues]);
 
   if (!reconciliationData) {
     return (
@@ -51,6 +67,44 @@ export function DataPreview() {
 
       {isVisible ? (
         <div className="mt-4 space-y-6">
+        <div className="rounded-xl border theme-border theme-muted p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold theme-text">Validation preview</p>
+              <p className="mt-1 text-xs theme-text-muted">
+                Quick checks for missing required fields and invalid numbers before you run agents.
+              </p>
+            </div>
+            <span
+              className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                issueCounts.total === 0
+                  ? "bg-emerald-500/20 text-emerald-200"
+                  : "bg-amber-500/20 text-amber-200"
+              }`}
+            >
+              {issueCounts.total === 0 ? "No issues" : `${issueCounts.total} issue${issueCounts.total === 1 ? "" : "s"}`}
+            </span>
+          </div>
+          {issueCounts.total > 0 && (
+            <div className="mt-3 space-y-2 text-xs theme-text-muted">
+              <p>
+                GL: {issueCounts.glBalances} | Subledger: {issueCounts.subledgerBalances} | Transactions: {issueCounts.transactions}
+              </p>
+              <ul className="list-disc pl-5">
+                {validationIssues.slice(0, 10).map((issue, idx) => (
+                  <li key={`${issue.dataset}-${issue.row}-${issue.field}-${idx}`}>
+                    {issue.dataset} row {issue.row + 1} – {issue.field}: {issue.message}
+                  </li>
+                ))}
+              </ul>
+              {validationIssues.length > 10 && (
+                <p className="text-xs theme-text-muted">
+                  Showing first 10 issues. Fix these and re-apply mappings to recheck.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
         {/* GL Balances */}
         {reconciliationData.glBalances && reconciliationData.glBalances.length > 0 && (
           <PreviewTable
