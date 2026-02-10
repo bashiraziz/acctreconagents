@@ -52,7 +52,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
         <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
-              âš ï¸
+              !
             </div>
             <div className="flex-1">
               <p className="font-semibold text-amber-100">
@@ -63,7 +63,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
               </p>
               <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
                 <p className="text-xs font-semibold text-amber-200">
-                  ðŸ’¡ Get Unlimited AI Analysis (Free!)
+                  Tip: Get Unlimited AI Analysis (Free!)
                 </p>
                 <p className="mt-1 text-xs text-amber-200/70">
                   Use your own Google Gemini API key to avoid quotas:
@@ -92,7 +92,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                     file
                   </li>
                   <li>3. Restart the orchestrator service</li>
-                  <li>4. âœ… Enjoy unlimited AI analysis!</li>
+                  <li>4. OK - Enjoy unlimited AI analysis!</li>
                 </ol>
               </div>
             </div>
@@ -104,7 +104,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
       {result.timeline && result.timeline.length > 0 && (
         <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
           <h3 className="text-sm font-semibold theme-text">
-            Timeline · {formatRunLabel(result.runId)}
+            Timeline - {formatRunLabel(result.runId)}
           </h3>
           <ol className="mt-3 space-y-2 text-sm theme-text-muted">
             {result.timeline.map((entry) => (
@@ -144,7 +144,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
       {result.geminiAgents && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold theme-text">
-            ðŸ¤– Gemini AI Agent Results (FREE)
+            Gemini AI Agent Results (FREE)
           </h3>
 
           {/* Validation Agent */}
@@ -152,7 +152,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
             <div className="rounded-2xl border theme-border theme-card p-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold theme-text">
-                  1ï¸âƒ£ Data Validation Agent
+                  1. Data Validation Agent
                 </h4>
                 <GeminiAgentStatusBadge status={result.geminiAgents.status?.validation} />
               </div>
@@ -168,7 +168,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                 <div className="flex items-center justify-between">
                   <span className="theme-text-muted">Validation Status:</span>
                   <span className="font-semibold theme-text">
-                    {result.geminiAgents.validation.isValid ? "âœ“ Valid" : "âš ï¸ Issues Found"}
+                    {result.geminiAgents.validation.isValid ? "OK" : "Issues Found"}
                   </span>
                 </div>
               </div>
@@ -190,7 +190,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
             <div className="rounded-2xl border theme-border theme-card p-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold theme-text">
-                  2ï¸âƒ£ Reconciliation Analyst Agent
+                  2. Reconciliation Analyst Agent
                 </h4>
                 <GeminiAgentStatusBadge status={result.geminiAgents.status?.analysis} />
               </div>
@@ -236,7 +236,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
             <div className="rounded-2xl border theme-border theme-card p-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold theme-text">
-                  3ï¸âƒ£ Variance Investigator Agent
+                  3. Variance Investigator Agent
                 </h4>
                 <GeminiAgentStatusBadge status={result.geminiAgents.status?.investigation} />
               </div>
@@ -283,7 +283,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
             <div className="rounded-2xl border theme-border theme-card p-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold theme-text">
-                  4ï¸âƒ£ Report Generator Agent
+                  4. Report Generator Agent
                 </h4>
                 <div className="flex items-center gap-2">
                   <button
@@ -295,7 +295,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                         await navigator.clipboard.writeText(reportText);
                         const btn = document.activeElement as HTMLButtonElement;
                         const originalText = btn.textContent;
-                        btn.textContent = "âœ“ Copied!";
+                        btn.textContent = "Copied!";
                         setTimeout(() => {
                           btn.textContent = originalText;
                         }, 2000);
@@ -306,7 +306,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                     className="rounded-lg bg-purple-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-purple-500"
                     title="Copy to Clipboard"
                   >
-                    ðŸ“‹ Copy
+                    Copy
                   </button>
                   <button
                     onClick={() => {
@@ -326,7 +326,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                     className="rounded-lg bg-emerald-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-emerald-500"
                     title="Download as Markdown"
                   >
-                    ðŸ“„ MD
+                    MD
                   </button>
                   <button
                     onClick={() => {
@@ -346,7 +346,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                     className="rounded-lg bg-sky-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-sky-500"
                     title="Download as Text"
                   >
-                    ðŸ“ TXT
+                    TXT
                   </button>
                   {canRetryReport && onRetryReport && (
                     <button
@@ -394,7 +394,7 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
     return (
       <div className="flex items-center gap-2">
         <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-300">
-          âœ“ AI Success
+          AI Success
         </span>
         {(status.retryCount ?? 0) > 0 && (
           <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
@@ -409,7 +409,7 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
     return (
       <div className="flex items-center gap-2">
         <span className="rounded-full bg-orange-500/20 px-2 py-1 text-xs font-medium text-orange-300">
-          âš  Fallback
+          Fallback
         </span>
         {status.error && (
           <span
@@ -490,5 +490,7 @@ function formatRunLabel(runId: string) {
   }
   return `Run on ${date.toLocaleString()}`;
 }
+
+
 
 
