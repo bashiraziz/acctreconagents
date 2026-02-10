@@ -8,6 +8,8 @@ type Organization = {
   id: string;
   name: string;
   isDefault: boolean;
+  defaultMateriality?: number | null;
+  defaultPrompt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -22,6 +24,9 @@ export default function SettingsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [defaultsId, setDefaultsId] = useState<string | null>(null);
+  const [defaultMateriality, setDefaultMateriality] = useState<number | "">("");
+  const [defaultPrompt, setDefaultPrompt] = useState("");
 
   const defaultOrg = useMemo(
     () => organizations.find((org) => org.isDefault),
@@ -109,6 +114,49 @@ export default function SettingsPage() {
   const cancelEdit = () => {
     setEditingId(null);
     setEditingName("");
+  };
+
+  const startDefaultsEdit = (org: Organization) => {
+    setDefaultsId(org.id);
+    setDefaultMateriality(
+      typeof org.defaultMateriality === "number" ? org.defaultMateriality : ""
+    );
+    setDefaultPrompt(org.defaultPrompt ?? "");
+  };
+
+  const cancelDefaultsEdit = () => {
+    setDefaultsId(null);
+    setDefaultMateriality("");
+    setDefaultPrompt("");
+  };
+
+  const saveDefaults = async () => {
+    if (!defaultsId) return;
+    setBusyId(defaultsId);
+    setError(null);
+    try {
+      const response = await fetch(`/api/user/organizations/${defaultsId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          defaultMateriality:
+            defaultMateriality === "" ? null : Number(defaultMateriality),
+          defaultPrompt: defaultPrompt.trim() || null,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Failed to update defaults");
+      }
+      setOrganizations((prev) =>
+        prev.map((org) => (org.id === defaultsId ? data.organization : org))
+      );
+      cancelDefaultsEdit();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update defaults");
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const saveEdit = async () => {
@@ -255,24 +303,35 @@ export default function SettingsPage() {
                       className="rounded-2xl border theme-border theme-muted p-4"
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex-1">
-                          {editingId === org.id ? (
-                            <input
-                              value={editingName}
-                              onChange={(event) => setEditingName(event.target.value)}
-                              className="w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
-                            />
-                          ) : (
-                            <div className="text-base font-semibold theme-text">
-                              {org.name}
-                            </div>
-                          )}
-                          <div className="mt-1 text-xs theme-text-muted">
-                            {org.isDefault ? "Default organization" : "Not default"}
+                      <div className="flex-1">
+                        {editingId === org.id ? (
+                          <input
+                            value={editingName}
+                            onChange={(event) => setEditingName(event.target.value)}
+                            className="w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
+                          />
+                        ) : (
+                          <div className="text-base font-semibold theme-text">
+                            {org.name}
+                          </div>
+                        )}
+                        <div className="mt-1 text-xs theme-text-muted">
+                          {org.isDefault ? "Default organization" : "Not default"}
+                        </div>
+                        <div className="mt-3 text-xs theme-text-muted">
+                          <div>
+                            Default materiality:{" "}
+                            {typeof org.defaultMateriality === "number"
+                              ? `$${org.defaultMateriality.toFixed(2)}`
+                              : "Not set"}
+                          </div>
+                          <div className="mt-1">
+                            Default prompt: {org.defaultPrompt?.trim() ? "Set" : "Not set"}
                           </div>
                         </div>
+                      </div>
 
-                        <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2">
                           {editingId === org.id ? (
                             <>
                               <button
@@ -307,6 +366,12 @@ export default function SettingsPage() {
                                 Rename
                               </button>
                               <button
+                                onClick={() => startDefaultsEdit(org)}
+                                className="rounded-lg border theme-border theme-card px-3 py-1.5 text-xs font-medium theme-text"
+                              >
+                                Defaults
+                              </button>
+                              <button
                                 onClick={() => handleDelete(org.id)}
                                 disabled={busyId === org.id}
                                 className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-100 disabled:opacity-50"
@@ -317,6 +382,58 @@ export default function SettingsPage() {
                           )}
                         </div>
                       </div>
+                      {defaultsId === org.id && (
+                        <div className="mt-4 rounded-xl border theme-border theme-muted p-3">
+                          <p className="text-xs font-semibold uppercase theme-text-muted">
+                            Defaults for this organization
+                          </p>
+                          <div className="mt-3 grid gap-3 md:grid-cols-2">
+                            <label className="text-xs font-medium uppercase theme-text-muted">
+                              Materiality Threshold
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={defaultMateriality}
+                                onChange={(event) =>
+                                  setDefaultMateriality(
+                                    event.target.value === ""
+                                      ? ""
+                                      : Number(event.target.value)
+                                  )
+                                }
+                                className="mt-2 w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
+                                placeholder="50"
+                              />
+                            </label>
+                            <label className="text-xs font-medium uppercase theme-text-muted">
+                              Default prompt
+                              <textarea
+                                value={defaultPrompt}
+                                onChange={(event) => setDefaultPrompt(event.target.value)}
+                                className="mt-2 w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
+                                rows={3}
+                                placeholder="Reconcile accounts for month-end close"
+                              />
+                            </label>
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              onClick={saveDefaults}
+                              disabled={busyId === org.id}
+                              className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-100 disabled:opacity-50"
+                            >
+                              Save defaults
+                            </button>
+                            <button
+                              onClick={cancelDefaultsEdit}
+                              className="rounded-lg border theme-border theme-card px-3 py-1.5 text-xs font-medium theme-text"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

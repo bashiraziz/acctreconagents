@@ -202,6 +202,7 @@ After mapping, click **"Preview Data"** to see:
    - **Lower values** = stricter reconciliation (more variances flagged)
    - **Higher values** = more lenient (only large variances flagged)
    - Your setting is saved for future reconciliations
+   - If your organization has a saved default, it will prefill here
 
 2. **Select Organization (Optional, signed-in users)**
    - If you have multiple organizations saved, use the dropdown to choose which one prints above the report title
@@ -222,6 +223,7 @@ After mapping, click **"Preview Data"** to see:
    - General instructions work too:
      - Example: "Reconcile inventory for October close"
      - Example: "Focus on material variances above $1,000"
+   - If your organization has a saved default prompt, it will prefill here
 
    **Smart Default**: If you don't specify accounts, the system automatically reconciles only accounts that exist in both your GL and subledger files. This prevents false variances for GL accounts that don't have supporting detail.
 
@@ -315,6 +317,7 @@ After reconciliation completes, you can export the report:
 - **Copy** - Copy report to clipboard
 - **MD** - Download as Markdown (.md file)
 - **TXT** - Download as plain text (.txt file)
+ - Reports are rendered in the UI (no raw Markdown headings)
 
 Report headers include:
 - **Organization** (if selected or defaulted)
@@ -580,7 +583,9 @@ Use your own free Google Gemini API key:
 
 **New Features:**
 - **Organization Settings**: Add multiple organizations, pick a default, and select per run
+- **Org defaults**: Save per-organization materiality thresholds and prompt defaults
 - **Report header fields**: Organization (if set), Reporting Period (Month YYYY), Report Generated On (today)
+- **Report viewer**: Markdown rendered cleanly in the app with export buttons
 - **Report resilience**: If AI output is incomplete, the system generates a fallback report from reconciliation data
 - **Simple Mode**: Toggle a reduced-color UI for less visual noise
 

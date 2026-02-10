@@ -221,6 +221,8 @@ export async function getUserOrganizations(
       userId: row.user_id,
       name: row.name,
       isDefault: row.is_default,
+      defaultMateriality: row.default_materiality ?? null,
+      defaultPrompt: row.default_prompt ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
@@ -250,6 +252,8 @@ export async function getDefaultUserOrganization(
       userId: row.user_id,
       name: row.name,
       isDefault: row.is_default,
+      defaultMateriality: row.default_materiality ?? null,
+      defaultPrompt: row.default_prompt ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -298,6 +302,8 @@ export async function createUserOrganization(
       userId: row.user_id,
       name: row.name,
       isDefault: row.is_default,
+      defaultMateriality: row.default_materiality ?? null,
+      defaultPrompt: row.default_prompt ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -330,6 +336,8 @@ export async function renameUserOrganization(
       userId: row.user_id,
       name: row.name,
       isDefault: row.is_default,
+      defaultMateriality: row.default_materiality ?? null,
+      defaultPrompt: row.default_prompt ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -367,12 +375,55 @@ export async function setDefaultUserOrganization(
       userId: row.user_id,
       name: row.name,
       isDefault: row.is_default,
+      defaultMateriality: row.default_materiality ?? null,
+      defaultPrompt: row.default_prompt ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
   } catch (error) {
     console.error("Database error in setDefaultUserOrganization:", error);
     throw new Error(`Failed to set default organization: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+export async function updateUserOrganizationDefaults(
+  userId: string,
+  organizationId: string,
+  defaults: {
+    defaultMateriality?: number | null;
+    defaultPrompt?: string | null;
+  },
+): Promise<UserOrganization> {
+  const { defaultMateriality, defaultPrompt } = defaults;
+  try {
+    const result = await sql`
+      UPDATE user_organizations
+      SET
+        default_materiality = ${defaultMateriality ?? null},
+        default_prompt = ${defaultPrompt ?? null},
+        updated_at = NOW()
+      WHERE user_id = ${userId} AND id = ${organizationId}
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Organization not found");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      isDefault: row.is_default,
+      defaultMateriality: row.default_materiality ?? null,
+      defaultPrompt: row.default_prompt ?? null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  } catch (error) {
+    console.error("Database error in updateUserOrganizationDefaults:", error);
+    throw new Error(`Failed to update organization defaults: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 

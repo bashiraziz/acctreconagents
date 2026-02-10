@@ -186,6 +186,27 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
     return organizations.find((org) => org.id === selectedOrganizationId)?.name;
   }, [organizations, selectedOrganizationId]);
 
+  useEffect(() => {
+    if (!selectedOrganizationId) return;
+    const selectedOrg = organizations.find((org) => org.id === selectedOrganizationId);
+    if (!selectedOrg) return;
+    if (typeof selectedOrg.defaultMateriality === "number") {
+      if (selectedOrg.defaultMateriality !== materialityThreshold) {
+        setMaterialityThreshold(selectedOrg.defaultMateriality);
+      }
+    }
+    if (selectedOrg.defaultPrompt?.trim() && prompt.trim().length === 0) {
+      setPrompt(selectedOrg.defaultPrompt.trim());
+    }
+  }, [
+    selectedOrganizationId,
+    organizations,
+    materialityThreshold,
+    prompt,
+    setMaterialityThreshold,
+    setPrompt,
+  ]);
+
   // Simulate agent progress during loading
   useEffect(() => {
     if (!loading) {

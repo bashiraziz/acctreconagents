@@ -50,7 +50,9 @@ package.json           # Root scripts (Spec-Kit check)
 * **Live Data Preview** - See transformed data before running reconciliation
 * **AI Agent Console** - Real-time progress tracking through 4-agent pipeline
 * **Organization Settings** - Manage multiple orgs, set default, and select per run
+* **Org Defaults** - Per-organization materiality and prompt defaults applied on run
 * **Report Headers** - Organization, Reporting Period, Report Generated On
+* **Report Viewer** - Markdown rendered in the UI with copy/MD/TXT export
 * **Simple Mode** - Optional low-contrast UI for reduced visual noise
 * **Rate Limiting** - Built-in protection (30/hour, 50/2hours, 70/3hours in anonymous mode)
 * **Data Storage** - Browser localStorage for column mappings and workflow state

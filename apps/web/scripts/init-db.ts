@@ -183,11 +183,17 @@ async function initializeDatabase() {
         user_id VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
         is_default BOOLEAN NOT NULL DEFAULT FALSE,
+        default_materiality DECIMAL(15, 2),
+        default_prompt TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
     console.log("✓ user_organizations table created");
+
+    // Add new columns if table already existed
+    await sql`ALTER TABLE user_organizations ADD COLUMN IF NOT EXISTS default_materiality DECIMAL(15, 2);`;
+    await sql`ALTER TABLE user_organizations ADD COLUMN IF NOT EXISTS default_prompt TEXT;`;
 
     await sql`
       CREATE INDEX IF NOT EXISTS idx_user_organizations_user

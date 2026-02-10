@@ -7,6 +7,7 @@ import {
   deleteUserOrganization,
   renameUserOrganization,
   setDefaultUserOrganization,
+  updateUserOrganizationDefaults,
 } from "@/lib/db/client";
 import { auth } from "@/lib/auth";
 import { withErrorHandler, ApiErrors } from "@/lib/api-error";
@@ -34,12 +35,22 @@ export const PATCH = withErrorHandler(async (request: NextRequest, context: { pa
   const body = await request.json();
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const makeDefault = Boolean(body?.makeDefault);
+  const defaultMateriality =
+    typeof body?.defaultMateriality === "number"
+      ? body.defaultMateriality
+      : null;
+  const defaultPrompt =
+    typeof body?.defaultPrompt === "string" ? body.defaultPrompt.trim() : null;
 
-  if (!name && !makeDefault) {
+  if (!name && !makeDefault && defaultMateriality === null && defaultPrompt === null) {
     return ApiErrors.badRequest(
       "No changes provided",
-      "Provide a new name and/or set makeDefault to true",
-      ["Set name to rename", "Set makeDefault to true to update default"]
+      "Provide a new name, defaults, and/or set makeDefault to true",
+      [
+        "Set name to rename",
+        "Set makeDefault to true to update default",
+        "Set defaultMateriality or defaultPrompt to update defaults",
+      ]
     );
   }
 
@@ -49,6 +60,12 @@ export const PATCH = withErrorHandler(async (request: NextRequest, context: { pa
   }
   if (makeDefault) {
     organization = await setDefaultUserOrganization(session.user.id, orgId);
+  }
+  if (defaultMateriality !== null || defaultPrompt !== null) {
+    organization = await updateUserOrganizationDefaults(session.user.id, orgId, {
+      defaultMateriality,
+      defaultPrompt,
+    });
   }
 
   return NextResponse.json({ organization });

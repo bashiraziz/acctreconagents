@@ -5,6 +5,8 @@
  * Displays reconciliation results including AI agent outputs
  */
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { OrchestratorResponse, GeminiAgentStatus, Investigation } from "@/types/reconciliation";
 
 interface RunResultPanelProps {
@@ -34,6 +36,12 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
   const canRetryReport =
     Boolean(result.geminiAgents?.status?.report) &&
     !result.geminiAgents?.status?.report?.success;
+  const reportMarkdown =
+    typeof result.geminiAgents?.report === "string"
+      ? formatReportOutput(result.geminiAgents.report)
+      : "```json\n" +
+        JSON.stringify(result.geminiAgents?.report ?? {}, null, 2) +
+        "\n```";
 
   return (
     <div className="mt-6 space-y-4">
@@ -367,11 +375,49 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                 </p>
               )}
               <div className="mt-3">
-                <div className="whitespace-pre-wrap text-sm theme-text/90">
-                  {typeof result.geminiAgents.report === 'string'
-                    ? formatReportOutput(result.geminiAgents.report)
-                    : JSON.stringify(result.geminiAgents.report, null, 2)}
-                </div>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ children }) => (
+                      <h1 className="text-lg font-semibold theme-text">{children}</h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="text-base font-semibold theme-text">{children}</h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="text-sm font-semibold theme-text">{children}</h3>
+                    ),
+                    p: ({ children }) => (
+                      <p className="text-sm theme-text/90">{children}</p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="list-disc space-y-1 pl-5 text-sm theme-text/90">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="list-decimal space-y-1 pl-5 text-sm theme-text/90">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => <li>{children}</li>,
+                    strong: ({ children }) => (
+                      <strong className="font-semibold theme-text">{children}</strong>
+                    ),
+                    code: ({ inline, children }) =>
+                      inline ? (
+                        <code className="rounded bg-slate-900/60 px-1 py-0.5 text-xs text-slate-100">
+                          {children}
+                        </code>
+                      ) : (
+                        <pre className="overflow-x-auto rounded-lg bg-slate-950/80 p-3 text-xs text-slate-100">
+                          <code>{children}</code>
+                        </pre>
+                      ),
+                  }}
+                >
+                  {reportMarkdown}
+                </ReactMarkdown>
               </div>
             </div>
           )}

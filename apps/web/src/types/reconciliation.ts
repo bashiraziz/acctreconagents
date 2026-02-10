@@ -243,6 +243,8 @@ export type UserOrganization = {
   userId: string;
   name: string;
   isDefault: boolean;
+  defaultMateriality?: number | null;
+  defaultPrompt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
