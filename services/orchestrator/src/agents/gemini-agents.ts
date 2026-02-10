@@ -454,7 +454,7 @@ export async function runReportAgent(
     )
   );
   const reportingPeriodLabel = formatReportingPeriod(periods);
-  const reportingDateLabel = formatReportingDate(periods);
+  const reportGeneratedOnLabel = formatReportGeneratedOn();
 
   const prompt = `You are a report writer creating audit-ready reconciliation documentation for an AI-POWERED AUTOMATED RECONCILIATION SYSTEM.
 
@@ -503,7 +503,8 @@ Create a professional markdown report with:
 
 Format in clean markdown suitable for audit documentation.
 Target length: 300-600 words.
-If you include "Reporting Period", write it as Month YYYY (example: October 2025).`;
+If you include "Reporting Period", write it as Month YYYY (example: October 2025).
+Use "Report Generated On: YYYY-MM-DD" for the current date (today).`;
 
   try {
     const { result, retryCount } = await retryWithBackoff(
@@ -517,7 +518,7 @@ If you include "Reporting Period", write it as Month YYYY (example: October 2025
     const normalizedReport = normalizeReportMetadata(
       result,
       reportingPeriodLabel,
-      reportingDateLabel
+      reportGeneratedOnLabel
     );
     return {
       data: normalizedReport,
@@ -578,27 +579,18 @@ function patchReportingPeriod(report: string, label: string) {
   return report;
 }
 
-function formatReportingDate(periods: string[]) {
-  if (periods.length === 0) return null;
-  const normalized = periods
-    .map((period) => period.trim())
-    .filter(Boolean)
-    .map((period) => period.slice(0, 7));
-  const last = normalized[normalized.length - 1];
-  if (!last) return null;
-  const match = last.match(/^(\d{4})-(\d{2})$/);
-  if (!match) return null;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  if (!year || month < 1 || month > 12) return null;
-  const lastDay = new Date(year, month, 0).getDate();
-  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+function formatReportGeneratedOn() {
+  return new Date().toISOString().slice(0, 10);
 }
 
-function patchReportDate(report: string, label: string) {
-  const pattern = /(Date:\s*)(.*)/i;
+function patchReportGeneratedOn(report: string, label: string) {
+  const pattern = /(Report Generated On:\s*)(.*)/i;
   if (pattern.test(report)) {
     return report.replace(pattern, `$1${label}`);
+  }
+  const legacyDate = /(Date:\s*)(.*)/i;
+  if (legacyDate.test(report)) {
+    return report.replace(legacyDate, `Report Generated On: ${label}`);
   }
   return report;
 }
@@ -606,14 +598,14 @@ function patchReportDate(report: string, label: string) {
 function normalizeReportMetadata(
   report: string,
   periodLabel: string | null,
-  dateLabel: string | null
+  reportGeneratedOnLabel: string | null
 ) {
   let updated = report;
   if (periodLabel) {
     updated = patchReportingPeriod(updated, periodLabel);
   }
-  if (dateLabel) {
-    updated = patchReportDate(updated, dateLabel);
+  if (reportGeneratedOnLabel) {
+    updated = patchReportGeneratedOn(updated, reportGeneratedOnLabel);
   }
   return updated;
 }
