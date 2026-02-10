@@ -49,6 +49,8 @@ package.json           # Root scripts (Spec-Kit check)
 * **Intelligent Column Mapping** - Auto-detects and maps CSV columns to canonical schema
 * **Live Data Preview** - See transformed data before running reconciliation
 * **AI Agent Console** - Real-time progress tracking through 4-agent pipeline
+* **Organization Settings** - Manage multiple orgs, set default, and select per run
+* **Report Headers** - Organization, Reporting Period, Report Generated On
 * **Rate Limiting** - Built-in protection (30/hour, 50/2hours, 70/3hours in anonymous mode)
 * **Data Storage** - Browser localStorage for column mappings and workflow state
 * **Deployment** - Optimized for Vercel with environment-based configuration
@@ -163,6 +165,10 @@ This skill can be used by Claude Code to implement Better Auth authentication si
 * `services/orchestrator`: `npm run dev`, `npm run build`, `npm run start`.
 * `tests/`: `npm test` – runs automated scenario tests using Claude skills (10 scenarios, ~8 min).
 
+## Database notes
+* The web app uses Vercel Postgres and includes a `user_organizations` table to store multiple organizations per user (with a single default).
+* Run `npx tsx apps/web/scripts/init-db.ts` once against your target database to create tables. The script includes a safety check to avoid running against localhost.
+
 ## API schemas
 OpenAPI documents live in `docs/api`:
 * `orchestrator.openapi.yaml` – Fastify service (`POST /agent/runs`).
@@ -184,4 +190,7 @@ Import them into your API gateway, generate clients, or extend them as additiona
 - ☐ Persist ChatKit conversation metadata or analytics as needed.
 - ☐ Harden upload storage and add authentication/authorization.
 
-Questions or improvements? Open an issue and include whether you’re working on the web app, orchestrator, or specification.*** End Patch**³**
+Questions or improvements? Open an issue and include whether you’re working on the web app, orchestrator, or specification.
+
+
+

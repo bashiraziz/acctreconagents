@@ -203,7 +203,12 @@ After mapping, click **"Preview Data"** to see:
    - **Higher values** = more lenient (only large variances flagged)
    - Your setting is saved for future reconciliations
 
-2. **Enter Analysis Prompt**
+2. **Select Organization (Optional, signed-in users)**
+   - If you have multiple organizations saved, use the dropdown to choose which one prints above the report title
+   - The selection applies to this run only (overrides the default organization)
+   - Anonymous users won't see this dropdown
+
+3. **Enter Analysis Prompt**
    - Provide instructions for the AI agents
    - **Account filtering options**:
      - **Specific accounts**: "Reconcile account 200" → reconciles only account 200
@@ -216,12 +221,12 @@ After mapping, click **"Preview Data"** to see:
 
    **Smart Default**: If you don't specify accounts, the system automatically reconciles only accounts that exist in both your GL and subledger files. This prevents false variances for GL accounts that don't have supporting detail.
 
-3. **Click "Illuminate ✨"**
+4. **Click "Illuminate ✨"**
    - Rowshni's AI agents start analyzing your data
    - Progress shown in real-time with a glowing progress indicator
    - You'll see which agent is currently working (Data Validation → Analysis → Investigation → Report)
 
-4. **Watch the Timeline**
+5. **Watch the Timeline**
    ```
    ✔ Spec Validation     - Data validated
    ▶ Data Validation Agent - Validating data quality
@@ -230,7 +235,7 @@ After mapping, click **"Preview Data"** to see:
    ▶ Report Generator Agent - Creating final report
    ```
 
-5. **Wait for Completion** (usually 10-30 seconds)
+6. **Wait for Completion** (usually 10-30 seconds)
 
 ---
 
@@ -306,6 +311,11 @@ After reconciliation completes, you can export the report:
 - **Copy** - Copy report to clipboard
 - **MD** - Download as Markdown (.md file)
 - **TXT** - Download as plain text (.txt file)
+
+Report headers include:
+- **Organization** (if selected or defaulted)
+- **Reporting Period** (Month YYYY)
+- **Report Generated On** (today's date)
 
 All numbers in reports are rounded to 2 decimal places for accounting precision.
 
@@ -561,6 +571,15 @@ Use your own free Google Gemini API key:
 *Rowshni - Shedding light on your ledger*
 
 ---
+
+## Recent Updates (February 2026)
+
+**New Features:**
+- **Organization Settings**: Add multiple organizations, pick a default, and select per run
+- **Report header fields**: Organization (if set), Reporting Period (Month YYYY), Report Generated On (today)
+- **Report resilience**: If AI output is incomplete, the system generates a fallback report from reconciliation data
+
+*Last updated: February 10, 2026*
 
 ## Recent Updates (December 2025)
 
