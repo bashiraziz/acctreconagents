@@ -11,10 +11,9 @@ import {
 import { auth } from "@/lib/auth";
 import { withErrorHandler, ApiErrors } from "@/lib/api-error";
 
-type RouteParams = { params: { orgId: string } };
-
 // PATCH /api/user/organizations/:orgId
-export const PATCH = withErrorHandler(async (request: NextRequest, { params }: RouteParams) => {
+export const PATCH = withErrorHandler(async (request: NextRequest, context: { params: Promise<{ orgId: string }> }) => {
+  const params = await context.params;
   let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
   try {
     session = await auth.api.getSession({
@@ -56,7 +55,8 @@ export const PATCH = withErrorHandler(async (request: NextRequest, { params }: R
 });
 
 // DELETE /api/user/organizations/:orgId
-export const DELETE = withErrorHandler(async (request: NextRequest, { params }: RouteParams) => {
+export const DELETE = withErrorHandler(async (request: NextRequest, context: { params: Promise<{ orgId: string }> }) => {
+  const params = await context.params;
   let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
   try {
     session = await auth.api.getSession({
