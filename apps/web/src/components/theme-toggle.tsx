@@ -18,8 +18,16 @@ function getThemeSnapshot(): Theme {
 
   try {
     const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return isTheme(savedTheme) ? savedTheme : DEFAULT_THEME;
+    if (isTheme(savedTheme)) {
+      return savedTheme;
+    }
+    const attrTheme = document.documentElement.getAttribute("data-theme");
+    return isTheme(attrTheme) ? attrTheme : DEFAULT_THEME;
   } catch {
+    const attrTheme = document.documentElement.getAttribute("data-theme");
+    if (isTheme(attrTheme)) {
+      return attrTheme;
+    }
     return DEFAULT_THEME;
   }
 }
