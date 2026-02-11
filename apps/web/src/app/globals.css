@@ -52,7 +52,7 @@ body {
 /* Simple mode reduces visual noise (neutral palette + minimal accents) */
 [data-simple-mode="true"] {
   --accent: var(--foreground);
-  filter: saturate(0.35);
+  filter: saturate(0.75);
 }
 
 [data-simple-mode="true"] .ui-kicker {
@@ -154,4 +154,98 @@ body {
   color: var(--muted-text);
   font-size: 0.875rem;
   line-height: 1.6;
+}
+
+/* Anonymous/auth info banner */
+.auth-info-banner {
+  border: 1px solid #60a5fa66;
+  background: #3b82f61a;
+}
+
+.auth-info-icon {
+  background: #3b82f633;
+}
+
+/* Light theme contrast */
+[data-theme="light"] .auth-info-banner {
+  color: #0f172a;
+}
+
+[data-theme="light"] .auth-info-title {
+  color: #1e3a8a;
+}
+
+[data-theme="light"] .auth-info-body {
+  color: #334155;
+}
+
+[data-theme="light"] .auth-info-link {
+  color: #1e3a8a;
+}
+
+[data-theme="light"] .auth-info-link:hover {
+  color: #1e40af;
+}
+
+/* Medium/Dark theme contrast */
+[data-theme="medium-dark"] .auth-info-banner,
+[data-theme="dark"] .auth-info-banner {
+  color: #dbeafe;
+}
+
+[data-theme="medium-dark"] .auth-info-title,
+[data-theme="dark"] .auth-info-title {
+  color: #bfdbfe;
+}
+
+[data-theme="medium-dark"] .auth-info-body,
+[data-theme="dark"] .auth-info-body {
+  color: #cbd5e1;
+}
+
+[data-theme="medium-dark"] .auth-info-link,
+[data-theme="dark"] .auth-info-link {
+  color: #bfdbfe;
+}
+
+[data-theme="medium-dark"] .auth-info-link:hover,
+[data-theme="dark"] .auth-info-link:hover {
+  color: #dbeafe;
+}
+
+/* Signed-in success banner */
+.auth-success-banner {
+  border: 1px solid #34d39966;
+  background: #10b9811a;
+}
+
+.auth-success-icon {
+  background: #10b98133;
+}
+
+[data-theme="light"] .auth-success-banner {
+  color: #064e3b;
+}
+
+[data-theme="light"] .auth-success-title {
+  color: #065f46;
+}
+
+[data-theme="light"] .auth-success-body {
+  color: #14532d;
+}
+
+[data-theme="medium-dark"] .auth-success-banner,
+[data-theme="dark"] .auth-success-banner {
+  color: #d1fae5;
+}
+
+[data-theme="medium-dark"] .auth-success-title,
+[data-theme="dark"] .auth-success-title {
+  color: #a7f3d0;
+}
+
+[data-theme="medium-dark"] .auth-success-body,
+[data-theme="dark"] .auth-success-body {
+  color: #bbf7d0;
 }

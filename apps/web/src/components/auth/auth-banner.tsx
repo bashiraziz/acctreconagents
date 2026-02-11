@@ -16,16 +16,16 @@ export function AuthBanner() {
   if (session?.user) {
     return (
       <div className="space-y-3">
-        <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+        <div className="auth-success-banner rounded-2xl p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+            <div className="auth-success-icon auth-success-title flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
               OK
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-slate-900 dark:text-emerald-100">
+              <p className="auth-success-title font-semibold">
                 Signed in as {session.user.name || session.user.email}
               </p>
-              <p className="mt-1 text-sm text-slate-700 dark:text-emerald-200/80">
+              <p className="auth-success-body mt-1 text-sm">
                 Mappings are saved to your account and your usage limits are doubled.
               </p>
             </div>
@@ -39,31 +39,31 @@ export function AuthBanner() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-4 text-slate-900 dark:text-blue-100">
+      <div className="auth-info-banner rounded-2xl p-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-200">
+          <div className="auth-info-icon flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full auth-info-title">
             A
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold text-blue-900 dark:text-blue-100">
+              <p className="auth-info-title font-semibold">
                 Anonymous mode
               </p>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="whitespace-nowrap text-xs font-medium text-blue-900 underline hover:text-blue-950 dark:text-blue-200 dark:hover:text-blue-100"
+                className="auth-info-link whitespace-nowrap text-xs font-medium underline"
                 aria-expanded={isExpanded}
               >
                 {isExpanded ? "Hide details" : "Show details"}
               </button>
             </div>
 
-            <p className="mt-1 text-sm text-slate-700 dark:text-blue-200/80">
+            <p className="auth-info-body mt-1 text-sm">
               Use all reconciliation features without signing in. Data persists in this browser.
             </p>
 
             {isExpanded && (
-              <ul className="mt-2 space-y-1 text-sm text-slate-700 dark:text-blue-200/80">
+              <ul className="auth-info-body mt-2 space-y-1 text-sm">
                 <li>- Base limits: 30 per hour, 50 per 2 hours, 70 per 3 hours</li>
                 <li>- Sign in to double limits and save mappings to your account</li>
                 <li>- AI analysis uses shared quota with retry and fallback</li>
@@ -73,7 +73,7 @@ export function AuthBanner() {
                     href="https://ai.google.dev/gemini-api/docs/api-key"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium underline text-blue-900 hover:text-blue-950 dark:text-blue-200 dark:hover:text-blue-100"
+                    className="auth-info-link font-medium underline"
                   >
                     Gemini API key
                   </a>
