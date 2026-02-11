@@ -157,7 +157,7 @@ function AboutPanel() {
         We illuminate your reconciliations with AI-powered insights, bringing clarity to complex financial data.
       </p>
 
-      <details className="mt-4 border-t theme-border pt-4">
+      <details className="simple-hide mt-4 border-t theme-border pt-4">
         <summary className="cursor-pointer text-sm font-medium theme-text">
           Tech Stack
         </summary>
@@ -241,7 +241,7 @@ function AboutPanel() {
         </div>
       </details>
 
-      <details className="mt-4 border-t theme-border pt-4">
+      <details className="simple-hide mt-4 border-t theme-border pt-4">
         <summary className="cursor-pointer text-sm font-medium theme-text">
           Data Model
         </summary>
@@ -278,7 +278,7 @@ function AboutPanel() {
         </div>
       </details>
 
-      <details className="mt-4 border-t theme-border pt-4">
+      <details className="simple-hide mt-4 border-t theme-border pt-4">
         <summary className="cursor-pointer text-sm font-medium theme-text">
           AI Agent Pipeline
         </summary>

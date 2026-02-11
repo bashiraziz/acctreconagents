@@ -110,7 +110,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
 
       {/* Timeline */}
       {result.timeline && result.timeline.length > 0 && (
-        <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
+        <div className="simple-hide rounded-2xl border border-slate-800/80 bg-black/40 p-4">
           <h3 className="text-sm font-semibold theme-text">
             Timeline - {formatRunLabel(result.runId)}
           </h3>
@@ -151,140 +151,142 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
       {/* Gemini Agent Results */}
       {result.geminiAgents && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold theme-text">
-            Gemini AI Agent Results (FREE)
-          </h3>
+          <div className="simple-hide space-y-4">
+            <h3 className="text-lg font-semibold theme-text">
+              Gemini AI Agent Results (FREE)
+            </h3>
 
-          {/* Validation Agent */}
-          {result.geminiAgents.validation && (
-            <div className="rounded-2xl border theme-border theme-card p-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold theme-text">
-                  1. Data Validation Agent
-                </h4>
-                <GeminiAgentStatusBadge status={result.geminiAgents.status?.validation} />
-              </div>
-              <div className="mt-3 space-y-2 text-sm">
+            {/* Validation Agent */}
+            {result.geminiAgents.validation && (
+              <div className="rounded-2xl border theme-border theme-card p-4">
                 <div className="flex items-center justify-between">
-                  <span className="theme-text-muted">Confidence Score:</span>
-                  <span className="font-semibold theme-text">
-                    {result.geminiAgents.validation.confidence
-                      ? Math.round(result.geminiAgents.validation.confidence * 100)
-                      : "N/A"}/100
-                  </span>
+                  <h4 className="font-semibold theme-text">
+                    1. Data Validation Agent
+                  </h4>
+                  <GeminiAgentStatusBadge status={result.geminiAgents.status?.validation} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="theme-text-muted">Validation Status:</span>
-                  <span className="font-semibold theme-text">
-                    {result.geminiAgents.validation.isValid ? "OK" : "Issues Found"}
-                  </span>
+                <div className="mt-3 space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="theme-text-muted">Confidence Score:</span>
+                    <span className="font-semibold theme-text">
+                      {result.geminiAgents.validation.confidence
+                        ? Math.round(result.geminiAgents.validation.confidence * 100)
+                        : "N/A"}/100
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="theme-text-muted">Validation Status:</span>
+                    <span className="font-semibold theme-text">
+                      {result.geminiAgents.validation.isValid ? "OK" : "Issues Found"}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              {result.geminiAgents.validation.warnings && result.geminiAgents.validation.warnings.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-xs font-semibold uppercase text-blue-300">Warnings</p>
-                  <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
-                    {result.geminiAgents.validation.warnings.map((w: string, i: number) => (
-                      <li key={i}>{w}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Analysis Agent */}
-          {result.geminiAgents.analysis && (
-            <div className="rounded-2xl border theme-border theme-card p-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold theme-text">
-                  2. Reconciliation Analyst Agent
-                </h4>
-                <GeminiAgentStatusBadge status={result.geminiAgents.status?.analysis} />
-              </div>
-              <div className="mt-3 space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="theme-text-muted">Risk Level:</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
-                      result.geminiAgents.analysis.riskLevel === "high"
-                        ? "bg-gray-900/20 text-rose-300"
-                        : result.geminiAgents.analysis.riskLevel === "medium"
-                          ? "bg-amber-500/20 text-amber-300"
-                          : "bg-emerald-500/20 text-emerald-300"
-                    }`}
-                  >
-                    {result.geminiAgents.analysis.riskLevel}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="theme-text-muted">Material Variances:</span>
-                  <span className="font-semibold theme-text">
-                    {result.geminiAgents.analysis.materialVariances?.length || 0}
-                  </span>
-                </div>
-              </div>
-              {result.geminiAgents.analysis.patterns && result.geminiAgents.analysis.patterns.length > 0 && (
-                <div className="mt-3">
-                  <p className="text-xs font-semibold uppercase text-purple-300">
-                    Patterns Detected
-                  </p>
-                  <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
-                    {result.geminiAgents.analysis.patterns.map((p: string, i: number) => (
-                      <li key={i}>{p}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Investigation Agent */}
-          {(result.geminiAgents.investigation?.investigations?.length ?? 0) > 0 && (
-            <div className="rounded-2xl border theme-border theme-card p-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold theme-text">
-                  3. Variance Investigator Agent
-                </h4>
-                <GeminiAgentStatusBadge status={result.geminiAgents.status?.investigation} />
-              </div>
-              <div className="mt-3 space-y-3">
-                {result.geminiAgents.investigation?.investigations?.map(
-                  (inv: Investigation, i: number) => (
-                    <div key={i} className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
-                      <p className="font-semibold text-sm theme-text">
-                        Account: {inv.account} (Variance: ${inv.variance?.toFixed(2)})
-                      </p>
-                      {inv.possibleCauses && inv.possibleCauses.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs font-semibold uppercase text-orange-300">
-                            Possible Causes
-                          </p>
-                          <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
-                            {inv.possibleCauses.map((cause: string, j: number) => (
-                              <li key={j}>{cause}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {inv.suggestedActions && inv.suggestedActions.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs font-semibold uppercase text-orange-300">
-                            Suggested Actions
-                          </p>
-                          <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
-                            {inv.suggestedActions.map((action: string, j: number) => (
-                              <li key={j}>{action}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  ),
+                {result.geminiAgents.validation.warnings && result.geminiAgents.validation.warnings.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold uppercase text-blue-300">Warnings</p>
+                    <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
+                      {result.geminiAgents.validation.warnings.map((w: string, i: number) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Analysis Agent */}
+            {result.geminiAgents.analysis && (
+              <div className="rounded-2xl border theme-border theme-card p-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold theme-text">
+                    2. Reconciliation Analyst Agent
+                  </h4>
+                  <GeminiAgentStatusBadge status={result.geminiAgents.status?.analysis} />
+                </div>
+                <div className="mt-3 space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="theme-text-muted">Risk Level:</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
+                        result.geminiAgents.analysis.riskLevel === "high"
+                          ? "bg-gray-900/20 text-rose-300"
+                          : result.geminiAgents.analysis.riskLevel === "medium"
+                            ? "bg-amber-500/20 text-amber-300"
+                            : "bg-emerald-500/20 text-emerald-300"
+                      }`}
+                    >
+                      {result.geminiAgents.analysis.riskLevel}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="theme-text-muted">Material Variances:</span>
+                    <span className="font-semibold theme-text">
+                      {result.geminiAgents.analysis.materialVariances?.length || 0}
+                    </span>
+                  </div>
+                </div>
+                {result.geminiAgents.analysis.patterns && result.geminiAgents.analysis.patterns.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold uppercase text-purple-300">
+                      Patterns Detected
+                    </p>
+                    <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
+                      {result.geminiAgents.analysis.patterns.map((p: string, i: number) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Investigation Agent */}
+            {(result.geminiAgents.investigation?.investigations?.length ?? 0) > 0 && (
+              <div className="rounded-2xl border theme-border theme-card p-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold theme-text">
+                    3. Variance Investigator Agent
+                  </h4>
+                  <GeminiAgentStatusBadge status={result.geminiAgents.status?.investigation} />
+                </div>
+                <div className="mt-3 space-y-3">
+                  {result.geminiAgents.investigation?.investigations?.map(
+                    (inv: Investigation, i: number) => (
+                      <div key={i} className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
+                        <p className="font-semibold text-sm theme-text">
+                          Account: {inv.account} (Variance: ${inv.variance?.toFixed(2)})
+                        </p>
+                        {inv.possibleCauses && inv.possibleCauses.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs font-semibold uppercase text-orange-300">
+                              Possible Causes
+                            </p>
+                            <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
+                              {inv.possibleCauses.map((cause: string, j: number) => (
+                                <li key={j}>{cause}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {inv.suggestedActions && inv.suggestedActions.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs font-semibold uppercase text-orange-300">
+                              Suggested Actions
+                            </p>
+                            <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
+                              {inv.suggestedActions.map((action: string, j: number) => (
+                                <li key={j}>{action}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Report Agent */}
           {result.geminiAgents?.report && (

@@ -76,6 +76,10 @@ body {
   color: inherit;
 }
 
+[data-simple-mode="true"] .simple-hide {
+  display: none !important;
+}
+
 /* Theme utility classes */
 .theme-bg {
   background-color: var(--background);
