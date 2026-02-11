@@ -13,8 +13,16 @@ function getSimpleModeSnapshot(): SimpleModeState {
   }
   try {
     const stored = window.localStorage.getItem(SIMPLE_MODE_KEY);
-    return stored === "on" ? "on" : "off";
+    if (stored === "on" || stored === "off") {
+      return stored;
+    }
+    const attr = document.documentElement.getAttribute("data-simple-mode");
+    return attr === "true" ? "on" : "off";
   } catch {
+    const attr = document.documentElement.getAttribute("data-simple-mode");
+    if (attr === "true") {
+      return "on";
+    }
     return "off";
   }
 }
@@ -80,7 +88,7 @@ export function SimpleModeToggle() {
             ? "bg-gray-900 text-white"
             : "theme-text-muted hover:opacity-70"
         }`}
-        title="Standard mode (full color theme)"
+        title="Standard mode"
       >
         Standard
       </button>
@@ -91,7 +99,7 @@ export function SimpleModeToggle() {
             ? "bg-gray-900 text-white"
             : "theme-text-muted hover:opacity-70"
         }`}
-        title="Simple mode (reduced color)"
+        title="Simple mode"
       >
         Simple
       </button>
