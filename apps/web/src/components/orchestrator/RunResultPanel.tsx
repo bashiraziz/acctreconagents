@@ -110,7 +110,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
 
       {/* Timeline */}
       {result.timeline && result.timeline.length > 0 && (
-        <div className="simple-hide rounded-2xl border border-slate-800/80 bg-black/40 p-4">
+        <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
           <h3 className="text-sm font-semibold theme-text">
             Timeline - {formatRunLabel(result.runId)}
           </h3>
@@ -151,7 +151,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
       {/* Gemini Agent Results */}
       {result.geminiAgents && (
         <div className="space-y-4">
-          <div className="simple-hide space-y-4">
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold theme-text">
               Gemini AI Agent Results (FREE)
             </h3>
