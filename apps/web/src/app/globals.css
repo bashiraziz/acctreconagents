@@ -71,10 +71,6 @@ body {
   color: #94a3b8;
 }
 
-[data-simple-mode="true"] a {
-  color: inherit;
-}
-
 [data-simple-mode="true"] .simple-hide {
   display: none !important;
 }
