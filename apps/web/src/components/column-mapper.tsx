@@ -173,7 +173,7 @@ export function ColumnMapper() {
   const subledgerMissing = getMissingFields("subledger_balance");
 
   return (
-    <section className="rounded-3xl border theme-border bg-slate-950/60 p-5 sm:p-6">
+    <section className="rounded-3xl border theme-border theme-card p-5 sm:p-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="ui-kicker">
@@ -274,10 +274,10 @@ export function ColumnMapper() {
       )}
 
       {/* Apply Button */}
-      <div className="mt-6 rounded-2xl border border-sky-800/40 bg-sky-500/10 p-4">
+      <div className="mt-6 rounded-2xl border border-sky-500/30 bg-sky-500/10 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1">
-            <p className="font-semibold text-sky-100">
+            <p className="font-semibold theme-text">
               {canApply
                 ? "Ready to apply mappings"
                 : "Complete required mappings to continue"}
@@ -298,7 +298,7 @@ export function ColumnMapper() {
                 )}
               </div>
             )}
-            <p className="mt-1 text-sm text-sky-200/80">
+            <p className="mt-1 text-sm theme-text-muted">
               {session?.user
                 ? "Mappings are saved to your account"
                 : "Mappings are saved locally in your browser"}
@@ -307,7 +307,7 @@ export function ColumnMapper() {
           <button
             onClick={handleApplyMappings}
             disabled={!canApply}
-            className="rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 sm:ml-4"
+            className="rounded-full bg-sky-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-400 sm:ml-4"
           >
             Apply Mappings
           </button>
@@ -334,16 +334,16 @@ function MappingTab({
 }) {
   if (!file) {
     return (
-      <div className="rounded-2xl border theme-border bg-slate-900/40 p-8 text-center">
-        <p className="text-sm theme-text-muted">
-          No file uploaded for {fileType.replace("_", " ")}
-        </p>
-        <p className="mt-2 text-xs text-slate-500">
-          Upload a file in the Upload Workspace above
-        </p>
-      </div>
-    );
-  }
+    <div className="rounded-2xl border theme-border theme-muted p-8 text-center">
+      <p className="text-sm theme-text">
+        No file uploaded for {fileType.replace("_", " ")}
+      </p>
+      <p className="mt-2 text-xs theme-text-muted">
+        Upload a file in the Upload Workspace above
+      </p>
+    </div>
+  );
+}
 
   const handleFieldChange = (fieldKey: string, sourceColumn: string) => {
     onMappingChange({
@@ -381,10 +381,10 @@ function MappingTab({
       {/* Auto-Suggest Button */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm theme-text-muted">
             Detected {file.headers.length} columns in {file.name}
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs theme-text-muted">
             {file.rowCount} rows loaded
           </p>
         </div>
@@ -398,10 +398,10 @@ function MappingTab({
 
       {/* Required Fields */}
       <div>
-        <h3 className="text-sm font-semibold text-white">Required Fields</h3>
+        <h3 className="text-sm font-semibold theme-text">Required Fields</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {requiredFields.map((field) => (
-            <div key={field.key} className="rounded-xl border theme-border bg-slate-900/40 p-3">
+            <div key={field.key} className="rounded-xl border theme-border theme-muted p-3">
               <label className="block">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium theme-text">
@@ -410,12 +410,12 @@ function MappingTab({
                   <span className="text-xs text-rose-400">Required</span>
                 </div>
                 {field.description && (
-                  <p className="mt-1 text-xs text-slate-500">{field.description}</p>
+                  <p className="mt-1 text-xs theme-text-muted">{field.description}</p>
                 )}
                 <select
                   value={mapping[field.key] || ""}
                   onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                  className="mt-2 w-full rounded-lg border theme-border theme-card p-2 text-sm theme-text focus:border-sky-400 focus:outline-none"
                 >
                   <option value="">-- Select Column --</option>
                   {file.headers.map((header: string) => (
@@ -431,27 +431,27 @@ function MappingTab({
       </div>
 
       {/* Optional Fields */}
-      <details className="rounded-xl border theme-border bg-slate-900/40">
-        <summary className="cursor-pointer p-4 text-sm font-semibold text-slate-300 hover:text-white">
+      <details className="rounded-xl border theme-border theme-muted">
+        <summary className="cursor-pointer p-4 text-sm font-semibold theme-text hover:theme-text">
           Optional Fields ({optionalFields.length})
         </summary>
         <div className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
           {optionalFields.map((field) => (
-            <div key={field.key} className="rounded-xl border theme-border bg-slate-950/60 p-3">
+            <div key={field.key} className="rounded-xl border theme-border theme-card p-3">
               <label className="block">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium theme-text">
                     {field.label}
                   </span>
-                  <span className="text-xs text-slate-500">Optional</span>
+                  <span className="text-xs theme-text-muted">Optional</span>
                 </div>
                 {field.description && (
-                  <p className="mt-1 text-xs text-slate-500">{field.description}</p>
+                  <p className="mt-1 text-xs theme-text-muted">{field.description}</p>
                 )}
                 <select
                   value={mapping[field.key] || ""}
                   onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                  className="mt-2 w-full rounded-lg border theme-border theme-card p-2 text-sm theme-text focus:border-sky-400 focus:outline-none"
                 >
                   <option value="">-- Skip Field --</option>
                   {file.headers.map((header: string) => (
@@ -467,8 +467,8 @@ function MappingTab({
       </details>
 
       {/* Current Mappings Summary */}
-      <div className="rounded-xl border theme-border bg-slate-900/40 p-4">
-        <h4 className="text-sm font-semibold text-slate-300">Current Mappings</h4>
+      <div className="rounded-xl border theme-border theme-muted p-4">
+        <h4 className="text-sm font-semibold theme-text">Current Mappings</h4>
         <div className="mt-2 space-y-1 text-xs">
           {Object.entries(mapping)
             .filter(([, value]) => value)
@@ -480,7 +480,7 @@ function MappingTab({
               </div>
             ))}
           {Object.entries(mapping).filter(([, value]) => value).length === 0 && (
-            <p className="text-slate-500">No mappings set yet</p>
+            <p className="theme-text-muted">No mappings set yet</p>
           )}
         </div>
       </div>

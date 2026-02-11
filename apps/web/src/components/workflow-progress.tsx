@@ -65,11 +65,11 @@ export function WorkflowProgress() {
   };
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-950/60 p-5 sm:p-6">
-      <h3 className="ui-kicker text-slate-300">
+    <div className="rounded-3xl border theme-border theme-card p-5 sm:p-6">
+      <h3 className="ui-kicker theme-text-muted">
         Workflow Progress
       </h3>
-      <p className="ui-copy mt-2 text-slate-400">
+      <p className="ui-copy mt-2 theme-text-muted">
         Follow the sequence below to move from raw files to final reconciliation output.
       </p>
 
@@ -87,7 +87,7 @@ export function WorkflowProgress() {
                     ? "border-emerald-500/40 bg-emerald-500/10"
                     : status === "active"
                       ? "border-sky-500/40 bg-sky-500/10"
-                      : "border-slate-800 bg-slate-900/40"
+                      : "theme-border theme-muted"
                 }
               `}
             >
@@ -100,7 +100,7 @@ export function WorkflowProgress() {
                         ? "bg-emerald-500/20 text-emerald-300"
                         : status === "active"
                           ? "bg-sky-500/20 text-sky-300"
-                          : "bg-slate-800 text-slate-400"
+                        : "theme-muted theme-text-muted"
                     }
                   `}
                 >
@@ -117,7 +117,7 @@ export function WorkflowProgress() {
                             ? "text-emerald-100"
                             : status === "active"
                               ? "text-sky-100"
-                              : "text-slate-400"
+                              : "theme-text-muted"
                         }
                       `}
                     >
@@ -127,7 +127,7 @@ export function WorkflowProgress() {
                       <span className="text-xs text-emerald-400">Done</span>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">{step.description}</p>
+                  <p className="mt-1 text-xs theme-text-muted">{step.description}</p>
                 </div>
               </div>
 
@@ -140,7 +140,7 @@ export function WorkflowProgress() {
                         ? "bg-emerald-500/20 text-emerald-300"
                         : status === "active"
                           ? "bg-sky-500/20 text-sky-300"
-                          : "bg-slate-800 text-slate-500"
+                        : "theme-muted theme-text-muted"
                     }
                   `}
                 >
@@ -156,7 +156,7 @@ export function WorkflowProgress() {
                 <div
                   className={`
                     absolute right-0 top-1/2 hidden h-0.5 w-full -translate-y-1/2 sm:block
-                    ${status === "complete" ? "bg-emerald-500/40" : "bg-slate-800"}
+                    ${status === "complete" ? "bg-emerald-500/40" : "bg-slate-300/70"}
                   `}
                   style={{ width: "calc(100% + 0.75rem)", left: "100%" }}
                 />
