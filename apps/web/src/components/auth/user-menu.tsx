@@ -24,7 +24,7 @@ export function UserMenu() {
     return (
       <Link
         href="/sign-in"
-        className="rounded-lg border theme-border theme-card px-4 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
+        className="auth-nav-link rounded-lg px-4 py-2 text-sm font-medium transition-colors hover:theme-muted"
       >
         Sign in
       </Link>

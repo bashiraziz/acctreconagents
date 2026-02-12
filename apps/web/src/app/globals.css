@@ -152,6 +152,24 @@ body {
   line-height: 1.6;
 }
 
+/* Header auth link */
+.auth-nav-link {
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--foreground);
+}
+
+[data-theme="light"] .auth-nav-link {
+  background: #ffffff;
+  color: #111827;
+}
+
+[data-theme="medium-dark"] .auth-nav-link,
+[data-theme="dark"] .auth-nav-link {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
 /* Small tooltip helper */
 .ui-tooltip {
   position: relative;
