@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useFileUploadStore } from "@/store/fileUploadStore";
 import { useAgentRunStore } from "@/store/agentRunStore";
 import { useUserPreferencesStore } from "@/store/userPreferencesStore";
+import { useSession } from "@/lib/auth-client";
 import type { OrchestratorResponse, UserOrganization } from "@/types/reconciliation";
 import type { AgentError } from "./ErrorDisplay";
 import type { OrchestratorFormHandle } from "./OrchestratorForm";
@@ -129,6 +130,7 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
   const [organizations, setOrganizations] = useState<UserOrganization[]>([]);
   const [isOrganizationsLoading, setIsOrganizationsLoading] = useState(false);
   const [selectedOrganizationId, setSelectedOrganizationId] = useState("");
+  const { data: session, isPending: isSessionPending } = useSession();
 
   // New domain-specific stores
   const reconciliationData = useFileUploadStore((state) => state.reconciliationData);
@@ -149,14 +151,19 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
   }, [reconciliationData]);
 
   useEffect(() => {
+    if (isSessionPending) return;
+    if (!session?.user) {
+      setOrganizations([]);
+      setSelectedOrganizationId("");
+      setIsOrganizationsLoading(false);
+      return;
+    }
+
     let isMounted = true;
     const loadOrganizations = async () => {
       setIsOrganizationsLoading(true);
       try {
         const response = await fetch("/api/user/organizations");
-        if (response.status === 401) {
-          return;
-        }
         const data = await response.json();
         if (!response.ok) {
           return;
@@ -179,7 +186,7 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [session?.user, isSessionPending]);
 
   const selectedOrganizationName = useMemo(() => {
     if (!selectedOrganizationId) return undefined;
