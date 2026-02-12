@@ -63,9 +63,7 @@ export default function Home() {
                 <span className="ml-2 hidden sm:inline">GitHub</span>
               </Link>
               <Link
-                href="https://github.com/bashiraziz/acctreconagents/blob/main/USER_GUIDE.md"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/user-guide"
                 className="rounded-lg border theme-border theme-card px-4 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
               >
                 User Guide
@@ -125,9 +123,7 @@ export default function Home() {
               </Link>
               <span className="text-sm theme-text-muted">|</span>
               <Link
-                href="https://github.com/bashiraziz/acctreconagents/blob/main/USER_GUIDE.md"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/user-guide"
                 className="text-sm font-medium theme-text hover:text-amber-500 transition-colors"
               >
                 Documentation
