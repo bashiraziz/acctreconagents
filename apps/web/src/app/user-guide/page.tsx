@@ -43,6 +43,9 @@ export default async function UserGuidePage() {
               <p className="mt-1 text-sm theme-text-muted">
                 Read the guide here and return without using the browser back button.
               </p>
+              <p className="mt-2 text-xs theme-text-muted">
+                Prefer the repo view? Use “View on GitHub”.
+              </p>
             </div>
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/main/USER_GUIDE.md"
