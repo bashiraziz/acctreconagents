@@ -152,6 +152,115 @@ body {
   line-height: 1.6;
 }
 
+/* User guide typography */
+.guide-content {
+  color: var(--foreground);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.guide-content h1,
+.guide-content h2,
+.guide-content h3,
+.guide-content h4 {
+  color: var(--foreground);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 1.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.guide-content h1 {
+  font-size: 1.8rem;
+}
+
+.guide-content h2 {
+  font-size: 1.4rem;
+}
+
+.guide-content h3 {
+  font-size: 1.1rem;
+}
+
+.guide-content p {
+  margin: 0.5rem 0;
+  color: var(--muted-text);
+}
+
+.guide-content strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.guide-content ul,
+.guide-content ol {
+  margin: 0.6rem 0 0.9rem 1.3rem;
+  color: var(--muted-text);
+}
+
+.guide-content li + li {
+  margin-top: 0.35rem;
+}
+
+.guide-content a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.guide-content a:hover {
+  opacity: 0.85;
+}
+
+.guide-content hr {
+  border: none;
+  border-top: 1px solid var(--card-border);
+  margin: 1.4rem 0;
+}
+
+.guide-content code {
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.35rem;
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 0.85em;
+}
+
+.guide-content pre {
+  overflow-x: auto;
+  border-radius: 0.6rem;
+  padding: 0.9rem;
+  background: var(--muted);
+  color: var(--foreground);
+  border: 1px solid var(--card-border);
+}
+
+.guide-content blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--card-border);
+  color: var(--muted-text);
+}
+
+.guide-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8rem 0 1.2rem;
+  font-size: 0.92rem;
+}
+
+.guide-content th,
+.guide-content td {
+  border: 1px solid var(--card-border);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+}
+
+.guide-content th {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
 /* Header auth link */
 .auth-nav-link {
   border: 1px solid var(--card-border);

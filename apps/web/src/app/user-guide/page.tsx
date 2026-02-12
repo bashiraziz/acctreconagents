@@ -59,9 +59,11 @@ export default async function UserGuidePage() {
         </header>
 
         <section className="theme-card theme-border rounded-3xl border p-6">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {content}
-          </ReactMarkdown>
+          <article className="guide-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {content}
+            </ReactMarkdown>
+          </article>
         </section>
       </main>
     </div>
