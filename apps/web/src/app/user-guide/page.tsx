@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { promises as fs } from "fs";
@@ -36,9 +37,19 @@ function slugifyHeading(text: string) {
     .replace(/\s+/g, "-");
 }
 
+function createSlugger() {
+  const counts = new Map<string, number>();
+  return (text: string) => {
+    const base = slugifyHeading(text);
+    const nextCount = (counts.get(base) ?? 0) + 1;
+    counts.set(base, nextCount);
+    return nextCount > 1 ? `${base}-${nextCount}` : base;
+  };
+}
+
 function extractHeadings(markdown: string): GuideHeading[] {
   const headings: GuideHeading[] = [];
-  const counts = new Map<string, number>();
+  const slugger = createSlugger();
   const lines = markdown.split("\n");
 
   for (const line of lines) {
@@ -47,20 +58,27 @@ function extractHeadings(markdown: string): GuideHeading[] {
     const level = match[1].length;
     const text = match[2].trim();
     if (!text) continue;
-    const base = slugifyHeading(text);
-    const nextCount = (counts.get(base) ?? 0) + 1;
-    counts.set(base, nextCount);
-    const id = nextCount > 1 ? `${base}-${nextCount}` : base;
-    headings.push({ id, level, text });
+    headings.push({ id: slugger(text), level, text });
   }
 
   return headings;
 }
 
+function extractText(node: ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (node && typeof node === "object" && "props" in node) {
+    const props = node.props as { children?: React.ReactNode };
+    return extractText(props.children);
+  }
+  return "";
+}
+
 export default async function UserGuidePage() {
   const content = await loadUserGuide();
   const headings = extractHeadings(content);
-  let headingIndex = 0;
+  const slugger = createSlugger();
 
   return (
     <div className="min-h-screen theme-bg">
@@ -101,33 +119,21 @@ export default async function UserGuidePage() {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  h1: ({ children }) => {
-                    const heading = headings[headingIndex];
-                    headingIndex += 1;
-                    return (
-                      <h1 id={heading?.id} className="scroll-mt-24">
-                        {children}
-                      </h1>
-                    );
-                  },
-                  h2: ({ children }) => {
-                    const heading = headings[headingIndex];
-                    headingIndex += 1;
-                    return (
-                      <h2 id={heading?.id} className="scroll-mt-24">
-                        {children}
-                      </h2>
-                    );
-                  },
-                  h3: ({ children }) => {
-                    const heading = headings[headingIndex];
-                    headingIndex += 1;
-                    return (
-                      <h3 id={heading?.id} className="scroll-mt-24">
-                        {children}
-                      </h3>
-                    );
-                  },
+                  h1: ({ children }) => (
+                    <h1 id={slugger(extractText(children))} className="scroll-mt-24">
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 id={slugger(extractText(children))} className="scroll-mt-24">
+                      {children}
+                    </h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 id={slugger(extractText(children))} className="scroll-mt-24">
+                      {children}
+                    </h3>
+                  ),
                 }}
               >
                 {content}
