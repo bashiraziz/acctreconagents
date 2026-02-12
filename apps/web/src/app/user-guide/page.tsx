@@ -1,16 +1,10 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { promises as fs } from "fs";
 import path from "path";
-
-type GuideHeading = {
-  id: string;
-  level: number;
-  text: string;
-  displayText: string;
-};
+import { createSlugger, extractUserGuideTocHeadings } from "@/lib/user-guide-headings";
 
 async function loadUserGuide(): Promise<string> {
   const cwd = process.cwd();
@@ -30,53 +24,6 @@ async function loadUserGuide(): Promise<string> {
   return "# User Guide\n\nUser guide file not found in this build.";
 }
 
-function slugifyHeading(text: string) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-");
-}
-
-function cleanHeadingText(text: string) {
-  let cleaned = text.replace(/\*\*/g, "").trim();
-  cleaned = cleaned.replace(/^"+|"+$/g, "");
-  cleaned = cleaned.replace(/^\d+\.\s+/, "");
-  return cleaned;
-}
-
-function createSlugger() {
-  const counts = new Map<string, number>();
-  return (text: string) => {
-    const base = slugifyHeading(text);
-    const nextCount = (counts.get(base) ?? 0) + 1;
-    counts.set(base, nextCount);
-    return nextCount > 1 ? `${base}-${nextCount}` : base;
-  };
-}
-
-function extractHeadings(markdown: string): GuideHeading[] {
-  const headings: GuideHeading[] = [];
-  const slugger = createSlugger();
-  const lines = markdown.split("\n");
-
-  for (const line of lines) {
-    const match = line.match(/^(#{1,3})\s+(.*)$/);
-    if (!match) continue;
-    const level = match[1].length;
-    const text = match[2].trim();
-    if (!text) continue;
-    headings.push({
-      id: slugger(text),
-      level,
-      text,
-      displayText: cleanHeadingText(text),
-    });
-  }
-
-  return headings;
-}
-
 function extractText(node: ReactNode): string {
   if (typeof node === "string") return node;
   if (typeof node === "number") return String(node);
@@ -90,7 +37,7 @@ function extractText(node: ReactNode): string {
 
 export default async function UserGuidePage() {
   const content = await loadUserGuide();
-  const headings = extractHeadings(content);
+  const headings = extractUserGuideTocHeadings(content);
   const slugger = createSlugger();
 
   return (
@@ -103,7 +50,7 @@ export default async function UserGuidePage() {
                 href="/"
                 className="text-sm font-medium text-amber-500 hover:text-amber-400"
               >
-                ← Back to app
+                &lt;- Back to app
               </Link>
               <h1 className="mt-2 text-2xl font-bold theme-text sm:text-3xl">
                 User Guide
@@ -112,7 +59,7 @@ export default async function UserGuidePage() {
                 Read the guide here and return without using the browser back button.
               </p>
               <p className="mt-2 text-xs theme-text-muted">
-                Prefer the repo view? Use “View on GitHub”.
+                Prefer the repo view? Use "View on GitHub".
               </p>
             </div>
             <Link
@@ -167,11 +114,9 @@ export default async function UserGuidePage() {
                     key={heading.id}
                     href={`#${heading.id}`}
                     className={`block rounded-lg px-2 py-1 transition hover:theme-muted ${
-                      heading.level === 1
-                        ? "font-semibold theme-text"
-                        : heading.level === 2
-                          ? "theme-text"
-                          : "pl-4 text-xs theme-text-muted"
+                      heading.level === 2
+                        ? "theme-text"
+                        : "pl-4 text-xs theme-text-muted"
                     }`}
                   >
                     {heading.displayText}

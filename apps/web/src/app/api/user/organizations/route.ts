@@ -21,7 +21,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     console.warn("Auth session lookup failed:", error);
   }
   if (!session?.user) {
-    return ApiErrors.unauthorized();
+    return NextResponse.json({ organizations: [] });
   }
 
   const organizations = await getUserOrganizations(session.user.id);
