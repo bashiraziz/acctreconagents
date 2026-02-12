@@ -67,8 +67,9 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
     strong: ({ children }) => (
       <strong className="font-semibold theme-text">{children}</strong>
     ),
-    code: ({ inline, className, children }) =>
-      inline ? (
+    code: ({ className, children }) => {
+      const isInline = !className;
+      return isInline ? (
         <code className="rounded bg-slate-900/60 px-1 py-0.5 text-xs text-slate-100">
           {children}
         </code>
@@ -76,7 +77,8 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
         <pre className="overflow-x-auto rounded-lg bg-slate-950/80 p-3 text-xs text-slate-100">
           <code className={className}>{children}</code>
         </pre>
-      ),
+      );
+    },
   };
 
   return (
