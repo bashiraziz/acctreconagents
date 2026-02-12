@@ -80,7 +80,8 @@ export function SimpleModeToggle() {
   }, [simpleMode]);
 
   return (
-    <div className="flex items-center gap-1 rounded border theme-border theme-card p-1">
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 rounded border theme-border theme-card p-1">
       <button
         onClick={() => updateSimpleMode("off")}
         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
@@ -103,6 +104,15 @@ export function SimpleModeToggle() {
       >
         Simple
       </button>
+      </div>
+      <span
+        className="ui-tooltip inline-flex h-7 w-7 items-center justify-center rounded-full border theme-border theme-card text-xs font-semibold theme-text-muted"
+        data-tooltip="Standard: full color and detail. Simple: reduced color and visual noise."
+        aria-label="Standard vs Simple modes"
+        tabIndex={0}
+      >
+        ?
+      </span>
     </div>
   );
 }
