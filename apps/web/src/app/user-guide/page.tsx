@@ -9,6 +9,7 @@ type GuideHeading = {
   id: string;
   level: number;
   text: string;
+  displayText: string;
 };
 
 async function loadUserGuide(): Promise<string> {
@@ -37,6 +38,13 @@ function slugifyHeading(text: string) {
     .replace(/\s+/g, "-");
 }
 
+function cleanHeadingText(text: string) {
+  let cleaned = text.replace(/\*\*/g, "").trim();
+  cleaned = cleaned.replace(/^"+|"+$/g, "");
+  cleaned = cleaned.replace(/^\d+\.\s+/, "");
+  return cleaned;
+}
+
 function createSlugger() {
   const counts = new Map<string, number>();
   return (text: string) => {
@@ -58,7 +66,12 @@ function extractHeadings(markdown: string): GuideHeading[] {
     const level = match[1].length;
     const text = match[2].trim();
     if (!text) continue;
-    headings.push({ id: slugger(text), level, text });
+    headings.push({
+      id: slugger(text),
+      level,
+      text,
+      displayText: cleanHeadingText(text),
+    });
   }
 
   return headings;
@@ -161,7 +174,7 @@ export default async function UserGuidePage() {
                           : "pl-4 text-xs theme-text-muted"
                     }`}
                   >
-                    {heading.text}
+                    {heading.displayText}
                   </a>
                 ))}
               </nav>
