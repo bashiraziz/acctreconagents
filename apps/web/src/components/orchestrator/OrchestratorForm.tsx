@@ -185,7 +185,7 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
               type="button"
               onClick={onRun}
               disabled={!hasData || isLoading}
-              className="rounded bg-gradient-to-r from-amber-500 to-yellow-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:from-amber-600 hover:to-yellow-600 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400"
+              className="illuminate-btn rounded px-6 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed"
             >
               {isLoading ? "Illuminating..." : "Illuminate"}
             </button>

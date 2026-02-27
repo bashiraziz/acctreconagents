@@ -50,7 +50,7 @@ export function UserMenu() {
           await signOut();
           router.refresh();
         }}
-        className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-sm font-medium dark:text-rose-100 text-rose-900 hover:bg-rose-500/20 transition-colors"
+        className="auth-signout-btn rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
       >
         Sign out
       </button>

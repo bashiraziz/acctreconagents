@@ -310,6 +310,30 @@ body {
   color: #f8fafc;
 }
 
+/* Header sign-out action */
+.auth-signout-btn {
+  border-color: #fb718566;
+  background: #fb71851a;
+}
+
+[data-theme="light"] .auth-signout-btn {
+  color: #9f1239;
+}
+
+[data-theme="light"] .auth-signout-btn:hover {
+  background: #fb718529;
+}
+
+[data-theme="medium-dark"] .auth-signout-btn,
+[data-theme="dark"] .auth-signout-btn {
+  color: #fecdd3;
+}
+
+[data-theme="medium-dark"] .auth-signout-btn:hover,
+[data-theme="dark"] .auth-signout-btn:hover {
+  background: #fb718533;
+}
+
 /* Small tooltip helper */
 .ui-tooltip {
   position: relative;
@@ -505,6 +529,38 @@ body {
 .ui-neutral-btn:hover,
 .preview-toggle-btn:hover {
   background: var(--muted);
+}
+
+/* Primary illuminate CTA */
+.illuminate-btn {
+  background: #e6a700;
+  color: #111827;
+  box-shadow: 0 4px 12px rgba(230, 167, 0, 0.25);
+}
+
+.illuminate-btn:hover:not(:disabled) {
+  background: #c98900;
+}
+
+.illuminate-btn:active:not(:disabled) {
+  background: #a66e00;
+}
+
+.illuminate-btn:focus-visible {
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
+}
+
+.illuminate-btn:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  box-shadow: none;
+}
+
+[data-theme="medium-dark"] .illuminate-btn:disabled,
+[data-theme="dark"] .illuminate-btn:disabled {
+  background: #475569;
+  color: #94a3b8;
 }
 
 /* Validation badges */

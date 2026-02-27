@@ -163,7 +163,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                   {entry.stage.replace(/_/g, " ")}
                 </span>
                 <span className="text-xs font-medium uppercase theme-text">
-                  {entry.status}
+                  {formatTimelineStatus(entry.stage, entry.status)}
                 </span>
               </div>
               <p className="mt-1 text-xs theme-text-muted">{entry.detail}</p>
@@ -519,6 +519,13 @@ function formatRunLabel(runId: string) {
     return "Recent run";
   }
   return `Run on ${date.toLocaleString()}`;
+}
+
+function formatTimelineStatus(stage: string, status: string) {
+  if (stage.endsWith("_start") && status === "in_progress") {
+    return "started";
+  }
+  return status;
 }
 
 
