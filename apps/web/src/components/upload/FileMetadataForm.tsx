@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * File Metadata Form Component
@@ -37,7 +37,7 @@ export function FileMetadataForm({
   const reverseSign = metadata.reverseSign ?? false;
 
   return (
-    <div className="mt-4 border-t border-emerald-500/20 pt-4">
+    <div className="upload-meta-divider mt-4 border-t pt-4">
       {/* Accounting System Selector */}
       <AccountingSystemSelector
         value={accountingSystem}
@@ -50,9 +50,9 @@ export function FileMetadataForm({
         {/* Account Code - Only for subledger */}
         {isSubledger && (
           <div>
-            <label className="block text-xs font-medium text-emerald-200 mb-2">
+            <label className="upload-meta-label mb-2 block text-xs font-medium">
               Account Code
-              <span className="ml-1 text-emerald-300/60">(if missing in file)</span>
+              <span className="upload-meta-hint ml-1">(if missing in file)</span>
             </label>
             <input
               type="text"
@@ -64,9 +64,9 @@ export function FileMetadataForm({
                   accountCode: e.target.value || undefined,
                 })
               }
-              className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 placeholder-emerald-300/30 focus:border-emerald-400 focus:outline-none"
+              className="upload-meta-input w-full rounded border px-3 py-2 text-sm focus:outline-none"
             />
-            <p className="mt-1 text-xs text-emerald-300/50">
+            <p className="upload-meta-hint mt-1 text-xs">
               Leave blank if account code is in the file
             </p>
           </div>
@@ -74,9 +74,9 @@ export function FileMetadataForm({
 
         {/* Period */}
         <div>
-          <label className="block text-xs font-medium text-emerald-200 mb-2">
+          <label className="upload-meta-label mb-2 block text-xs font-medium">
             Period (YYYY-MM)
-            <span className="ml-1 text-emerald-300/60">(if missing in file)</span>
+            <span className="upload-meta-hint ml-1">(if missing in file)</span>
           </label>
           <input
             type="text"
@@ -88,16 +88,16 @@ export function FileMetadataForm({
                 period: e.target.value || undefined,
               })
             }
-            className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 placeholder-emerald-300/30 focus:border-emerald-400 focus:outline-none"
+            className="upload-meta-input w-full rounded border px-3 py-2 text-sm focus:outline-none"
           />
-          <p className="mt-1 text-xs text-emerald-300/50">
+          <p className="upload-meta-hint mt-1 text-xs">
             Auto-detected from filename or leave blank if in file
           </p>
         </div>
 
         {/* Currency */}
         <div>
-          <label className="block text-xs font-medium text-emerald-200 mb-2">
+          <label className="upload-meta-label mb-2 block text-xs font-medium">
             Currency
           </label>
           <input
@@ -110,16 +110,14 @@ export function FileMetadataForm({
                 currency: e.target.value || undefined,
               })
             }
-            className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 placeholder-emerald-300/30 focus:border-emerald-400 focus:outline-none"
+            className="upload-meta-input w-full rounded border px-3 py-2 text-sm focus:outline-none"
           />
-          <p className="mt-1 text-xs text-emerald-300/50">
-            Default: USD
-          </p>
+          <p className="upload-meta-hint mt-1 text-xs">Default: USD</p>
         </div>
 
         {/* Reverse Sign */}
         <div className="flex items-center">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               checked={reverseSign}
@@ -129,15 +127,11 @@ export function FileMetadataForm({
                   reverseSign: e.target.checked,
                 });
               }}
-              className="h-4 w-4 rounded border-emerald-500/30 bg-emerald-500/5 text-emerald-500 focus:ring-emerald-500"
+              className="upload-meta-checkbox h-4 w-4 rounded"
             />
-            <span className="text-xs font-medium text-emerald-200">
-              Reverse Sign
-            </span>
+            <span className="upload-meta-label text-xs font-medium">Reverse Sign</span>
           </label>
-          <p className="ml-2 text-xs text-emerald-300/50">
-            (multiply amounts by -1)
-          </p>
+          <p className="upload-meta-hint ml-2 text-xs">(multiply amounts by -1)</p>
         </div>
       </div>
     </div>

@@ -404,3 +404,112 @@ body {
 [data-theme="dark"] .auth-success-body {
   color: #bbf7d0;
 }
+
+/* Upload success + metadata form */
+.upload-success-card {
+  border-color: #34d39966;
+  background: #10b9811a;
+}
+
+.upload-success-icon {
+  background: #10b98133;
+  color: #047857;
+}
+
+.upload-success-title {
+  color: #065f46;
+}
+
+.upload-success-body {
+  color: #047857;
+}
+
+.upload-meta-divider {
+  border-color: #34d39980;
+}
+
+.upload-meta-label {
+  color: #065f46;
+}
+
+.upload-meta-hint {
+  color: #047857;
+}
+
+.upload-meta-input {
+  border-color: #34d39999;
+  background: #ffffff;
+  color: #111827;
+}
+
+.upload-meta-input::placeholder {
+  color: #6b7280;
+}
+
+.upload-meta-input:focus {
+  border-color: #10b981;
+}
+
+.upload-meta-checkbox {
+  border-color: #34d39999;
+  background: #ffffff;
+  color: #10b981;
+  accent-color: #10b981;
+}
+
+[data-theme="medium-dark"] .upload-success-card,
+[data-theme="dark"] .upload-success-card {
+  border-color: #34d39966;
+  background: #10b9811a;
+}
+
+[data-theme="medium-dark"] .upload-success-icon,
+[data-theme="dark"] .upload-success-icon {
+  background: #10b98133;
+  color: #a7f3d0;
+}
+
+[data-theme="medium-dark"] .upload-success-title,
+[data-theme="dark"] .upload-success-title {
+  color: #d1fae5;
+}
+
+[data-theme="medium-dark"] .upload-success-body,
+[data-theme="dark"] .upload-success-body {
+  color: #a7f3d0;
+}
+
+[data-theme="medium-dark"] .upload-meta-divider,
+[data-theme="dark"] .upload-meta-divider {
+  border-color: #34d39955;
+}
+
+[data-theme="medium-dark"] .upload-meta-label,
+[data-theme="dark"] .upload-meta-label {
+  color: #d1fae5;
+}
+
+[data-theme="medium-dark"] .upload-meta-hint,
+[data-theme="dark"] .upload-meta-hint {
+  color: #a7f3d0;
+}
+
+[data-theme="medium-dark"] .upload-meta-input,
+[data-theme="dark"] .upload-meta-input {
+  border-color: #34d39966;
+  background: #10b9810f;
+  color: #ecfdf5;
+}
+
+[data-theme="medium-dark"] .upload-meta-input::placeholder,
+[data-theme="dark"] .upload-meta-input::placeholder {
+  color: #6ee7b7;
+}
+
+[data-theme="medium-dark"] .upload-meta-checkbox,
+[data-theme="dark"] .upload-meta-checkbox {
+  border-color: #34d39966;
+  background: #10b9810f;
+  color: #34d399;
+  accent-color: #34d399;
+}

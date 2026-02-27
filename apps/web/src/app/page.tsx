@@ -177,6 +177,37 @@ function AboutPanel() {
 
           <details className="rounded border theme-border theme-muted p-3">
             <summary className="cursor-pointer text-sm font-medium theme-text">
+              What are Claude Skills?
+            </summary>
+            <div className="mt-2 space-y-2 text-xs theme-text-muted">
+              <p>
+                Claude Skills are task-specific instructions and workflows that act like reusable
+                subagents for focused reconciliation jobs.
+              </p>
+              <p className="font-medium theme-text">They define:</p>
+              <ul className="list-disc space-y-1 pl-4">
+                <li>
+                  <span className="font-medium">Specialized Logic</span>: Domain-specific steps for
+                  mapping, validation, and variance investigation
+                </li>
+                <li>
+                  <span className="font-medium">Operational Guardrails</span>: Consistent rules for
+                  handling inputs, edge cases, and error recovery
+                </li>
+                <li>
+                  <span className="font-medium">Reusable Workflows</span>: Repeatable agent behaviors
+                  that reduce manual prompt engineering
+                </li>
+              </ul>
+              <p>
+                In this app, Claude Skills support parts of the AI pipeline where structured,
+                predictable behavior improves reconciliation quality and consistency.
+              </p>
+            </div>
+          </details>
+
+          <details className="rounded border theme-border theme-muted p-3">
+            <summary className="cursor-pointer text-sm font-medium theme-text">
               What are Spec-Kit contracts?
             </summary>
             <div className="mt-2 space-y-2 text-xs theme-text-muted">
@@ -245,6 +276,27 @@ function AboutPanel() {
           {specMetadata.summary} Reports include Organization (if set), Reporting Period, and Report Generated On.
         </p>
         <div className="mt-4 space-y-4">
+          <div>
+            <p className="text-xs font-medium uppercase theme-text-muted">Application Entities</p>
+            <ul className="mt-2 space-y-1 text-sm theme-text">
+              <li className="flex items-center justify-between">
+                <span>user organizations</span>
+                <span className="text-xs theme-text-muted">persistent</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>default organization per user</span>
+                <span className="text-xs theme-text-muted">supported</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>organization defaults (materiality, prompt)</span>
+                <span className="text-xs theme-text-muted">supported</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>per-run organization selection</span>
+                <span className="text-xs theme-text-muted">supported</span>
+              </li>
+            </ul>
+          </div>
           <div>
             <p className="text-xs font-medium uppercase theme-text-muted">Balance Fields</p>
             <ul className="mt-2 space-y-1 text-sm theme-text">

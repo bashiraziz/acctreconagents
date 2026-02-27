@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * Accounting System Selector Component
@@ -31,14 +31,14 @@ export function AccountingSystemSelector({
 }: AccountingSystemSelectorProps) {
   return (
     <div className={className}>
-      <label className="block text-xs font-medium text-emerald-200 mb-2">
+      <label className="upload-meta-label mb-2 block text-xs font-medium">
         Accounting System
-        <span className="ml-1 text-emerald-300/60">(for better parsing)</span>
+        <span className="upload-meta-hint ml-1">(for better parsing)</span>
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as AccountingSystem)}
-        className="w-full rounded border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-100 focus:border-emerald-400 focus:outline-none [&>option]:text-slate-900 [&>option]:bg-white"
+        className="upload-meta-input w-full rounded border px-3 py-2 text-sm focus:outline-none"
       >
         <option value="auto">Auto-detect (recommended)</option>
         <option value="quickbooks">QuickBooks</option>
@@ -49,9 +49,7 @@ export function AccountingSystemSelector({
         <option value="xero">Xero</option>
         <option value="generic">Generic / Other</option>
       </select>
-      <p className="mt-1 text-xs text-emerald-300/50">
-        {SYSTEM_DESCRIPTIONS[value]}
-      </p>
+      <p className="upload-meta-hint mt-1 text-xs">{SYSTEM_DESCRIPTIONS[value]}</p>
     </div>
   );
 }

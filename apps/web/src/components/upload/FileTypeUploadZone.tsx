@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * File Type Upload Zone Component
@@ -47,25 +47,27 @@ export function FileTypeUploadZone({
     return (
       <div className="rounded border border-red-500/40 bg-red-500/10 p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500/20 dark:text-red-400 text-red-700">
-              ✕
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold dark:text-red-100 text-red-900">{label}</p>
-              <p className="mt-0.5 text-xs dark:text-red-200/80 text-red-800 truncate">
-                {uploadRecord.name}
-              </p>
-              {uploadRecord.message && (
-                <p className="mt-1 text-xs dark:text-red-300 text-red-700">
-                  Error: {uploadRecord.message}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500/20 text-red-700 dark:text-red-400">
+                ×
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-red-900 dark:text-red-100">{label}</p>
+                <p className="mt-0.5 truncate text-xs text-red-800 dark:text-red-200/80">
+                  {uploadRecord.name}
                 </p>
-              )}
+                {uploadRecord.message && (
+                  <p className="mt-1 text-xs text-red-700 dark:text-red-300">
+                    Error: {uploadRecord.message}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-          <div className="flex gap-2 flex-shrink-0">
+          <div className="flex flex-shrink-0 gap-2">
             <label className="cursor-pointer">
-              <div className="rounded border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs font-medium dark:text-blue-200 text-blue-900 transition hover:bg-blue-500/20">
+              <div className="rounded border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-900 transition hover:bg-blue-500/20 dark:text-blue-200">
                 Try Again
               </div>
               <input
@@ -90,15 +92,15 @@ export function FileTypeUploadZone({
   if (uploadedFile) {
     // Show uploaded file info + metadata form
     return (
-      <div className="rounded border border-emerald-500/40 bg-emerald-500/10 p-4">
+      <div className="upload-success-card rounded border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+            <div className="upload-success-icon flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
               ✓
             </div>
             <div>
-              <p className="text-sm font-semibold text-emerald-100">{label}</p>
-              <p className="mt-0.5 text-xs text-emerald-200/80">
+              <p className="upload-success-title text-sm font-semibold">{label}</p>
+              <p className="upload-success-body mt-0.5 text-xs">
                 {uploadedFile.name} • {uploadedFile.rowCount} rows × {uploadedFile.columnCount} columns
               </p>
             </div>

@@ -3,6 +3,16 @@
   "name": "acctrecon-cleanroom",
   "version": "0.1.0",
   "summary": "Agentic reconciliation workspace that ingests GL/subledger data, maps heterogeneous headers, and coordinates AI subagents.",
+  "uiPrinciples": [
+    {
+      "name": "minimal_color_feedback",
+      "rules": [
+        "Use neutral surfaces and typography for default layout.",
+        "Use color only for state and severity (success, warning, error).",
+        "Prioritize readable contrast in light, medium-dark, and dark themes."
+      ]
+    }
+  ],
   "actors": [
     {
       "name": "operations_analyst",
