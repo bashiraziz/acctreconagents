@@ -580,7 +580,7 @@ Processed ${localOutput.reconciliations.length} accounts with materiality thresh
   }
 }
 
-function formatReportingPeriod(periods: string[]) {
+function formatReportingPeriod(periods: string[]): string | null {
   if (periods.length === 0) return null;
   const normalized = periods
     .map((period) => period.trim())
@@ -592,8 +592,11 @@ function formatReportingPeriod(periods: string[]) {
     .filter((label): label is string => Boolean(label));
 
   if (formatted.length === 0) return null;
-  if (formatted.length === 1) return formatted[0];
-  return `${formatted[0]} – ${formatted[formatted.length - 1]}`;
+  if (formatted.length === 1) return formatted[0] ?? null;
+  const first = formatted[0];
+  const last = formatted[formatted.length - 1];
+  if (!first || !last) return null;
+  return `${first} - ${last}`;
 }
 
 function toMonthYear(period: string) {

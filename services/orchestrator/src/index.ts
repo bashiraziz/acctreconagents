@@ -232,8 +232,13 @@ fastify.post("/agent/report", async (request, reply) => {
     investigationResult,
     organizationName,
   } = parsed.data;
+  const reportAgentInput = {
+    userPrompt,
+    payload: {},
+    ...(typeof organizationName === "string" ? { organizationName } : {}),
+  };
   const reportResult = await runReportAgent(
-    { userPrompt, payload: {}, organizationName },
+    reportAgentInput,
     toolOutput,
     validationResult ?? null,
     analysisResult ?? null,
@@ -390,7 +395,14 @@ async function orchestrateRun(input: RunInput) {
         timestamp: new Date().toISOString(),
       });
 
-      geminiAgentResults = await runGeminiAgentPipeline(input, localToolOutput);
+      const geminiPipelineInput = {
+        userPrompt: input.userPrompt,
+        payload: input.payload,
+        ...(typeof input.organizationName === "string"
+          ? { organizationName: input.organizationName }
+          : {}),
+      };
+      geminiAgentResults = await runGeminiAgentPipeline(geminiPipelineInput, localToolOutput);
 
       timeline.push({
         stage: "gemini_agents_complete",
