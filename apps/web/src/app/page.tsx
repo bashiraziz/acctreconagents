@@ -162,7 +162,7 @@ function AboutPanel() {
           <li>Frontend: Next.js web app | Backend: Fastify orchestrator</li>
           <li>Runtime: Gemini by default, with optional OpenAI and Claude integration</li>
         </ul>
-        <p className="mt-2 text-xs theme-text-muted">
+        <p className="simple-only mt-2 text-xs theme-text-muted">
           For full technical details, turn off Simple mode or open the User Guide.
         </p>
       </div>

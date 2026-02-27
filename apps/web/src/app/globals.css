@@ -75,6 +75,14 @@ body {
   display: none !important;
 }
 
+.simple-only {
+  display: none;
+}
+
+[data-simple-mode="true"] .simple-only {
+  display: block;
+}
+
 /* Theme utility classes */
 .theme-bg {
   background-color: var(--background);
