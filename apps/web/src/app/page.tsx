@@ -167,6 +167,27 @@ function AboutPanel() {
         </p>
       </div>
 
+      <div className="mt-4 rounded border theme-border theme-card p-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] theme-text-muted">
+          Open-Source Highlight
+        </p>
+        <p className="mt-2 text-sm theme-text">
+          Reusable Claude Code Skill: Better Auth for Next.js
+        </p>
+        <p className="mt-1 text-sm theme-text-muted">
+          Production-ready Better Auth integration for Next.js 16, packaged as a public Claude
+          Code plugin to avoid common bundling pitfalls.
+        </p>
+        <Link
+          href="https://github.com/bashiraziz/claude-better-auth-skill"
+          className="mt-2 inline-flex text-sm font-medium theme-text underline hover:text-amber-500 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub: bashiraziz/claude-better-auth-skill
+        </Link>
+      </div>
+
       <details className="simple-hide mt-4 border-t theme-border pt-4">
         <summary className="cursor-pointer text-sm font-medium theme-text">
           Tech Stack
