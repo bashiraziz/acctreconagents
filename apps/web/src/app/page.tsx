@@ -153,6 +153,20 @@ function AboutPanel() {
         We illuminate your reconciliations with AI-powered insights, bringing clarity to complex financial data.
       </p>
 
+      <div className="mt-4 rounded border theme-border theme-muted p-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] theme-text-muted">
+          Platform Snapshot
+        </p>
+        <ul className="mt-2 space-y-1 text-sm theme-text-muted">
+          <li>4-stage AI pipeline: Validation, Analysis, Investigation, and Report generation</li>
+          <li>Frontend: Next.js web app | Backend: Fastify orchestrator</li>
+          <li>Runtime: Gemini by default, with optional OpenAI and Claude integration</li>
+        </ul>
+        <p className="mt-2 text-xs theme-text-muted">
+          For full technical details, turn off Simple mode or open the User Guide.
+        </p>
+      </div>
+
       <details className="simple-hide mt-4 border-t theme-border pt-4">
         <summary className="cursor-pointer text-sm font-medium theme-text">
           Tech Stack
