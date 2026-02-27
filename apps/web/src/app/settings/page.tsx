@@ -301,7 +301,7 @@ export default function SettingsPage() {
                   </span>
                   {defaultOrg && (
                     <span className="rounded-full border theme-border theme-muted px-2 py-0.5">
-                      Primary Organization: {displayOrgName(defaultOrg.name)}
+                      Default: {displayOrgName(defaultOrg.name)}
                     </span>
                   )}
                 </div>
