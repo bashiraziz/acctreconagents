@@ -148,7 +148,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
 
       {/* Timeline */}
       {result.timeline && result.timeline.length > 0 && (
-        <div className="rounded-2xl border border-slate-800/80 bg-black/40 p-4">
+        <div className="rounded-2xl border theme-border theme-muted p-4">
           <h3 className="text-sm font-semibold theme-text">
             Timeline - {formatRunLabel(result.runId)}
           </h3>
@@ -156,28 +156,18 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
             {result.timeline.map((entry) => (
             <li
               key={entry.stage + entry.timestamp}
-              className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-3"
+              className="rounded-xl border theme-border theme-card p-3"
             >
               <div className="flex items-center justify-between">
                 <span className="font-semibold capitalize">
                   {entry.stage.replace(/_/g, " ")}
                 </span>
-                <span
-                  className={`text-xs font-medium uppercase ${
-                    entry.status === "completed"
-                      ? "text-emerald-400"
-                      : entry.status === "failed"
-                        ? "text-rose-400"
-                        : entry.status === "in_progress"
-                          ? "text-sky-400"
-                          : "theme-text-muted"
-                  }`}
-                >
+                <span className="text-xs font-medium uppercase theme-text">
                   {entry.status}
                 </span>
               </div>
               <p className="mt-1 text-xs theme-text-muted">{entry.detail}</p>
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] theme-text-muted">
                 {new Date(entry.timestamp).toLocaleTimeString()}
               </p>
             </li>
@@ -221,7 +211,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                 </div>
                 {result.geminiAgents.validation.warnings && result.geminiAgents.validation.warnings.length > 0 && (
                   <div className="mt-3">
-                    <p className="text-xs font-semibold uppercase text-blue-300">Warnings</p>
+                    <p className="text-xs font-semibold uppercase theme-text">Warnings</p>
                     <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
                       {result.geminiAgents.validation.warnings.map((w: string, i: number) => (
                         <li key={i}>{w}</li>
@@ -245,13 +235,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                   <div className="flex items-center justify-between">
                     <span className="theme-text-muted">Risk Level:</span>
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
-                        result.geminiAgents.analysis.riskLevel === "high"
-                          ? "bg-gray-900/20 text-rose-300"
-                          : result.geminiAgents.analysis.riskLevel === "medium"
-                            ? "bg-amber-500/20 text-amber-300"
-                            : "bg-emerald-500/20 text-emerald-300"
-                      }`}
+                      className="rounded-full border theme-border theme-muted px-2 py-0.5 text-xs font-semibold uppercase theme-text"
                     >
                       {result.geminiAgents.analysis.riskLevel}
                     </span>
@@ -265,7 +249,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                 </div>
                 {result.geminiAgents.analysis.patterns && result.geminiAgents.analysis.patterns.length > 0 && (
                   <div className="mt-3">
-                    <p className="text-xs font-semibold uppercase text-purple-300">
+                    <p className="text-xs font-semibold uppercase theme-text">
                       Patterns Detected
                     </p>
                     <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
@@ -290,13 +274,13 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                 <div className="mt-3 space-y-3">
                   {result.geminiAgents.investigation?.investigations?.map(
                     (inv: Investigation, i: number) => (
-                      <div key={i} className="rounded-xl border border-orange-700/40 bg-orange-900/20 p-3">
+                      <div key={i} className="rounded-xl border theme-border theme-muted p-3">
                         <p className="font-semibold text-sm theme-text">
                           Account: {inv.account} (Variance: ${inv.variance?.toFixed(2)})
                         </p>
                         {inv.possibleCauses && inv.possibleCauses.length > 0 && (
                           <div className="mt-2">
-                            <p className="text-xs font-semibold uppercase text-orange-300">
+                            <p className="text-xs font-semibold uppercase theme-text">
                               Possible Causes
                             </p>
                             <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
@@ -308,7 +292,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                         )}
                         {inv.suggestedActions && inv.suggestedActions.length > 0 && (
                           <div className="mt-2">
-                            <p className="text-xs font-semibold uppercase text-orange-300">
+                            <p className="text-xs font-semibold uppercase theme-text">
                               Suggested Actions
                             </p>
                             <ul className="mt-1 list-disc pl-5 text-sm theme-text-muted/80">
@@ -351,7 +335,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                         console.error("Failed to copy:", err);
                       }
                     }}
-                    className="rounded-lg bg-purple-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-purple-500"
+                    className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
                     title="Copy to Clipboard"
                   >
                     Copy
@@ -371,7 +355,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       document.body.removeChild(a);
                       URL.revokeObjectURL(url);
                     }}
-                    className="rounded-lg bg-emerald-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-emerald-500"
+                    className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
                     title="Download as Markdown"
                   >
                     MD
@@ -391,7 +375,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       document.body.removeChild(a);
                       URL.revokeObjectURL(url);
                     }}
-                    className="rounded-lg bg-sky-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-sky-500"
+                    className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
                     title="Download as Text"
                   >
                     TXT
@@ -400,7 +384,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                     <button
                       onClick={onRetryReport}
                       disabled={isRetryingReport}
-                      className="rounded-lg bg-amber-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:bg-amber-900/60"
+                      className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
                       title="Retry report generation"
                     >
                       {isRetryingReport ? "Retrying..." : "Retry"}
@@ -430,7 +414,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
 function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
   if (!status) {
     return (
-      <span className="rounded-full bg-gray-500/20 px-2 py-1 text-xs font-medium text-gray-400">
+      <span className="rounded-full border theme-border theme-muted px-2 py-1 text-xs font-medium theme-text-muted">
         No Status
       </span>
     );
@@ -439,11 +423,11 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
   if (status.success) {
     return (
       <div className="flex items-center gap-2">
-        <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-300">
+        <span className="status-badge-ok rounded-full px-2 py-1 text-xs font-medium">
           AI Success
         </span>
         {(status.retryCount ?? 0) > 0 && (
-          <span className="rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-300">
+          <span className="status-badge-warn rounded-full px-2 py-1 text-xs font-medium">
             {status.retryCount} {status.retryCount === 1 ? 'retry' : 'retries'}
           </span>
         )}
@@ -454,12 +438,12 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
   if (status.usedFallback) {
     return (
       <div className="flex items-center gap-2">
-        <span className="rounded-full bg-orange-500/20 px-2 py-1 text-xs font-medium text-orange-300">
+        <span className="status-badge-warn rounded-full px-2 py-1 text-xs font-medium">
           Fallback
         </span>
         {status.error && (
           <span
-            className="rounded-full bg-rose-500/20 px-2 py-1 text-xs font-medium text-rose-300"
+            className="rounded-full border theme-border theme-muted px-2 py-1 text-xs font-medium theme-text"
             title={toUserFriendlyAgentError(status.error).message}
           >
             {toUserFriendlyAgentError(status.error).badge}
@@ -470,7 +454,7 @@ function GeminiAgentStatusBadge({ status }: { status?: GeminiAgentStatus }) {
   }
 
   return (
-    <span className="rounded-full bg-gray-500/20 px-2 py-1 text-xs font-medium text-gray-400">
+    <span className="rounded-full border theme-border theme-muted px-2 py-1 text-xs font-medium theme-text-muted">
       Unknown
     </span>
   );

@@ -46,7 +46,7 @@ export function OrchestratorConsole() {
     <section className="ui-panel">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="ui-kicker text-amber-400">
+          <p className="ui-kicker">
             AI Reconciliation
           </p>
           <h2 className="ui-title mt-1">
@@ -94,9 +94,9 @@ export function OrchestratorConsole() {
       )}
 
       {reconciliationData && !result && !error && (
-        <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm">
-          <p className="font-semibold text-emerald-100">Data ready to reconcile</p>
-          <p className="mt-1 text-emerald-200/90">
+        <div className="reconcile-ready-card mt-4 rounded-xl border p-4 text-sm">
+          <p className="reconcile-ready-title font-semibold">Data ready to reconcile</p>
+          <p className="reconcile-ready-body mt-1">
             {reconciliationData.glBalances.length} GL balances, {" "}
             {reconciliationData.subledgerBalances.length} subledger balances
             {reconciliationData.transactions &&

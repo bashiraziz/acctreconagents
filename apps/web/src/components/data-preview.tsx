@@ -59,7 +59,7 @@ export function DataPreview() {
         <button
           type="button"
           onClick={() => setIsVisible((prev) => !prev)}
-          className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100 transition hover:bg-amber-500/20"
+          className="ui-neutral-btn rounded-lg border px-3 py-1 text-xs font-semibold transition"
         >
           {isVisible ? "Hide preview" : "Show preview"}
         </button>
@@ -78,8 +78,8 @@ export function DataPreview() {
             <span
               className={`rounded-full px-2 py-1 text-xs font-semibold ${
                 issueCounts.total === 0
-                  ? "bg-emerald-500/20 text-emerald-200"
-                  : "bg-amber-500/20 text-amber-200"
+                  ? "status-badge-ok"
+                  : "status-badge-warn"
               }`}
             >
               {issueCounts.total === 0 ? "No issues" : `${issueCounts.total} issue${issueCounts.total === 1 ? "" : "s"}`}
@@ -167,7 +167,7 @@ export function DataPreview() {
           <button
             type="button"
             onClick={() => setIsVisible(false)}
-            className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100 transition hover:bg-amber-500/20"
+            className="ui-neutral-btn rounded-lg border px-3 py-1 text-xs font-semibold transition"
           >
             Hide preview
           </button>
