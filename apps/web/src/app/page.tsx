@@ -126,7 +126,7 @@ export default function Home() {
                 href="/user-guide"
                 className="text-sm font-medium theme-text hover:text-amber-500 transition-colors"
               >
-                Documentation
+                User Guide
               </Link>
             </div>
           </div>
