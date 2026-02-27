@@ -207,6 +207,18 @@ async function initializeDatabase() {
       WHERE is_default = true;
     `;
     console.log("✓ user_organizations default index created");
+    // Rename legacy organization labels to current names
+    await sql`
+      UPDATE user_organizations
+      SET name = 'Primary Organization', updated_at = NOW()
+      WHERE UPPER(TRIM(name)) = 'MYCO';
+    `;
+    await sql`
+      UPDATE user_organizations
+      SET name = 'Lead Organization', updated_at = NOW()
+      WHERE UPPER(TRIM(name)) IN ('ACME', 'ACME, INC');
+    `;
+    console.log("✓ user_organizations legacy names migrated");
 
     // Create reconciliation_history table
     await sql`
@@ -249,3 +261,4 @@ async function initializeDatabase() {
 }
 
 initializeDatabase();
+

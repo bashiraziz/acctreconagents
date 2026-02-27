@@ -32,6 +32,16 @@ export default function SettingsPage() {
     () => organizations.find((org) => org.isDefault),
     [organizations]
   );
+  const displayOrgName = (name: string) => {
+    const normalized = name.trim().toUpperCase();
+    if (normalized === "MYCO") {
+      return "Primary Organization";
+    }
+    if (normalized === "ACME" || normalized === "ACME, INC") {
+      return "Lead Organization";
+    }
+    return name;
+  };
 
   useEffect(() => {
     if (!session?.user) return;
@@ -214,7 +224,7 @@ export default function SettingsPage() {
               href="/"
               className="text-sm font-medium text-amber-500 hover:text-amber-400"
             >
-              ← Back to console
+              &larr; Back to console
             </Link>
             <h1 className="text-2xl font-bold theme-text sm:text-3xl">
               Settings
@@ -237,12 +247,12 @@ export default function SettingsPage() {
             </div>
 
             {isPending && (
-              <div className="text-sm theme-text-muted">Checking session…</div>
+              <div className="text-sm theme-text-muted">Checking session...</div>
             )}
 
             {!isPending && !session?.user && (
               <div className="rounded-xl border theme-border theme-muted p-4 text-sm theme-text-muted">
-                Sign in to manage organization names. Anonymous runs won’t show an organization header.
+                Sign in to manage organization names. Anonymous runs won't show an organization header.
                 <div className="mt-3">
                   <Link
                     href="/sign-in"
@@ -257,7 +267,7 @@ export default function SettingsPage() {
             {session?.user && (
               <>
                 {error && (
-                  <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">
+                  <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm theme-text">
                     {error}
                   </div>
                 )}
@@ -277,7 +287,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleCreate}
                     disabled={isSaving || !newName.trim()}
-                    className="rounded-xl border border-amber-500/60 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-100 transition-colors hover:bg-amber-500/20 disabled:opacity-50"
+                    className="ui-neutral-btn rounded-xl border px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-70"
                   >
                     {isSaving ? "Saving..." : "Add organization"}
                   </button>
@@ -291,7 +301,7 @@ export default function SettingsPage() {
                   </span>
                   {defaultOrg && (
                     <span className="rounded-full border theme-border theme-muted px-2 py-0.5">
-                      Default: {defaultOrg.name}
+                      Primary Organization: {displayOrgName(defaultOrg.name)}
                     </span>
                   )}
                 </div>
@@ -312,7 +322,7 @@ export default function SettingsPage() {
                           />
                         ) : (
                           <div className="text-base font-semibold theme-text">
-                            {org.name}
+                            {displayOrgName(org.name)}
                           </div>
                         )}
                         <div className="mt-1 text-xs theme-text-muted">
@@ -337,7 +347,7 @@ export default function SettingsPage() {
                               <button
                                 onClick={saveEdit}
                                 disabled={busyId === org.id || !editingName.trim()}
-                                className="rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-100 disabled:opacity-50"
+                                className="ui-neutral-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
                               >
                                 Save
                               </button>
@@ -354,7 +364,7 @@ export default function SettingsPage() {
                                 <button
                                   onClick={() => handleMakeDefault(org.id)}
                                   disabled={busyId === org.id}
-                                  className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-100 disabled:opacity-50"
+                                  className="ui-neutral-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
                                 >
                                   Set default
                                 </button>
@@ -374,7 +384,7 @@ export default function SettingsPage() {
                               <button
                                 onClick={() => handleDelete(org.id)}
                                 disabled={busyId === org.id}
-                                className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-100 disabled:opacity-50"
+                                className="auth-signout-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
                               >
                                 Delete
                               </button>
@@ -421,7 +431,7 @@ export default function SettingsPage() {
                             <button
                               onClick={saveDefaults}
                               disabled={busyId === org.id}
-                              className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-100 disabled:opacity-50"
+                              className="ui-neutral-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
                             >
                               Save defaults
                             </button>
@@ -445,3 +455,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

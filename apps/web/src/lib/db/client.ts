@@ -202,10 +202,42 @@ export async function deleteUserAccount(
 // User Organizations CRUD
 // ============================================
 
+function normalizeOrganizationName(name: string): string {
+  const trimmed = name.trim();
+  const normalized = trimmed.toUpperCase();
+  if (normalized === "MYCO") {
+    return "Primary Organization";
+  }
+  if (normalized === "ACME" || normalized === "ACME, INC") {
+    return "Lead Organization";
+  }
+  return trimmed;
+}
+
+async function migrateLegacyOrganizationNames(userId: string): Promise<void> {
+  await sql`
+    UPDATE user_organizations
+    SET
+      name = CASE
+        WHEN UPPER(TRIM(name)) = 'MYCO' THEN 'Primary Organization'
+        WHEN UPPER(TRIM(name)) IN ('ACME', 'ACME, INC') THEN 'Lead Organization'
+        ELSE name
+      END,
+      updated_at = CASE
+        WHEN UPPER(TRIM(name)) IN ('MYCO', 'ACME', 'ACME, INC') THEN NOW()
+        ELSE updated_at
+      END
+    WHERE user_id = ${userId}
+      AND UPPER(TRIM(name)) IN ('MYCO', 'ACME', 'ACME, INC');
+  `;
+}
+
 export async function getUserOrganizations(
   userId: string,
 ): Promise<UserOrganization[]> {
   try {
+    await migrateLegacyOrganizationNames(userId);
+
     const result = await sql`
       SELECT * FROM user_organizations
       WHERE user_id = ${userId}
@@ -236,6 +268,8 @@ export async function getDefaultUserOrganization(
   userId: string,
 ): Promise<UserOrganization | null> {
   try {
+    await migrateLegacyOrganizationNames(userId);
+
     const result = await sql`
       SELECT * FROM user_organizations
       WHERE user_id = ${userId} AND is_default = true
@@ -269,6 +303,7 @@ export async function createUserOrganization(
   makeDefault: boolean = false,
 ): Promise<UserOrganization> {
   const id = `org_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const persistedName = normalizeOrganizationName(name);
 
   try {
     const existing = await sql`
@@ -288,7 +323,7 @@ export async function createUserOrganization(
 
     const result = await sql`
       INSERT INTO user_organizations (id, user_id, name, is_default, created_at, updated_at)
-      VALUES (${id}, ${userId}, ${name}, ${shouldDefault}, NOW(), NOW())
+      VALUES (${id}, ${userId}, ${persistedName}, ${shouldDefault}, NOW(), NOW())
       RETURNING *;
     `;
 
@@ -318,10 +353,11 @@ export async function renameUserOrganization(
   organizationId: string,
   name: string,
 ): Promise<UserOrganization> {
+  const persistedName = normalizeOrganizationName(name);
   try {
     const result = await sql`
       UPDATE user_organizations
-      SET name = ${name}, updated_at = NOW()
+      SET name = ${persistedName}, updated_at = NOW()
       WHERE user_id = ${userId} AND id = ${organizationId}
       RETURNING *;
     `;
