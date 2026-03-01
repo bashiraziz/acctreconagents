@@ -10,6 +10,23 @@
   --muted: #f3f4f6;
   --muted-text: #6b7280;
   --accent: #1f2937;
+  --focus-ring: #f59e0b;
+  --primary: #d97706;
+  --primary-strong: #b45309;
+  --primary-soft: #fef3c7;
+  --primary-contrast: #111827;
+  --info-bg: #dbeafe;
+  --info-border: #93c5fd;
+  --info-text: #1e3a8a;
+  --success-bg: #dcfce7;
+  --success-border: #86efac;
+  --success-text: #14532d;
+  --warning-bg: #fef3c7;
+  --warning-border: #fcd34d;
+  --warning-text: #78350f;
+  --danger-bg: #fee2e2;
+  --danger-border: #fca5a5;
+  --danger-text: #7f1d1d;
 }
 
 /* Medium Dark Theme */
@@ -21,6 +38,23 @@
   --muted: #475569;
   --muted-text: #cbd5e1;
   --accent: #f1f5f9;
+  --focus-ring: #fbbf24;
+  --primary: #f59e0b;
+  --primary-strong: #d97706;
+  --primary-soft: #3f2a06;
+  --primary-contrast: #0f172a;
+  --info-bg: #1e3a8a66;
+  --info-border: #60a5fa66;
+  --info-text: #dbeafe;
+  --success-bg: #14532d66;
+  --success-border: #4ade8080;
+  --success-text: #d1fae5;
+  --warning-bg: #78350f66;
+  --warning-border: #fbbf2480;
+  --warning-text: #fef3c7;
+  --danger-bg: #7f1d1d66;
+  --danger-border: #f8717180;
+  --danger-text: #fecaca;
 }
 
 /* Dark Theme */
@@ -32,6 +66,23 @@
   --muted: #1e293b;
   --muted-text: #94a3b8;
   --accent: #f8fafc;
+  --focus-ring: #fbbf24;
+  --primary: #f59e0b;
+  --primary-strong: #d97706;
+  --primary-soft: #3f2a06;
+  --primary-contrast: #0f172a;
+  --info-bg: #1e3a8a66;
+  --info-border: #60a5fa66;
+  --info-text: #dbeafe;
+  --success-bg: #14532d66;
+  --success-border: #4ade8080;
+  --success-text: #d1fae5;
+  --warning-bg: #78350f66;
+  --warning-border: #fbbf2480;
+  --warning-text: #fef3c7;
+  --danger-bg: #7f1d1d66;
+  --danger-border: #f8717180;
+  --danger-text: #fecaca;
 }
 
 @theme inline {
@@ -59,6 +110,25 @@ body {
   letter-spacing: 0.08em;
 }
 
+[data-simple-mode="true"] .ui-panel {
+  border-radius: 0.9rem;
+  padding: 1rem;
+}
+
+[data-simple-mode="true"] .ui-title {
+  font-size: 1.1rem;
+}
+
+[data-simple-mode="true"] .btn {
+  border-radius: 0.55rem;
+}
+
+[data-simple-mode="true"] .badge {
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+}
+
 [data-simple-mode="true"] .theme-muted {
   background-color: rgba(148, 163, 184, 0.08);
 }
@@ -72,6 +142,10 @@ body {
 }
 
 [data-simple-mode="true"] .simple-hide {
+  display: none !important;
+}
+
+[data-simple-mode="true"] .simple-mode-compact {
   display: none !important;
 }
 
@@ -117,6 +191,161 @@ body {
 .theme-accent {
   color: var(--accent);
   transition: color 0.3s ease;
+}
+
+/* Design system primitives */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.65rem;
+  background: var(--card);
+  color: var(--foreground);
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.08s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--muted);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 0.45rem 0.8rem;
+  font-size: 0.78rem;
+}
+
+.btn-md {
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+}
+
+.btn-pill {
+  border-radius: 9999px;
+}
+
+.btn-primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--primary-strong);
+  background: var(--primary-strong);
+}
+
+.btn-secondary {
+  border-color: var(--card-border);
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.btn-muted {
+  border-color: var(--card-border);
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.btn-danger {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-neutral {
+  border-color: var(--card-border);
+  background: var(--muted);
+  color: var(--muted-text);
+}
+
+.badge-info {
+  border-color: var(--info-border);
+  background: color-mix(in srgb, var(--info-bg) 75%, transparent);
+  color: var(--info-text);
+}
+
+.badge-success {
+  border-color: var(--success-border);
+  background: color-mix(in srgb, var(--success-bg) 75%, transparent);
+  color: var(--success-text);
+}
+
+.badge-warning {
+  border-color: var(--warning-border);
+  background: color-mix(in srgb, var(--warning-bg) 75%, transparent);
+  color: var(--warning-text);
+}
+
+.badge-danger {
+  border-color: var(--danger-border);
+  background: color-mix(in srgb, var(--danger-bg) 75%, transparent);
+  color: var(--danger-text);
+}
+
+.alert {
+  border-radius: 1rem;
+  border: 1px solid var(--card-border);
+  background: var(--muted);
+  color: var(--foreground);
+  padding: 1rem;
+}
+
+.alert-info {
+  border-color: var(--info-border);
+  background: color-mix(in srgb, var(--info-bg) 72%, transparent);
+  color: var(--info-text);
+}
+
+.alert-success {
+  border-color: var(--success-border);
+  background: color-mix(in srgb, var(--success-bg) 72%, transparent);
+  color: var(--success-text);
+}
+
+.alert-warning {
+  border-color: var(--warning-border);
+  background: color-mix(in srgb, var(--warning-bg) 72%, transparent);
+  color: var(--warning-text);
+}
+
+.alert-danger {
+  border-color: var(--danger-border);
+  background: color-mix(in srgb, var(--danger-bg) 72%, transparent);
+  color: var(--danger-text);
 }
 
 /* Agent progress indicator (neutral, theme-based) */
@@ -529,9 +758,12 @@ body {
 /* Neutral action button (minimize extra accent colors) */
 .ui-neutral-btn,
 .preview-toggle-btn {
-  border-color: var(--card-border);
+  border: 1px solid var(--card-border);
   background: var(--card);
   color: var(--foreground);
+  border-radius: 0.65rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .ui-neutral-btn:hover,
@@ -541,63 +773,48 @@ body {
 
 /* Primary illuminate CTA */
 .illuminate-btn {
-  background: #e6a700;
-  color: #111827;
-  box-shadow: 0 4px 12px rgba(230, 167, 0, 0.25);
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-radius: 0.65rem;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .illuminate-btn:hover:not(:disabled) {
-  background: #c98900;
+  border-color: var(--primary-strong);
+  background: var(--primary-strong);
 }
 
 .illuminate-btn:active:not(:disabled) {
-  background: #a66e00;
+  transform: translateY(1px);
 }
 
 .illuminate-btn:focus-visible {
-  outline: 2px solid #facc15;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
 .illuminate-btn:disabled {
-  background: #cbd5e1;
-  color: #64748b;
+  border-color: var(--card-border);
+  background: var(--muted);
+  color: var(--muted-text);
   box-shadow: none;
-}
-
-[data-theme="medium-dark"] .illuminate-btn:disabled,
-[data-theme="dark"] .illuminate-btn:disabled {
-  background: #475569;
-  color: #94a3b8;
+  opacity: 0.6;
 }
 
 /* Validation badges */
 .status-badge-ok,
 .validation-badge-ok {
-  background: #10b98126;
-  color: #065f46;
+  border: 1px solid var(--success-border);
+  background: color-mix(in srgb, var(--success-bg) 75%, transparent);
+  color: var(--success-text);
 }
 
 .status-badge-warn,
 .validation-badge-warn {
-  background: #f59e0b26;
-  color: #92400e;
-}
-
-[data-theme="medium-dark"] .status-badge-ok,
-[data-theme="dark"] .status-badge-ok,
-[data-theme="medium-dark"] .validation-badge-ok,
-[data-theme="dark"] .validation-badge-ok {
-  background: #10b98126;
-  color: #d1fae5;
-}
-
-[data-theme="medium-dark"] .status-badge-warn,
-[data-theme="dark"] .status-badge-warn,
-[data-theme="medium-dark"] .validation-badge-warn,
-[data-theme="dark"] .validation-badge-warn {
-  background: #f59e0b26;
-  color: #fef3c7;
+  border: 1px solid var(--warning-border);
+  background: color-mix(in srgb, var(--warning-bg) 75%, transparent);
+  color: var(--warning-text);
 }
 
 /* Upload success + metadata form */

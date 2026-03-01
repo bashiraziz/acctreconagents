@@ -45,20 +45,20 @@ export function FileTypeUploadZone({
   // Show error state if upload failed
   if (uploadRecord?.status === "error") {
     return (
-      <div className="rounded border border-red-500/40 bg-red-500/10 p-4">
+      <div className="alert alert-danger">
         <div className="flex items-center justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500/20 text-red-700 dark:text-red-400">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-current/30 bg-current/10">
                 ×
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-red-900 dark:text-red-100">{label}</p>
-                <p className="mt-0.5 truncate text-xs text-red-800 dark:text-red-200/80">
+                <p className="text-sm font-semibold">{label}</p>
+                <p className="mt-0.5 truncate text-xs opacity-85">
                   {uploadRecord.name}
                 </p>
                 {uploadRecord.message && (
-                  <p className="mt-1 text-xs text-red-700 dark:text-red-300">
+                  <p className="mt-1 text-xs">
                     Error: {uploadRecord.message}
                   </p>
                 )}
@@ -67,7 +67,7 @@ export function FileTypeUploadZone({
           </div>
           <div className="flex flex-shrink-0 gap-2">
             <label className="cursor-pointer">
-              <div className="rounded border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-900 transition hover:bg-blue-500/20 dark:text-blue-200">
+              <div className="btn btn-secondary btn-sm">
                 Try Again
               </div>
               <input
@@ -79,7 +79,7 @@ export function FileTypeUploadZone({
             </label>
             <button
               onClick={onRemove}
-              className="rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text-muted transition hover:theme-muted"
+              className="btn btn-danger btn-sm"
             >
               Remove
             </button>

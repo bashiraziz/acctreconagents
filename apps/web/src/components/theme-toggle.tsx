@@ -85,33 +85,21 @@ export function ThemeToggle() {
     <div className="flex items-center gap-1 rounded border theme-border theme-card p-1">
       <button
         onClick={() => updateTheme("light")}
-        className={`rounded px-3 py-1.5 text-xs font-medium transition ${
-          theme === "light"
-            ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:opacity-70"
-        }`}
+        className={`btn btn-sm ${theme === "light" ? "btn-primary" : "btn-secondary"}`}
         title="Light theme"
       >
         Light
       </button>
       <button
         onClick={() => updateTheme("medium-dark")}
-        className={`rounded px-3 py-1.5 text-xs font-medium transition ${
-          theme === "medium-dark"
-            ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:opacity-70"
-        }`}
+        className={`btn btn-sm ${theme === "medium-dark" ? "btn-primary" : "btn-secondary"}`}
         title="Medium dark theme"
       >
         Medium
       </button>
       <button
         onClick={() => updateTheme("dark")}
-        className={`rounded px-3 py-1.5 text-xs font-medium transition ${
-          theme === "dark"
-            ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:opacity-70"
-        }`}
+        className={`btn btn-sm ${theme === "dark" ? "btn-primary" : "btn-secondary"}`}
         title="Dark theme"
       >
         Dark

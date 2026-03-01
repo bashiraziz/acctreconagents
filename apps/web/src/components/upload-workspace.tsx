@@ -41,7 +41,7 @@ export function UploadWorkspace() {
   const transactionsUploadRecord = uploads.find((r) => r.fileType === "transactions");
 
   return (
-    <section className="ui-panel">
+    <section id="upload-files" className="ui-panel scroll-mt-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
           <p className="ui-kicker">Step 1</p>
@@ -62,7 +62,7 @@ export function UploadWorkspace() {
                   clearUploads();
                 }
               }}
-              className="rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text-muted transition hover:theme-muted"
+              className="btn btn-secondary btn-sm"
             >
               Clear All
             </button>
@@ -186,15 +186,15 @@ function UploadList({ label, uploads }: { label: string; uploads: UploadRecord[]
                 {upload.message && <p className="mt-1 text-xs text-gray-500">{upload.message}</p>}
               </div>
               <span
-                className={
+                className={`badge ${
                   upload.status === "ready"
-                    ? "rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text"
+                    ? "badge-success"
                     : upload.status === "error"
-                      ? "rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text"
+                      ? "badge-danger"
                       : upload.status === "uploading"
-                        ? "rounded border theme-border theme-muted px-3 py-1 text-xs font-medium theme-text-muted"
-                        : "rounded border theme-border theme-card px-3 py-1 text-xs font-medium theme-text-muted"
-                }
+                        ? "badge-info"
+                        : "badge-neutral"
+                }`}
               >
                 {upload.status}
               </span>

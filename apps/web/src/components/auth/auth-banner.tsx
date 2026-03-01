@@ -16,16 +16,16 @@ export function AuthBanner() {
   if (session?.user) {
     return (
       <div className="space-y-3">
-        <div className="auth-success-banner rounded-2xl p-4">
+        <div className="alert alert-success">
           <div className="flex items-center gap-3">
-            <div className="auth-success-icon auth-success-title flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
+            <div className="badge badge-success flex h-10 w-10 flex-shrink-0 items-center justify-center p-0 text-sm">
               OK
             </div>
             <div className="min-w-0 flex-1">
-              <p className="auth-success-title font-semibold">
+              <p className="font-semibold">
                 Signed in as {session.user.name || session.user.email}
               </p>
-              <p className="auth-success-body mt-1 text-sm">
+              <p className="mt-1 text-sm opacity-90">
                 Mappings are saved to your account and your usage limits are doubled.
               </p>
             </div>
@@ -39,31 +39,31 @@ export function AuthBanner() {
 
   return (
     <div className="space-y-3">
-      <div className="auth-info-banner rounded-2xl p-4">
+      <div className="alert alert-info">
         <div className="flex items-start gap-3">
-          <div className="auth-info-icon flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full auth-info-title">
+          <div className="badge badge-info flex h-10 w-10 flex-shrink-0 items-center justify-center p-0 text-sm">
             A
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="auth-info-title font-semibold">
+              <p className="font-semibold">
                 Anonymous mode
               </p>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="auth-info-link whitespace-nowrap text-xs font-medium underline"
+                className="whitespace-nowrap text-xs font-medium underline"
                 aria-expanded={isExpanded}
               >
                 {isExpanded ? "Hide details" : "Show details"}
               </button>
             </div>
 
-            <p className="auth-info-body mt-1 text-sm">
+            <p className="mt-1 text-sm opacity-90">
               Use all reconciliation features without signing in. Data persists in this browser.
             </p>
 
             {isExpanded && (
-              <ul className="auth-info-body mt-2 space-y-1 text-sm">
+              <ul className="mt-2 space-y-1 text-sm opacity-90">
                 <li>- Base limits: 30 per hour, 50 per 2 hours, 70 per 3 hours</li>
                 <li>- Sign in to double limits and save mappings to your account</li>
                 <li>- AI analysis uses shared quota with retry and fallback</li>
@@ -73,7 +73,7 @@ export function AuthBanner() {
                     href="https://ai.google.dev/gemini-api/docs/api-key"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="auth-info-link font-medium underline"
+                    className="font-medium underline"
                   >
                     Gemini API key
                   </a>

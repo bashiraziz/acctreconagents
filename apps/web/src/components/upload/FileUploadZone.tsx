@@ -75,7 +75,7 @@ export function FileUploadZone({
       <p className="mt-1 text-xs theme-text-muted">{description}</p>
 
       <label className="mt-3 cursor-pointer">
-        <div className="rounded bg-gradient-to-r from-amber-500 to-yellow-500 px-4 py-2 text-sm font-semibold text-white transition hover:from-amber-600 hover:to-yellow-600">
+        <div className="btn btn-primary btn-sm btn-pill">
           Choose File
         </div>
         <input

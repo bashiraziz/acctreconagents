@@ -14,7 +14,7 @@ export function UserMenu() {
 
   if (isPending) {
     return (
-      <div className="rounded-lg border theme-border theme-card px-3 py-2 text-sm font-medium theme-text">
+      <div className="badge badge-neutral px-3 py-2 text-sm normal-case tracking-normal">
         Loading...
       </div>
     );
@@ -24,7 +24,7 @@ export function UserMenu() {
     return (
       <Link
         href="/sign-in"
-        className="auth-nav-link rounded-lg px-4 py-2 text-sm font-medium transition-colors hover:theme-muted"
+        className="btn btn-secondary btn-sm"
       >
         Sign in
       </Link>
@@ -37,7 +37,7 @@ export function UserMenu() {
     <div className="flex items-center gap-3">
       <Link
         href="/settings"
-        className="rounded-lg border theme-border theme-card px-3 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
+        className="btn btn-secondary btn-sm"
       >
         Settings
       </Link>
@@ -50,7 +50,7 @@ export function UserMenu() {
           await signOut();
           router.refresh();
         }}
-        className="auth-signout-btn rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+        className="btn btn-danger btn-sm"
       >
         Sign out
       </button>

@@ -84,55 +84,55 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
   return (
     <div className="mt-6 space-y-4">
       {friendlyAgentError && (
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
-          <p className="font-semibold text-amber-100">
+        <div className="alert alert-warning">
+          <p className="font-semibold">
             {friendlyAgentError.title}
           </p>
-          <p className="mt-1 text-sm text-amber-200/80">
+          <p className="mt-1 text-sm opacity-90">
             {friendlyAgentError.message}
           </p>
         </div>
       )}
       {/* Rate Limit Warning */}
       {hasRateLimitIssue && (
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
+        <div className="alert alert-warning">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+            <div className="badge badge-warning flex h-10 w-10 flex-shrink-0 items-center justify-center p-0 text-sm">
               !
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-amber-100">
+              <p className="font-semibold">
                 AI Analysis Quota Reached
               </p>
-              <p className="mt-1 text-sm text-amber-200/80">
+              <p className="mt-1 text-sm opacity-90">
                 Some AI agents used fallback analysis due to shared quota limits. Your reconciliation is complete, but AI insights may be limited.
               </p>
-              <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-                <p className="text-xs font-semibold text-amber-200">
+              <div className="mt-3 rounded-lg border border-current/20 bg-current/5 p-3">
+                <p className="text-xs font-semibold">
                   Tip: Get Unlimited AI Analysis (Free!)
                 </p>
-                <p className="mt-1 text-xs text-amber-200/70">
+                <p className="mt-1 text-xs opacity-85">
                   Use your own Google Gemini API key to avoid quotas:
                 </p>
-                <ol className="mt-2 space-y-1 text-xs text-amber-200/70">
+                <ol className="mt-2 space-y-1 text-xs opacity-90">
                   <li>
                     1. Get a free key at:{" "}
                     <a
                       href="https://ai.google.dev/gemini-api/docs/api-key"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline hover:text-amber-100"
+                      className="underline"
                     >
                       ai.google.dev/gemini-api
                     </a>
                   </li>
                   <li>
                     2. Set{" "}
-                    <code className="rounded bg-amber-900/30 px-1 py-0.5 font-mono text-amber-100">
+                    <code className="rounded bg-current/20 px-1 py-0.5 font-mono">
                       GEMINI_API_KEY=your-key
                     </code>{" "}
                     in your{" "}
-                    <code className="rounded bg-amber-900/30 px-1 py-0.5 font-mono text-amber-100">
+                    <code className="rounded bg-current/20 px-1 py-0.5 font-mono">
                       .env
                     </code>{" "}
                     file

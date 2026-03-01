@@ -222,7 +222,7 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-2">
             <Link
               href="/"
-              className="text-sm font-medium text-amber-500 hover:text-amber-400"
+              className="btn btn-secondary btn-sm w-fit"
             >
               &larr; Back to console
             </Link>
@@ -252,11 +252,11 @@ export default function SettingsPage() {
 
             {!isPending && !session?.user && (
               <div className="rounded-xl border theme-border theme-muted p-4 text-sm theme-text-muted">
-                Sign in to manage organization names. Anonymous runs won't show an organization header.
+                Sign in to manage organization names. Anonymous runs will not show an organization header.
                 <div className="mt-3">
                   <Link
                     href="/sign-in"
-                    className="rounded-lg border theme-border theme-card px-3 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
+                    className="btn btn-secondary btn-sm"
                   >
                     Sign in
                   </Link>
@@ -267,7 +267,7 @@ export default function SettingsPage() {
             {session?.user && (
               <>
                 {error && (
-                  <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm theme-text">
+                  <div className="alert alert-danger text-sm">
                     {error}
                   </div>
                 )}
@@ -287,7 +287,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleCreate}
                     disabled={isSaving || !newName.trim()}
-                    className="ui-neutral-btn rounded-xl border px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-70"
+                    className="btn btn-secondary btn-md disabled:opacity-70"
                   >
                     {isSaving ? "Saving..." : "Add organization"}
                   </button>
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                       : `${organizations.length} organization${organizations.length === 1 ? "" : "s"}`}
                   </span>
                   {defaultOrg && (
-                    <span className="rounded-full border theme-border theme-muted px-2 py-0.5">
+                    <span className="badge badge-neutral normal-case tracking-normal">
                       Default: {displayOrgName(defaultOrg.name)}
                     </span>
                   )}
@@ -347,13 +347,13 @@ export default function SettingsPage() {
                               <button
                                 onClick={saveEdit}
                                 disabled={busyId === org.id || !editingName.trim()}
-                                className="ui-neutral-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
+                                className="btn btn-secondary btn-sm disabled:opacity-70"
                               >
                                 Save
                               </button>
                               <button
                                 onClick={cancelEdit}
-                                className="rounded-lg border theme-border theme-card px-3 py-1.5 text-xs font-medium theme-text"
+                                className="btn btn-secondary btn-sm"
                               >
                                 Cancel
                               </button>
@@ -364,27 +364,27 @@ export default function SettingsPage() {
                                 <button
                                   onClick={() => handleMakeDefault(org.id)}
                                   disabled={busyId === org.id}
-                                  className="ui-neutral-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
+                                  className="btn btn-secondary btn-sm disabled:opacity-70"
                                 >
                                   Set default
                                 </button>
                               )}
                               <button
                                 onClick={() => startEdit(org)}
-                                className="rounded-lg border theme-border theme-card px-3 py-1.5 text-xs font-medium theme-text"
+                                className="btn btn-secondary btn-sm"
                               >
                                 Rename
                               </button>
                               <button
                                 onClick={() => startDefaultsEdit(org)}
-                                className="rounded-lg border theme-border theme-card px-3 py-1.5 text-xs font-medium theme-text"
+                                className="btn btn-secondary btn-sm"
                               >
                                 Defaults
                               </button>
                               <button
                                 onClick={() => handleDelete(org.id)}
                                 disabled={busyId === org.id}
-                                className="auth-signout-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
+                                className="btn btn-danger btn-sm disabled:opacity-70"
                               >
                                 Delete
                               </button>
@@ -431,13 +431,13 @@ export default function SettingsPage() {
                             <button
                               onClick={saveDefaults}
                               disabled={busyId === org.id}
-                              className="ui-neutral-btn rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-70"
+                              className="btn btn-secondary btn-sm disabled:opacity-70"
                             >
                               Save defaults
                             </button>
                             <button
                               onClick={cancelDefaultsEdit}
-                              className="rounded-lg border theme-border theme-card px-3 py-1.5 text-xs font-medium theme-text"
+                              className="btn btn-secondary btn-sm"
                             >
                               Cancel
                             </button>

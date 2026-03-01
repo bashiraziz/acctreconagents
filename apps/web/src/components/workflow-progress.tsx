@@ -5,7 +5,9 @@
 
 "use client";
 
-import { useWorkflowStore } from "@/store/workflowStore";
+import { useAgentRunStore } from "@/store/agentRunStore";
+import { useColumnMappingStore } from "@/store/columnMappingStore";
+import { useFileUploadStore } from "@/store/fileUploadStore";
 
 type Step = {
   id: string;
@@ -42,23 +44,35 @@ const steps: Step[] = [
 ];
 
 export function WorkflowProgress() {
-  const workflowStatus = useWorkflowStore((state) => state.status);
+  const files = useFileUploadStore((state) => state.files);
+  const reconciliationData = useFileUploadStore((state) => state.reconciliationData);
+  const mappings = useColumnMappingStore((state) => state.mappings);
+  const isRunning = useAgentRunStore((state) => state.isRunning);
 
-  const getStepStatus = (
-    stepId: string,
-  ): "complete" | "active" | "pending" | "incomplete" => {
-    const status = workflowStatus[stepId as keyof typeof workflowStatus];
+  const hasRequiredFiles = Boolean(files.glBalance && files.subledgerBalance);
+  const hasAnyMapping =
+    Object.keys(mappings.gl_balance).length > 0 ||
+    Object.keys(mappings.subledger_balance).length > 0 ||
+    Object.keys(mappings.transactions).length > 0;
+  const hasPreparedData = Boolean(reconciliationData);
 
-    if (status === "complete") {
-      return "complete";
+  const getStepStatus = (stepId: string): "complete" | "active" | "pending" | "incomplete" => {
+    if (stepId === "upload") {
+      return hasRequiredFiles ? "complete" : "pending";
     }
 
-    if (status === "running") {
-      return "active";
-    }
-
-    if (status === "not_started") {
+    if (stepId === "map") {
+      if (hasPreparedData) return "complete";
+      if (hasRequiredFiles && hasAnyMapping) return "active";
       return "pending";
+    }
+
+    if (stepId === "preview") {
+      return hasPreparedData ? "complete" : "pending";
+    }
+
+    if (stepId === "run") {
+      return isRunning ? "active" : hasPreparedData ? "pending" : "pending";
     }
 
     return "incomplete";
@@ -69,81 +83,56 @@ export function WorkflowProgress() {
       <h3 className="ui-kicker theme-text-muted">
         Workflow Progress
       </h3>
-      <p className="ui-copy mt-2 theme-text-muted">
+      <p className="simple-mode-compact ui-copy mt-2 theme-text-muted">
         Follow the sequence below to move from raw files to final reconciliation output.
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {steps.map((step, index) => {
           const status = getStepStatus(step.id);
+          const isComplete = status === "complete";
+          const isActive = status === "active";
+          const cardClass = isComplete
+            ? "alert alert-success"
+            : isActive
+              ? "alert alert-info"
+              : "rounded-2xl border theme-border theme-muted";
+          const indexBadgeClass = isComplete
+            ? "badge badge-success"
+            : isActive
+              ? "badge badge-info"
+              : "badge badge-neutral";
+          const statusBadgeClass = isComplete
+            ? "badge badge-success"
+            : isActive
+              ? "badge badge-info"
+              : "badge badge-neutral";
 
           return (
             <div
               key={step.id}
-              className={`
-                relative rounded-2xl border p-4 transition
-                ${
-                  status === "complete"
-                    ? "border-emerald-500/40 bg-emerald-500/10"
-                    : status === "active"
-                      ? "border-sky-500/40 bg-sky-500/10"
-                      : "theme-border theme-muted"
-                }
-              `}
+              className={`relative p-4 transition ${cardClass}`}
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`
-                    flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold
-                    ${
-                      status === "complete"
-                        ? "bg-emerald-500/20 text-emerald-300"
-                        : status === "active"
-                          ? "bg-sky-500/20 text-sky-300"
-                        : "theme-muted theme-text-muted"
-                    }
-                  `}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-sm ${indexBadgeClass}`}
                 >
                   {status === "complete" ? "OK" : step.step}
                 </div>
 
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p
-                      className={`
-                        text-sm font-semibold
-                        ${
-                          status === "complete"
-                            ? "text-emerald-100"
-                            : status === "active"
-                              ? "text-sky-100"
-                              : "theme-text-muted"
-                        }
-                      `}
-                    >
+                    <p className="text-sm font-semibold theme-text">
                       {step.label}
                     </p>
-                    {status === "complete" && (
-                      <span className="text-xs text-emerald-400">Done</span>
-                    )}
+                    {status === "complete" && <span className="badge badge-success">Done</span>}
                   </div>
-                  <p className="mt-1 text-xs theme-text-muted">{step.description}</p>
+                  <p className="simple-mode-compact mt-1 text-xs theme-text-muted">{step.description}</p>
                 </div>
               </div>
 
               <div className="mt-3">
-                <span
-                  className={`
-                    rounded-full px-2 py-0.5 text-xs font-medium
-                    ${
-                      status === "complete"
-                        ? "bg-emerald-500/20 text-emerald-300"
-                        : status === "active"
-                          ? "bg-sky-500/20 text-sky-300"
-                        : "theme-muted theme-text-muted"
-                    }
-                  `}
-                >
+                <span className={statusBadgeClass}>
                   {status === "complete"
                     ? "Completed"
                     : status === "active"
@@ -154,11 +143,15 @@ export function WorkflowProgress() {
 
               {index < steps.length - 1 && (
                 <div
-                  className={`
-                    absolute right-0 top-1/2 hidden h-0.5 w-full -translate-y-1/2 sm:block
-                    ${status === "complete" ? "bg-emerald-500/40" : "bg-slate-300/70"}
-                  `}
-                  style={{ width: "calc(100% + 0.75rem)", left: "100%" }}
+                  className="absolute right-0 top-1/2 hidden h-0.5 w-full -translate-y-1/2 sm:block"
+                  style={{
+                    backgroundColor:
+                      status === "complete"
+                        ? "var(--success-border)"
+                        : "var(--card-border)",
+                    width: "calc(100% + 0.75rem)",
+                    left: "100%",
+                  }}
                 />
               )}
             </div>

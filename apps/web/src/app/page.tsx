@@ -10,6 +10,7 @@ import { WorkflowProgress } from "@/components/workflow-progress";
 import { DataPreview } from "@/components/data-preview";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SimpleModeToggle } from "@/components/simple-mode-toggle";
+import { NextActionPanel } from "@/components/next-action-panel";
 import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/spec";
 
 export default function Home() {
@@ -23,23 +24,23 @@ export default function Home() {
               <h1 className="text-2xl font-bold theme-text sm:text-3xl">
                 Rowshni
               </h1>
-              <p className="mt-1 text-base font-medium text-amber-500 sm:text-lg">
+              <p className="mt-1 text-base font-medium theme-text-muted sm:text-lg">
                 Shedding light on your ledger
               </p>
-              <p className="mt-2 max-w-3xl text-sm leading-relaxed theme-text-muted">
+              <p className="simple-mode-compact mt-2 max-w-3xl text-sm leading-relaxed theme-text-muted">
                 AI-powered reconciliation for month-end close. Upload files, map fields, review transformed data, and run agents.
               </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+              <div className="simple-mode-compact mt-3 flex flex-wrap gap-2 text-xs">
+                <span className="badge badge-neutral">
                   1. Upload
                 </span>
-                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+                <span className="badge badge-neutral">
                   2. Map
                 </span>
-                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+                <span className="badge badge-neutral">
                   3. Preview
                 </span>
-                <span className="rounded-full border theme-border theme-muted px-3 py-1 theme-text-muted">
+                <span className="badge badge-neutral">
                   4. Reconcile
                 </span>
               </div>
@@ -49,7 +50,7 @@ export default function Home() {
                 href="https://github.com/bashiraziz/acctreconagents"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center rounded-lg border theme-border theme-card px-3 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
+                className="btn btn-secondary btn-sm"
                 title="View on GitHub"
               >
                 <svg
@@ -64,7 +65,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/user-guide"
-                className="rounded-lg border theme-border theme-card px-4 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
+                className="btn btn-secondary btn-sm"
               >
                 User Guide
               </Link>
@@ -80,6 +81,7 @@ export default function Home() {
 
         {/* Workflow Progress Indicator */}
         <WorkflowProgress />
+        <NextActionPanel />
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
@@ -99,17 +101,17 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-8 border-t theme-border pt-6 pb-8">
+        <footer className="simple-mode-compact mt-8 border-t theme-border pt-6 pb-8">
           <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
             <div className="text-sm theme-text-muted">
-              <span className="font-medium text-amber-500">Rowshni</span> - Shedding light on your ledger
+              <span className="font-medium theme-text">Rowshni</span> - Shedding light on your ledger
             </div>
             <div className="flex items-center gap-4">
               <Link
                 href="https://github.com/bashiraziz/acctreconagents"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm font-medium theme-text hover:text-amber-500 transition-colors"
+                className="flex items-center gap-2 text-sm font-medium theme-text transition-opacity hover:opacity-80"
               >
                 <svg
                   viewBox="0 0 16 16"
@@ -124,7 +126,7 @@ export default function Home() {
               <span className="text-sm theme-text-muted">|</span>
               <Link
                 href="/user-guide"
-                className="text-sm font-medium theme-text hover:text-amber-500 transition-colors"
+                className="text-sm font-medium theme-text transition-opacity hover:opacity-80"
               >
                 User Guide
               </Link>
@@ -149,8 +151,8 @@ function AboutPanel() {
     <section className="ui-panel">
       <h3 className="ui-title">About Rowshni</h3>
       <p className="ui-copy mt-2">
-        <span className="font-medium text-amber-500">Rowshni</span> means &quot;light&quot;.
-        We illuminate your reconciliations with AI-powered insights, bringing clarity to complex financial data.
+        <span className="font-medium theme-text">Rowshni</span> means &quot;light&quot;.
+        It streamlines GL-to-subledger reconciliation with guided steps and AI assistance.
       </p>
 
       <div className="mt-4 rounded border theme-border theme-muted p-3">
@@ -162,35 +164,11 @@ function AboutPanel() {
           <li>Frontend: Next.js web app | Backend: Fastify orchestrator</li>
           <li>Runtime: Gemini by default, with optional OpenAI and Claude integration</li>
         </ul>
-        <p className="simple-only mt-2 text-xs theme-text-muted">
-          For full technical details, turn off Simple mode or open the User Guide.
-        </p>
-      </div>
-
-      <div className="mt-4 rounded border theme-border theme-card p-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] theme-text-muted">
-          Open-Source Highlight
-        </p>
-        <p className="mt-2 text-sm theme-text">
-          Reusable Claude Code Skill: Better Auth for Next.js
-        </p>
-        <p className="mt-1 text-sm theme-text-muted">
-          Production-ready Better Auth integration for Next.js 16, packaged as a public Claude
-          Code plugin to avoid common bundling pitfalls.
-        </p>
-        <Link
-          href="https://github.com/bashiraziz/claude-better-auth-skill"
-          className="mt-2 inline-flex text-sm font-medium theme-text underline hover:text-amber-500 transition-colors"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          GitHub: bashiraziz/claude-better-auth-skill
-        </Link>
       </div>
 
       <details className="simple-hide mt-4 border-t theme-border pt-4">
         <summary className="cursor-pointer text-sm font-medium theme-text">
-          Tech Stack
+          Technical Reference
         </summary>
         <div className="mt-3 space-y-3 text-sm theme-text-muted">
           <div className="flex flex-wrap gap-2">
@@ -206,192 +184,36 @@ function AboutPanel() {
             <li>Fastify orchestrator service (OpenAI, Claude, Gemini modes)</li>
             <li>Spec-Kit contracts for data validation</li>
             <li>Gemini 2.0 Flash (default free-tier 4-agent pipeline)</li>
-            <li>Claude skills subagents for mapping and variance investigation</li>
-            <li>Anonymous mode with browser localStorage</li>
+            <li>Optional Claude skills for mapping and investigation</li>
           </ul>
 
-          <details className="rounded border theme-border theme-muted p-3">
-            <summary className="cursor-pointer text-sm font-medium theme-text">
-              What are Claude Skills?
-            </summary>
-            <div className="mt-2 space-y-2 text-xs theme-text-muted">
-              <p>
-                Claude Skills are task-specific instructions and workflows that act like reusable
-                subagents for focused reconciliation jobs.
-              </p>
-              <p className="font-medium theme-text">They define:</p>
-              <ul className="list-disc space-y-1 pl-4">
-                <li>
-                  <span className="font-medium">Specialized Logic</span>: Domain-specific steps for
-                  mapping, validation, and variance investigation
-                </li>
-                <li>
-                  <span className="font-medium">Operational Guardrails</span>: Consistent rules for
-                  handling inputs, edge cases, and error recovery
-                </li>
-                <li>
-                  <span className="font-medium">Reusable Workflows</span>: Repeatable agent behaviors
-                  that reduce manual prompt engineering
-                </li>
-              </ul>
-              <p>
-                In this app, Claude Skills support parts of the AI pipeline where structured,
-                predictable behavior improves reconciliation quality and consistency.
-              </p>
-            </div>
-          </details>
-
-          <details className="rounded border theme-border theme-muted p-3">
-            <summary className="cursor-pointer text-sm font-medium theme-text">
-              What are Spec-Kit contracts?
-            </summary>
-            <div className="mt-2 space-y-2 text-xs theme-text-muted">
-              <p>
-                Spec-Kit contracts are structured JSON schemas that define the &quot;source of truth&quot;
-                for data validation and system behavior.
-              </p>
-              <p className="font-medium theme-text">They define:</p>
-              <ul className="list-disc space-y-1 pl-4">
-                <li>
-                  <span className="font-medium">Data Models</span>: Canonical schemas like
-                  <code className="mx-1 rounded bg-gray-700 px-1 py-0.5 text-[11px] text-gray-200">canonical_balance</code>
-                  (account_code, period, amount, currency)
-                </li>
-                <li>
-                  <span className="font-medium">Interfaces</span>: Exact inputs/outputs for the reconciliation
-                  tool that AI agents consume
-                </li>
-                <li>
-                  <span className="font-medium">Workflows</span>: Expected process flows for upload and reconciliation
-                </li>
-              </ul>
-              <p>
-                Your uploaded CSVs are transformed to match these canonical schemas. This ensures
-                consistency across different accounting systems and allows AI agents to reliably
-                process your data.
-              </p>
-              <p className="pt-1 text-[11px] italic">
-                Contract version {specMetadata.version} | {canonicalBalanceFields.length + transactionFields.length} fields total
-              </p>
-            </div>
-          </details>
-
-          <div className="rounded border theme-border theme-muted p-3">
-            <p className="text-sm font-medium theme-text">
-              AI Runtime
-            </p>
-            <p className="mt-1 text-xs theme-text-muted">
-              Default: Gemini 2.0 Flash free tier. Optional OpenAI agents and Claude skills run when configured.
-            </p>
-          </div>
           <div className="flex flex-wrap gap-3">
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/master/README.md"
-              className="text-xs font-medium theme-text underline hover:text-amber-500 transition-colors"
+              className="btn btn-secondary btn-sm"
               target="_blank"
             >
-              {"View README ->"}
+              View README
             </Link>
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/master/specs/reconciliation.speckit.json"
-              className="text-xs font-medium theme-text underline hover:text-amber-500 transition-colors"
+              className="btn btn-secondary btn-sm"
               target="_blank"
             >
-              {"View Spec ->"}
+              View Spec
+            </Link>
+            <Link
+              href="/user-guide"
+              className="btn btn-secondary btn-sm"
+            >
+              Open User Guide
             </Link>
           </div>
         </div>
       </details>
-
-      <details className="simple-hide mt-4 border-t theme-border pt-4">
-        <summary className="cursor-pointer text-sm font-medium theme-text">
-          Data Model
-        </summary>
-        <p className="mt-2 text-sm theme-text-muted">
-          {specMetadata.summary} Reports include Organization (if set), Reporting Period, and Report Generated On.
-        </p>
-        <div className="mt-4 space-y-4">
-          <div>
-            <p className="text-xs font-medium uppercase theme-text-muted">Application Entities</p>
-            <ul className="mt-2 space-y-1 text-sm theme-text">
-              <li className="flex items-center justify-between">
-                <span>user organizations</span>
-                <span className="text-xs theme-text-muted">persistent</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span>default organization per user</span>
-                <span className="text-xs theme-text-muted">supported</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span>organization defaults (materiality, prompt)</span>
-                <span className="text-xs theme-text-muted">supported</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span>per-run organization selection</span>
-                <span className="text-xs theme-text-muted">supported</span>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase theme-text-muted">Balance Fields</p>
-            <ul className="mt-2 space-y-1 text-sm theme-text">
-              {canonicalBalanceFields.map((field) => (
-                <li key={field.key} className="flex items-center justify-between">
-                  <span>{field.label}</span>
-                  <span className="text-xs theme-text-muted">
-                    {field.required ? "required" : "optional"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase theme-text-muted">Transaction Fields</p>
-            <ul className="mt-2 space-y-1 text-sm theme-text">
-              {transactionFields.map((field) => (
-                <li key={field.key} className="flex items-center justify-between">
-                  <span>{field.label}</span>
-                  <span className="text-xs theme-text-muted">
-                    {field.required ? "required" : "optional"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </details>
-
-      <details className="simple-hide mt-4 border-t theme-border pt-4">
-        <summary className="cursor-pointer text-sm font-medium theme-text">
-          AI Agent Pipeline
-        </summary>
-        <div className="mt-3 space-y-2 text-sm">
-          <div className="border-l-2 border-gray-500 pl-3">
-            <p className="font-medium theme-text">1. Data Validation Agent</p>
-            <p className="text-xs theme-text-muted">
-              Validates data quality and detects issues
-            </p>
-          </div>
-          <div className="border-l-2 border-gray-500 pl-3">
-            <p className="font-medium theme-text">2. Reconciliation Analyst</p>
-            <p className="text-xs theme-text-muted">
-              Analyzes variances and identifies patterns
-            </p>
-          </div>
-          <div className="border-l-2 border-gray-500 pl-3">
-            <p className="font-medium theme-text">3. Variance Investigator</p>
-            <p className="text-xs theme-text-muted">
-              Investigates material variances and root causes
-            </p>
-          </div>
-          <div className="border-l-2 border-gray-500 pl-3">
-            <p className="font-medium theme-text">4. Report Generator</p>
-            <p className="text-xs theme-text-muted">
-              Creates audit-ready documentation
-            </p>
-          </div>
-        </div>
-      </details>
+      <p className="simple-only mt-4 text-xs theme-text-muted">
+        For full technical details, turn off Simple mode or open the User Guide.
+      </p>
     </section>
   );
 }

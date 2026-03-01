@@ -43,7 +43,7 @@ export function OrchestratorConsole() {
   } = useOrchestratorState(formRef);
 
   return (
-    <section className="ui-panel">
+    <section id="run-agents" className="ui-panel scroll-mt-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="ui-kicker">

@@ -34,7 +34,7 @@ export function DataPreview() {
 
   if (!reconciliationData) {
     return (
-      <div className="ui-panel">
+      <div id="preview-data" className="ui-panel scroll-mt-6">
         <h3 className="ui-kicker">
           Data Preview
         </h3>
@@ -46,7 +46,7 @@ export function DataPreview() {
   }
 
   return (
-    <div className="ui-panel">
+    <div id="preview-data" className="ui-panel scroll-mt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="ui-kicker">
@@ -162,15 +162,6 @@ export function DataPreview() {
               </>
             )}
           </div>
-        </div>
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => setIsVisible(false)}
-            className="ui-neutral-btn rounded-lg border px-3 py-1 text-xs font-semibold transition"
-          >
-            Hide preview
-          </button>
         </div>
       </div>
       ) : (

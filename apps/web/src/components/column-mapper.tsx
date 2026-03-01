@@ -173,7 +173,7 @@ export function ColumnMapper() {
   const subledgerMissing = getMissingFields("subledger_balance");
 
   return (
-    <section className="rounded-3xl border theme-border theme-card p-5 sm:p-6">
+    <section id="map-columns" className="ui-panel scroll-mt-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="ui-kicker">
@@ -260,21 +260,21 @@ export function ColumnMapper() {
 
       {/* Errors */}
       {errors.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4">
-          <p className="font-semibold text-rose-100">Validation Errors</p>
-          <ul className="mt-2 list-disc pl-5 text-sm text-rose-100/90">
+        <div className="alert alert-danger mt-4">
+          <p className="font-semibold">Validation Errors</p>
+          <ul className="mt-2 list-disc pl-5 text-sm">
             {errors.slice(0, 10).map((error, i) => (
               <li key={i}>{error}</li>
             ))}
             {errors.length > 10 && (
-              <li className="text-rose-100/70">...and {errors.length - 10} more</li>
+              <li className="opacity-85">...and {errors.length - 10} more</li>
             )}
           </ul>
         </div>
       )}
 
       {/* Apply Button */}
-      <div className="mt-6 rounded-2xl border border-sky-500/30 bg-sky-500/10 p-4">
+      <div className="alert alert-info mt-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1">
             <p className="font-semibold theme-text">
@@ -285,13 +285,13 @@ export function ColumnMapper() {
             {!canApply && (glMissing.length > 0 || subledgerMissing.length > 0) && (
               <div className="mt-2 space-y-1">
                 {glMissing.length > 0 && (
-                  <p className="text-sm text-amber-300">
+                  <p className="text-sm">
                     <span className="font-medium">GL Missing:</span> {glMissing.join(", ")}
                     {glMissing.includes("Account Code") && " (fill in Upload Files metadata or map column)"}
                   </p>
                 )}
                 {subledgerMissing.length > 0 && (
-                  <p className="text-sm text-amber-300">
+                  <p className="text-sm">
                     <span className="font-medium">Subledger Missing:</span> {subledgerMissing.join(", ")}
                     {subledgerMissing.includes("Account Code") && " (fill in Upload Files metadata)"}
                   </p>
@@ -307,7 +307,7 @@ export function ColumnMapper() {
           <button
             onClick={handleApplyMappings}
             disabled={!canApply}
-            className="rounded-full bg-sky-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-400 sm:ml-4"
+            className="btn btn-primary btn-md btn-pill sm:ml-4"
           >
             Apply Mappings
           </button>
@@ -390,7 +390,7 @@ function MappingTab({
         </div>
         <button
           onClick={onAutoSuggest}
-          className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400"
+          className="btn btn-secondary btn-sm btn-pill"
         >
           Auto-Suggest Mappings
         </button>
@@ -407,7 +407,7 @@ function MappingTab({
                   <span className="text-sm font-medium theme-text">
                     {field.label}
                   </span>
-                  <span className="text-xs text-rose-400">Required</span>
+                  <span className="badge badge-danger">Required</span>
                 </div>
                 {field.description && (
                   <p className="mt-1 text-xs theme-text-muted">{field.description}</p>

@@ -48,7 +48,7 @@ export default async function UserGuidePage() {
             <div>
               <Link
                 href="/"
-                className="text-sm font-medium text-amber-500 hover:text-amber-400"
+                className="btn btn-secondary btn-sm w-fit"
               >
                 &lt;- Back to app
               </Link>
@@ -59,14 +59,14 @@ export default async function UserGuidePage() {
                 Read the guide here and return without using the browser back button.
               </p>
               <p className="mt-2 text-xs theme-text-muted">
-                Prefer the repo view? Use "View on GitHub".
+                Prefer the repo view? Use &quot;View on GitHub&quot;.
               </p>
             </div>
             <Link
               href="https://github.com/bashiraziz/acctreconagents/blob/main/USER_GUIDE.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border theme-border theme-card px-4 py-2 text-sm font-medium theme-text transition-colors hover:theme-muted"
+              className="btn btn-secondary btn-sm"
             >
               View on GitHub
             </Link>

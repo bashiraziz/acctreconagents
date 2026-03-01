@@ -141,7 +141,7 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
               Lower values increase sensitivity.
             </p>
             {materialityThreshold === 0 && (
-              <p className="mt-2 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-200">
+              <p className="alert alert-warning mt-2 px-2 py-1 text-xs">
                 Threshold 0 means every variance, even 0.01, is marked material.
               </p>
             )}
@@ -176,7 +176,7 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
             <button
               type="button"
               onClick={onStop}
-              className="rounded bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              className="btn btn-danger btn-md"
             >
               Stop Agents
             </button>
@@ -185,7 +185,7 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
               type="button"
               onClick={onRun}
               disabled={!hasData || isLoading}
-              className="illuminate-btn rounded px-6 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed"
+              className="btn btn-primary btn-md"
             >
               {isLoading ? "Illuminating..." : "Illuminate"}
             </button>

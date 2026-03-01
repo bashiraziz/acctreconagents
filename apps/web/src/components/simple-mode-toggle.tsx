@@ -84,22 +84,14 @@ export function SimpleModeToggle() {
       <div className="flex items-center gap-1 rounded border theme-border theme-card p-1">
       <button
         onClick={() => updateSimpleMode("off")}
-        className={`rounded px-3 py-1.5 text-xs font-medium transition ${
-          simpleMode === "off"
-            ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:opacity-70"
-        }`}
+        className={`btn btn-sm ${simpleMode === "off" ? "btn-primary" : "btn-secondary"}`}
         title="Standard mode"
       >
         Standard
       </button>
       <button
         onClick={() => updateSimpleMode("on")}
-        className={`rounded px-3 py-1.5 text-xs font-medium transition ${
-          simpleMode === "on"
-            ? "bg-gray-900 text-white"
-            : "theme-text-muted hover:opacity-70"
-        }`}
+        className={`btn btn-sm ${simpleMode === "on" ? "btn-primary" : "btn-secondary"}`}
         title="Simple mode"
       >
         Simple
