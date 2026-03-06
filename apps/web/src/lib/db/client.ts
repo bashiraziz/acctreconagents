@@ -27,6 +27,25 @@ export type XeroConnectionRecord = {
   lastSyncedAt: string | null;
 };
 
+export type IntegrationConnectionProvider = "xero";
+
+export type IntegrationConnectionRecord = {
+  id: string;
+  userId: string;
+  organizationId: string;
+  provider: IntegrationConnectionProvider;
+  externalTenantId: string;
+  externalTenantName: string | null;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  scope: string | null;
+  tokenType: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastSyncedAt: string | null;
+};
+
 // ============================================
 // User Mappings CRUD
 // ============================================
@@ -664,6 +683,228 @@ export async function deleteXeroConnection(userId: string): Promise<void> {
     console.error("Database error in deleteXeroConnection:", error);
     throw new Error(
       `Failed to delete Xero connection: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+function isRelationMissingError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const maybe = error as { code?: string };
+  return maybe.code === "42P01";
+}
+
+function mapIntegrationConnectionRow(row: Record<string, unknown>): IntegrationConnectionRecord {
+  return {
+    id: String(row.id ?? ""),
+    userId: String(row.user_id ?? ""),
+    organizationId: String(row.organization_id ?? ""),
+    provider: String(row.provider ?? "xero") as IntegrationConnectionProvider,
+    externalTenantId: String(row.external_tenant_id ?? ""),
+    externalTenantName:
+      row.external_tenant_name === null || row.external_tenant_name === undefined
+        ? null
+        : String(row.external_tenant_name),
+    accessToken: String(row.access_token ?? ""),
+    refreshToken: String(row.refresh_token ?? ""),
+    expiresAt: String(row.expires_at ?? ""),
+    scope: row.scope === null || row.scope === undefined ? null : String(row.scope),
+    tokenType:
+      row.token_type === null || row.token_type === undefined
+        ? null
+        : String(row.token_type),
+    createdAt: String(row.created_at ?? ""),
+    updatedAt: String(row.updated_at ?? ""),
+    lastSyncedAt:
+      row.last_synced_at === null || row.last_synced_at === undefined
+        ? null
+        : String(row.last_synced_at),
+  };
+}
+
+function mapLegacyXeroToIntegration(
+  legacy: XeroConnectionRecord,
+  organizationId: string
+): IntegrationConnectionRecord {
+  return {
+    id: legacy.id,
+    userId: legacy.userId,
+    organizationId,
+    provider: "xero",
+    externalTenantId: legacy.tenantId,
+    externalTenantName: legacy.tenantName,
+    accessToken: legacy.accessToken,
+    refreshToken: legacy.refreshToken,
+    expiresAt: legacy.expiresAt,
+    scope: legacy.scope,
+    tokenType: legacy.tokenType,
+    createdAt: legacy.createdAt,
+    updatedAt: legacy.updatedAt,
+    lastSyncedAt: legacy.lastSyncedAt,
+  };
+}
+
+export async function upsertIntegrationConnection(
+  userId: string,
+  organizationId: string,
+  provider: IntegrationConnectionProvider,
+  connection: {
+    externalTenantId: string;
+    externalTenantName?: string | null;
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: Date;
+    scope?: string | null;
+    tokenType?: string | null;
+  }
+): Promise<IntegrationConnectionRecord> {
+  const id = `conn_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  try {
+    const result = await sql`
+      INSERT INTO integration_connections (
+        id,
+        user_id,
+        organization_id,
+        provider,
+        external_tenant_id,
+        external_tenant_name,
+        access_token,
+        refresh_token,
+        expires_at,
+        scope,
+        token_type,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${id},
+        ${userId},
+        ${organizationId},
+        ${provider},
+        ${connection.externalTenantId},
+        ${connection.externalTenantName ?? null},
+        ${connection.accessToken},
+        ${connection.refreshToken},
+        ${connection.expiresAt.toISOString()},
+        ${connection.scope ?? null},
+        ${connection.tokenType ?? null},
+        NOW(),
+        NOW()
+      )
+      ON CONFLICT (user_id, organization_id, provider)
+      DO UPDATE SET
+        external_tenant_id = EXCLUDED.external_tenant_id,
+        external_tenant_name = EXCLUDED.external_tenant_name,
+        access_token = EXCLUDED.access_token,
+        refresh_token = EXCLUDED.refresh_token,
+        expires_at = EXCLUDED.expires_at,
+        scope = EXCLUDED.scope,
+        token_type = EXCLUDED.token_type,
+        updated_at = NOW()
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to save integration connection - no rows returned");
+    }
+    return mapIntegrationConnectionRow(result.rows[0] as Record<string, unknown>);
+  } catch (error) {
+    if (provider === "xero" && isRelationMissingError(error)) {
+      const legacy = await upsertXeroConnection(userId, {
+        tenantId: connection.externalTenantId,
+        tenantName: connection.externalTenantName ?? null,
+        accessToken: connection.accessToken,
+        refreshToken: connection.refreshToken,
+        expiresAt: connection.expiresAt,
+        scope: connection.scope ?? null,
+        tokenType: connection.tokenType ?? null,
+      });
+      return mapLegacyXeroToIntegration(legacy, organizationId);
+    }
+    console.error("Database error in upsertIntegrationConnection:", error);
+    throw new Error(
+      `Failed to save integration connection: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function getIntegrationConnection(
+  userId: string,
+  organizationId: string,
+  provider: IntegrationConnectionProvider
+): Promise<IntegrationConnectionRecord | null> {
+  try {
+    const result = await sql`
+      SELECT * FROM integration_connections
+      WHERE user_id = ${userId}
+        AND organization_id = ${organizationId}
+        AND provider = ${provider}
+      LIMIT 1;
+    `;
+    if (result.rows && result.rows.length > 0) {
+      return mapIntegrationConnectionRow(result.rows[0] as Record<string, unknown>);
+    }
+    if (provider === "xero") {
+      const legacy = await getXeroConnection(userId);
+      return legacy ? mapLegacyXeroToIntegration(legacy, organizationId) : null;
+    }
+    return null;
+  } catch (error) {
+    if (provider === "xero" && isRelationMissingError(error)) {
+      const legacy = await getXeroConnection(userId);
+      return legacy ? mapLegacyXeroToIntegration(legacy, organizationId) : null;
+    }
+    console.error("Database error in getIntegrationConnection:", error);
+    throw new Error(
+      `Failed to get integration connection: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function markIntegrationConnectionSynced(
+  userId: string,
+  organizationId: string,
+  provider: IntegrationConnectionProvider
+): Promise<void> {
+  try {
+    await sql`
+      UPDATE integration_connections
+      SET last_synced_at = NOW(), updated_at = NOW()
+      WHERE user_id = ${userId}
+        AND organization_id = ${organizationId}
+        AND provider = ${provider};
+    `;
+  } catch (error) {
+    if (provider === "xero" && isRelationMissingError(error)) {
+      await markXeroConnectionSynced(userId);
+      return;
+    }
+    console.error("Database error in markIntegrationConnectionSynced:", error);
+    throw new Error(
+      `Failed to mark integration sync time: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function deleteIntegrationConnection(
+  userId: string,
+  organizationId: string,
+  provider: IntegrationConnectionProvider
+): Promise<void> {
+  try {
+    await sql`
+      DELETE FROM integration_connections
+      WHERE user_id = ${userId}
+        AND organization_id = ${organizationId}
+        AND provider = ${provider};
+    `;
+  } catch (error) {
+    if (provider === "xero" && isRelationMissingError(error)) {
+      await deleteXeroConnection(userId);
+      return;
+    }
+    console.error("Database error in deleteIntegrationConnection:", error);
+    throw new Error(
+      `Failed to delete integration connection: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }

@@ -4,6 +4,7 @@ const XERO_AUTH_BASE = "https://login.xero.com/identity/connect/authorize";
 const XERO_TOKEN_URL = "https://identity.xero.com/connect/token";
 const XERO_REVOKE_URL = "https://identity.xero.com/connect/revocation";
 const XERO_API_BASE = "https://api.xero.com";
+const NON_ROUTABLE_DEV_HOSTS = new Set(["0.0.0.0", "::", "[::]"]);
 
 type XeroTokenResponse = {
   access_token: string;
@@ -20,7 +21,7 @@ type XeroConnection = {
   tenantType: string;
 };
 
-type XeroTrialBalanceResponse = {
+export type XeroTrialBalanceResponse = {
   Reports?: Array<{
     ReportTitles?: string[];
     ReportDate?: string;
@@ -28,13 +29,47 @@ type XeroTrialBalanceResponse = {
   }>;
 };
 
+export type XeroNormalizedBalance = Balance & {
+  debit?: number;
+  credit?: number;
+  balanceSide?: "debit" | "credit" | "zero";
+};
+
+type FlattenedXeroRow = {
+  rowType: string;
+  cells: string[];
+};
+
+function normalizeLocalDevHost(urlValue: string): string {
+  try {
+    const parsed = new URL(urlValue);
+    if (
+      process.env.NODE_ENV !== "production" &&
+      NON_ROUTABLE_DEV_HOSTS.has(parsed.hostname)
+    ) {
+      parsed.hostname = "localhost";
+    }
+    return parsed.toString();
+  } catch {
+    return urlValue;
+  }
+}
+
 export function getXeroConfig() {
-  const clientId = process.env.XERO_CLIENT_ID?.trim() ?? "";
-  const clientSecret = process.env.XERO_CLIENT_SECRET?.trim() ?? "";
-  const baseUrl = process.env.BETTER_AUTH_URL?.trim() || "http://localhost:3000";
-  const redirectUri =
+  const clientId =
+    process.env.XERO_CLIENT_ID?.trim() ||
+    process.env.Xero_Client_Id?.trim() ||
+    "";
+  const clientSecret =
+    process.env.XERO_CLIENT_SECRET?.trim() ||
+    process.env.Xero_Client_Secret?.trim() ||
+    "";
+  const baseUrlRaw = process.env.BETTER_AUTH_URL?.trim() || "http://localhost:3000";
+  const baseUrl = normalizeLocalDevHost(baseUrlRaw).replace(/\/$/, "");
+  const redirectUriRaw =
     process.env.XERO_REDIRECT_URI?.trim() ||
-    `${baseUrl.replace(/\/$/, "")}/api/integrations/xero/callback`;
+    `${baseUrl}/api/integrations/xero/callback`;
+  const redirectUri = normalizeLocalDevHost(redirectUriRaw);
 
   return {
     clientId,
@@ -184,57 +219,154 @@ function toNumber(value: string): number | null {
   return trimmed.includes("(") && trimmed.includes(")") ? -Math.abs(parsed) : parsed;
 }
 
-function collectCells(node: unknown, output: string[][]) {
+function collectRows(node: unknown, output: FlattenedXeroRow[]) {
   if (!node || typeof node !== "object") return;
-  const maybe = node as { Cells?: Array<{ Value?: string | number | null }>; Rows?: unknown[] };
+  const maybe = node as {
+    RowType?: string;
+    Cells?: Array<{ Value?: string | number | null }>;
+    Rows?: unknown[];
+  };
   if (Array.isArray(maybe.Cells)) {
     const cells = maybe.Cells.map((cell) =>
       cell?.Value === null || cell?.Value === undefined ? "" : String(cell.Value)
     );
-    output.push(cells);
+    output.push({
+      rowType: typeof maybe.RowType === "string" ? maybe.RowType.toLowerCase() : "",
+      cells,
+    });
   }
   if (Array.isArray(maybe.Rows)) {
     for (const child of maybe.Rows) {
-      collectCells(child, output);
+      collectRows(child, output);
     }
   }
+}
+
+function detectColumnIndexes(rows: FlattenedXeroRow[]) {
+  for (const row of rows) {
+    if (!row.cells || row.cells.length < 2) continue;
+    const labels = row.cells.map((cell) => cell.trim().toLowerCase());
+    const looksLikeHeader =
+      row.rowType === "header" ||
+      labels.some((label) => label.includes("debit") || label.includes("credit"));
+    if (!looksLikeHeader) continue;
+
+    const debitCandidates = labels
+      .map((label, index) => ({ label, index }))
+      .filter(({ label }) => label.includes("debit"));
+    const creditCandidates = labels
+      .map((label, index) => ({ label, index }))
+      .filter(({ label }) => label.includes("credit"));
+
+    const pickPreferredDebitCredit = (
+      candidates: Array<{ label: string; index: number }>
+    ): number | null => {
+      if (candidates.length === 0) return null;
+      const ytd = candidates.find(
+        ({ label }) =>
+          label.includes("year to date") ||
+          label.includes("year-to-date") ||
+          label.includes("ytd")
+      );
+      if (ytd) return ytd.index;
+
+      const nonMonth = candidates.find(({ label }) => !label.includes("month"));
+      if (nonMonth) return nonMonth.index;
+
+      return candidates[0]?.index ?? null;
+    };
+
+    const debitIdx = pickPreferredDebitCredit(debitCandidates);
+    const creditIdx = pickPreferredDebitCredit(creditCandidates);
+    const netIdx = labels.findIndex(
+      (label) =>
+        label.includes("balance") ||
+        label === "amount" ||
+        /\b\d{4}\b/.test(label) // e.g., "Dec 31, 2025"
+    );
+
+    return {
+      debitIndex: debitIdx,
+      creditIndex: creditIdx,
+      netIndex: netIdx >= 0 ? netIdx : null,
+    };
+  }
+
+  return {
+    debitIndex: null as number | null,
+    creditIndex: null as number | null,
+    netIndex: null as number | null,
+  };
 }
 
 export function normalizeXeroTrialBalance(
   payload: XeroTrialBalanceResponse,
   period: string,
-): Balance[] {
+): XeroNormalizedBalance[] {
   const report = payload?.Reports?.[0];
   if (!report?.Rows) {
     return [];
   }
 
-  const rows: string[][] = [];
+  const rows: FlattenedXeroRow[] = [];
   for (const row of report.Rows) {
-    collectCells(row, rows);
+    collectRows(row, rows);
   }
+  const { debitIndex, creditIndex, netIndex } = detectColumnIndexes(rows);
 
-  const balances: Balance[] = [];
-  for (const cells of rows) {
+  const balances: XeroNormalizedBalance[] = [];
+  for (const row of rows) {
+    const cells = row.cells;
     if (cells.length < 2) continue;
-    const accountCell = cells[0]?.trim();
+    const accountCell = cells[0]?.trim() ?? "";
     if (!accountCell) continue;
-
-    const amountCandidate = [...cells].reverse().map(toNumber).find((val) => val !== null);
-    if (amountCandidate === undefined || amountCandidate === null) continue;
 
     // Prefer a pure numeric account code when present, otherwise keep source label.
     const codeMatch = accountCell.match(/\b\d{2,}\b/);
+    if (!codeMatch) {
+      // Ignore non-account rows such as section labels and totals.
+      continue;
+    }
     const accountCode = codeMatch ? codeMatch[0] : accountCell.slice(0, 80);
+
+    const parsedDebit =
+      debitIndex !== null && debitIndex < cells.length ? toNumber(cells[debitIndex]) : null;
+    const parsedCredit =
+      creditIndex !== null && creditIndex < cells.length ? toNumber(cells[creditIndex]) : null;
+    const debit = parsedDebit === null ? null : Math.abs(parsedDebit);
+    const credit = parsedCredit === null ? null : Math.abs(parsedCredit);
+
+    // Prefer debit/credit math (YTD when present) over the report's date column,
+    // which often represents opening balance and can understate current position.
+    let amount: number | null = null;
+    if (debit !== null || credit !== null) {
+      amount = (debit ?? 0) - (credit ?? 0);
+    }
+
+    const netFromColumn =
+      netIndex !== null && netIndex < cells.length ? toNumber(cells[netIndex]) : null;
+    if (amount === null) {
+      amount = netFromColumn;
+    }
+
+    if (amount === null) {
+      amount = [...cells.slice(1)].reverse().map(toNumber).find((val) => val !== null) ?? null;
+    }
+    if (amount === null) continue;
+
+    const balanceSide: "debit" | "credit" | "zero" =
+      amount > 0 ? "debit" : amount < 0 ? "credit" : "zero";
 
     balances.push({
       account_code: accountCode,
       period,
-      amount: amountCandidate,
+      amount,
       currency: "USD",
+      debit: debit ?? (amount > 0 ? Math.abs(amount) : 0),
+      credit: credit ?? (amount < 0 ? Math.abs(amount) : 0),
+      balanceSide,
     });
   }
 
   return balances;
 }
-

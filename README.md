@@ -203,7 +203,7 @@ Advanced:
 * The web app uses Vercel Postgres and includes a `user_organizations` table to store multiple organizations per user (with a single default).
 * Xero integration stores OAuth and tenant metadata in `xero_connections`.
 * For local testing without DB migration, set `XERO_DEV_NO_DB=true` and connect from Settings. This mode is non-persistent by design.
-* Run `npx tsx apps/web/scripts/init-db.ts` once against your target database to create tables. The script includes a safety check to avoid running against localhost.
+  * Run `npx tsx apps/web/scripts/init-db.ts` once against your target database to create tables. The script includes a safety check to avoid running against localhost.
 
 ## API schemas
 OpenAPI documents live in `docs/api`:

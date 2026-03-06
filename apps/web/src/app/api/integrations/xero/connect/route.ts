@@ -2,16 +2,19 @@ import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ApiErrors, withErrorHandler } from "@/lib/api-error";
-import { buildXeroAuthorizeUrl, getXeroConfig } from "@/lib/xero";
-import { isXeroDevNoDbModeEnabled } from "@/lib/xero-dev-store";
+import { resolveOrganizationScope } from "@/lib/integrations/organization-scope";
+import { getIntegrationProvider } from "@/lib/integrations/provider-registry";
+import { rememberXeroOAuthState } from "@/lib/xero-oauth-state-store";
 
 export const runtime = "nodejs";
 
 const XERO_STATE_COOKIE = "xero_oauth_state";
 const XERO_DEV_SESSION_COOKIE = "xero_dev_session";
+const XERO_ORG_SCOPE_COOKIE = "xero_org_scope";
+const provider = getIntegrationProvider("xero");
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
-  const devNoDbMode = isXeroDevNoDbModeEnabled();
+  const devNoDbMode = provider.isDevNoDbModeEnabled();
   let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
   try {
     session = await auth.api.getSession({
@@ -24,7 +27,13 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     return ApiErrors.unauthorized();
   }
 
-  const config = getXeroConfig();
+  const scope = await resolveOrganizationScope({
+    request,
+    userId: session?.user?.id ?? null,
+    allowAnonymous: devNoDbMode,
+  });
+
+  const config = provider.getConfig();
   if (!config.isConfigured) {
     return ApiErrors.badRequest(
       "Xero integration is not configured",
@@ -33,7 +42,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   }
 
   const state = randomUUID();
-  const authorizeUrl = buildXeroAuthorizeUrl(state);
+  if (process.env.NODE_ENV !== "production") {
+    rememberXeroOAuthState(state);
+  }
+  const authorizeUrl = provider.oauth.buildAuthorizeUrl(state);
   const response = NextResponse.redirect(authorizeUrl);
   response.cookies.set(XERO_STATE_COOKIE, state, {
     httpOnly: true,
@@ -42,8 +54,15 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     path: "/",
     maxAge: 60 * 10,
   });
+  response.cookies.set(XERO_ORG_SCOPE_COOKIE, scope.organizationId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 10,
+  });
 
-  if (!session?.user && devNoDbMode) {
+  if (devNoDbMode) {
     const devSession = request.cookies.get(XERO_DEV_SESSION_COOKIE)?.value || randomUUID();
     response.cookies.set(XERO_DEV_SESSION_COOKIE, devSession, {
       httpOnly: true,

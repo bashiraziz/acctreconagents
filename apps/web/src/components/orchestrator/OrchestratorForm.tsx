@@ -18,6 +18,7 @@ export interface OrchestratorFormProps {
   onPromptChange: (value: string) => void;
   materialityThreshold: number;
   onMaterialityChange: (value: number) => void;
+  reportingPeriodDefault: string;
   organizations: UserOrganization[];
   selectedOrganizationId: string;
   onOrganizationChange: (id: string) => void;
@@ -43,6 +44,7 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
       onPromptChange,
       materialityThreshold,
       onMaterialityChange,
+      reportingPeriodDefault,
       organizations,
       selectedOrganizationId,
       onOrganizationChange,
@@ -140,6 +142,11 @@ export const OrchestratorForm = forwardRef<OrchestratorFormHandle, OrchestratorF
               Variances above this amount are flagged as material and need follow-up.
               Lower values increase sensitivity.
             </p>
+            {reportingPeriodDefault && (
+              <p className="mt-2">
+                Reporting period default: <span className="font-semibold theme-text">{reportingPeriodDefault}</span>
+              </p>
+            )}
             {materialityThreshold === 0 && (
               <p className="alert alert-warning mt-2 px-2 py-1 text-xs">
                 Threshold 0 means every variance, even 0.01, is marked material.
