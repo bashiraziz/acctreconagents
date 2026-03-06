@@ -12,6 +12,12 @@ type XeroStatus = {
   connected: boolean;
   devNoDbMode: boolean;
   requiresAuth: boolean;
+  mode?: "oauth" | "mcp";
+  mcp?: {
+    enabled: boolean;
+    configured: boolean;
+    reason?: string | null;
+  };
   connection: {
     tenantId: string;
     tenantName: string | null;
@@ -42,12 +48,120 @@ type LocalBalanceRow = {
   amount: number;
   currency: string;
 };
+type XeroMode = "oauth" | "mcp";
+type XeroAction = "idle" | "pull" | "disconnect" | "discover";
+type XeroReportsDiscovery = {
+  mode: XeroMode;
+  count: number;
+  tenant: {
+    id: string;
+    name: string | null;
+  };
+  reports: Array<{
+    id: string;
+    name: string;
+    type: string | null;
+    source?: "reports_list" | "endpoint_probe";
+  }>;
+  diagnostics?: {
+    listCount: number;
+    probedCount: number;
+    totalProbes: number;
+  };
+};
+
+function resolveXeroMode(value: string | null | undefined): XeroMode {
+  return value?.toLowerCase() === "mcp" ? "mcp" : "oauth";
+}
+
+function getTodayLocalIsoDate(): string {
+  const now = new Date();
+  const year = String(now.getFullYear());
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatIsoDate(year: number, monthIndexZeroBased: number, day: number): string {
+  const y = String(year);
+  const m = String(monthIndexZeroBased + 1).padStart(2, "0");
+  const d = String(day).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getMonthEndIsoDate(base: Date): string {
+  const year = base.getFullYear();
+  const month = base.getMonth();
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  return formatIsoDate(year, month, lastDay);
+}
+
+function getPriorMonthEndIsoDate(base: Date): string {
+  const year = base.getFullYear();
+  const month = base.getMonth();
+  const prior = new Date(year, month, 0);
+  const priorYear = prior.getFullYear();
+  const priorMonth = prior.getMonth();
+  const priorLastDay = prior.getDate();
+  return formatIsoDate(priorYear, priorMonth, priorLastDay);
+}
+
+function getPriorYearEndIsoDate(base: Date): string {
+  const priorYear = base.getFullYear() - 1;
+  return formatIsoDate(priorYear, 11, 31);
+}
+
+function clampIsoDateToMax(dateIso: string, maxIso: string): string {
+  return dateIso > maxIso ? maxIso : dateIso;
+}
+
+function formatElapsedDuration(ms: number): string {
+  const totalSeconds = Math.max(0, Math.round(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes > 0) {
+    return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
+  return `${seconds}s`;
+}
+
+function getApiErrorMessage(
+  payload: unknown,
+  fallback: string
+): string {
+  if (!payload || typeof payload !== "object") {
+    return fallback;
+  }
+  const body = payload as { message?: unknown; details?: unknown };
+  const message = typeof body.message === "string" ? body.message.trim() : "";
+  const details = typeof body.details === "string" ? body.details.trim() : "";
+  if (message && details) {
+    return `${message}: ${details}`;
+  }
+  if (message) {
+    return message;
+  }
+  if (details) {
+    return details;
+  }
+  return fallback;
+}
 
 export default function XeroIntegrationPage() {
   const { data: session, isPending } = useSession();
+  const [selectedMode, setSelectedMode] = useState<XeroMode>("oauth");
+  const [xeroAsOfDate, setXeroAsOfDate] = useState<string>(() => getTodayLocalIsoDate());
+  const [modeInitialized, setModeInitialized] = useState(false);
   const [xeroStatus, setXeroStatus] = useState<XeroStatus | null>(null);
   const [xeroLoading, setXeroLoading] = useState(false);
-  const [xeroBusy, setXeroBusy] = useState(false);
+  const [xeroAction, setXeroAction] = useState<XeroAction>("idle");
+  const [xeroPullStartedAt, setXeroPullStartedAt] = useState<number | null>(null);
+  const [xeroPullElapsedMs, setXeroPullElapsedMs] = useState(0);
+  const [xeroLastPullDurationMs, setXeroLastPullDurationMs] = useState<number | null>(null);
+  const [xeroLastPullMode, setXeroLastPullMode] = useState<XeroMode | null>(null);
+  const [xeroReportsDiscovery, setXeroReportsDiscovery] = useState<XeroReportsDiscovery | null>(
+    null
+  );
   const [xeroError, setXeroError] = useState<string | null>(null);
   const [xeroPreview, setXeroPreview] = useState<XeroTrialBalancePreview | null>(null);
   const [showAllXeroRows, setShowAllXeroRows] = useState(false);
@@ -61,8 +175,11 @@ export default function XeroIntegrationPage() {
   );
 
   const xeroDevModeActive = Boolean(xeroStatus?.devNoDbMode);
+  const xeroMcpModeActive = selectedMode === "mcp";
+  const xeroMcpEnabled = Boolean(xeroStatus?.mcp?.enabled);
   const xeroCanUseWithoutAuth = Boolean(session?.user) || xeroDevModeActive;
-  const xeroModePending = !session?.user && xeroStatus === null && xeroLoading;
+  const xeroModePending =
+    !modeInitialized || (!session?.user && xeroStatus === null && xeroLoading);
   const xeroRecommendedMateriality = useMemo(() => {
     if (!xeroPreview || xeroPreview.glBalances.length === 0) return 50;
     const maxAbs = Math.max(
@@ -92,12 +209,26 @@ export default function XeroIntegrationPage() {
     [xeroTotals.debit, xeroTotals.credit]
   );
   const xeroTbBalanced = Math.abs(xeroTbDifference) < 0.005;
+  const xeroMaxAsOfDate = useMemo(() => getTodayLocalIsoDate(), []);
+  const xeroMonthEndAsOfDate = useMemo(() => getMonthEndIsoDate(new Date()), []);
+  const xeroPriorMonthEndAsOfDate = useMemo(
+    () => getPriorMonthEndIsoDate(new Date()),
+    []
+  );
+  const xeroPriorYearEndAsOfDate = useMemo(
+    () => getPriorYearEndIsoDate(new Date()),
+    []
+  );
+  const xeroBusy = xeroAction !== "idle";
+  const xeroPullInProgress = xeroPullStartedAt !== null;
 
   const loadXeroStatus = useCallback(async () => {
     setXeroLoading(true);
     setXeroError(null);
     try {
-      const response = await fetch("/api/integrations/xero/status");
+      const response = await fetch(
+        `/api/integrations/xero/status?mode=${encodeURIComponent(selectedMode)}`
+      );
       const data = await response.json();
       if (response.status === 401) {
         setXeroStatus({
@@ -105,28 +236,52 @@ export default function XeroIntegrationPage() {
           connected: false,
           devNoDbMode: false,
           requiresAuth: true,
+          mode: selectedMode,
           connection: null,
         });
         return;
       }
       if (!response.ok) {
-        throw new Error(data?.message ?? "Failed to load Xero connection status");
+        throw new Error(getApiErrorMessage(data, "Failed to load Xero connection status"));
       }
-      setXeroStatus(data as XeroStatus);
+      const nextStatus = data as XeroStatus;
+      setXeroStatus(nextStatus);
+      if (nextStatus.mode && nextStatus.mode !== selectedMode) {
+        setSelectedMode(nextStatus.mode);
+      }
     } catch (err) {
       setXeroError(err instanceof Error ? err.message : "Failed to load Xero status");
     } finally {
       setXeroLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    if (isPending) return;
-    void loadXeroStatus();
-  }, [isPending, session?.user, loadXeroStatus]);
+  }, [selectedMode]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const modeFromQuery = resolveXeroMode(params.get("mode"));
+    const hasModeQuery = params.has("mode");
+    const storedMode = resolveXeroMode(window.localStorage.getItem("xeroIntegrationMode"));
+    const initialMode = hasModeQuery ? modeFromQuery : storedMode;
+    setSelectedMode(initialMode);
+    window.localStorage.setItem("xeroIntegrationMode", initialMode);
+    setModeInitialized(true);
+  }, []);
+
+  useEffect(() => {
+    if (!modeInitialized || isPending) return;
+    void loadXeroStatus();
+  }, [modeInitialized, isPending, session?.user, loadXeroStatus]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hasModeQuery = params.has("mode");
+    if (hasModeQuery) {
+      const modeFromQuery = resolveXeroMode(params.get("mode"));
+      if (modeFromQuery !== selectedMode) {
+        setSelectedMode(modeFromQuery);
+        window.localStorage.setItem("xeroIntegrationMode", modeFromQuery);
+      }
+    }
     const status = params.get("xero");
     const detail = params.get("detail");
     if (!status) return;
@@ -138,10 +293,30 @@ export default function XeroIntegrationPage() {
     if (status === "error") {
       setXeroError(detail || "Xero connection failed");
     }
-  }, [loadXeroStatus]);
+  }, [loadXeroStatus, selectedMode]);
+
+  useEffect(() => {
+    if (!xeroStatus || selectedMode !== "mcp" || xeroMcpEnabled) {
+      return;
+    }
+    setSelectedMode("oauth");
+    window.localStorage.setItem("xeroIntegrationMode", "oauth");
+  }, [selectedMode, xeroMcpEnabled, xeroStatus]);
+
+  useEffect(() => {
+    if (xeroPullStartedAt === null) {
+      return;
+    }
+    const interval = window.setInterval(() => {
+      setXeroPullElapsedMs(Date.now() - xeroPullStartedAt);
+    }, 250);
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [xeroPullStartedAt]);
 
   const handleDisconnectXero = async () => {
-    setXeroBusy(true);
+    setXeroAction("disconnect");
     setXeroError(null);
     setXeroSavedMessage(null);
     try {
@@ -150,29 +325,49 @@ export default function XeroIntegrationPage() {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.message ?? "Failed to disconnect Xero");
+        throw new Error(getApiErrorMessage(data, "Failed to disconnect Xero"));
       }
       setXeroPreview(null);
+      setXeroReportsDiscovery(null);
       setShowAllXeroRows(false);
       await loadXeroStatus();
     } catch (err) {
       setXeroError(err instanceof Error ? err.message : "Failed to disconnect Xero");
     } finally {
-      setXeroBusy(false);
+      setXeroAction("idle");
     }
   };
 
   const handlePullXeroTrialBalance = async () => {
-    setXeroBusy(true);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(xeroAsOfDate)) {
+      setXeroError("Invalid As of date. Use YYYY-MM-DD.");
+      return;
+    }
+
+    setXeroAction("pull");
     setXeroError(null);
     setXeroSavedMessage(null);
+    const pullStartedAt = Date.now();
+    const pullMode = selectedMode;
+    setXeroPullStartedAt(pullStartedAt);
+    setXeroPullElapsedMs(0);
     try {
-      const response = await fetch("/api/integrations/xero/data/trial-balance");
+      const params = new URLSearchParams({
+        mode: selectedMode,
+        date: xeroAsOfDate,
+      });
+      const response = await fetch(
+        `/api/integrations/xero/data/trial-balance?${params.toString()}`
+      );
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.message ?? "Failed to pull trial balance from Xero");
+        throw new Error(getApiErrorMessage(data, "Failed to pull trial balance from Xero"));
       }
-      setXeroPreview(data as XeroTrialBalancePreview);
+      const preview = data as XeroTrialBalancePreview;
+      setXeroPreview(preview);
+      if (preview.asOfDate) {
+        setXeroAsOfDate(preview.asOfDate);
+      }
       setShowAllXeroRows(false);
       await loadXeroStatus();
     } catch (err) {
@@ -180,7 +375,33 @@ export default function XeroIntegrationPage() {
         err instanceof Error ? err.message : "Failed to pull trial balance from Xero"
       );
     } finally {
-      setXeroBusy(false);
+      const duration = Date.now() - pullStartedAt;
+      setXeroLastPullDurationMs(duration);
+      setXeroLastPullMode(pullMode);
+      setXeroPullElapsedMs(duration);
+      setXeroPullStartedAt(null);
+      setXeroAction("idle");
+    }
+  };
+
+  const handleDiscoverXeroReports = async () => {
+    setXeroAction("discover");
+    setXeroError(null);
+    setXeroSavedMessage(null);
+    try {
+      const response = await fetch(
+        `/api/integrations/xero/data/reports?mode=${encodeURIComponent(selectedMode)}`
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, "Failed to discover Xero reports"));
+      }
+      setXeroReportsDiscovery(data as XeroReportsDiscovery);
+    } catch (err) {
+      setXeroReportsDiscovery(null);
+      setXeroError(err instanceof Error ? err.message : "Failed to discover Xero reports");
+    } finally {
+      setXeroAction("idle");
     }
   };
 
@@ -275,6 +496,40 @@ export default function XeroIntegrationPage() {
       maximumFractionDigits: 2,
     });
 
+  const handleModeChange = (mode: XeroMode) => {
+    if (mode === selectedMode) return;
+    if (mode === "mcp" && !xeroMcpEnabled) return;
+    setSelectedMode(mode);
+    window.localStorage.setItem("xeroIntegrationMode", mode);
+    setXeroError(null);
+    setXeroSavedMessage(null);
+    setXeroPreview(null);
+    setXeroReportsDiscovery(null);
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("mode", mode);
+    const query = params.toString();
+    window.history.replaceState({}, "", query ? `?${query}` : window.location.pathname);
+  };
+
+  const handleSelectAsOfDatePreset = (
+    preset: "today" | "month_end" | "prior_month_end" | "prior_year_end"
+  ) => {
+    if (preset === "today") {
+      setXeroAsOfDate(xeroMaxAsOfDate);
+      return;
+    }
+    if (preset === "month_end") {
+      setXeroAsOfDate(clampIsoDateToMax(xeroMonthEndAsOfDate, xeroMaxAsOfDate));
+      return;
+    }
+    if (preset === "prior_month_end") {
+      setXeroAsOfDate(clampIsoDateToMax(xeroPriorMonthEndAsOfDate, xeroMaxAsOfDate));
+      return;
+    }
+    setXeroAsOfDate(clampIsoDateToMax(xeroPriorYearEndAsOfDate, xeroMaxAsOfDate));
+  };
+
   return (
     <div className="min-h-screen theme-bg">
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
@@ -294,6 +549,44 @@ export default function XeroIntegrationPage() {
 
         <section className="theme-card theme-border rounded-3xl border p-6">
           <div className="flex flex-col gap-4">
+            <div className="rounded-xl border theme-border theme-muted p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-wide theme-text-muted">
+                  Pull Mode
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleModeChange("oauth")}
+                    className={
+                      selectedMode === "oauth"
+                        ? "btn btn-secondary btn-sm"
+                        : "btn btn-secondary btn-sm opacity-75"
+                    }
+                  >
+                    API
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleModeChange("mcp")}
+                    disabled={!xeroMcpEnabled}
+                    className={
+                      selectedMode === "mcp"
+                        ? "btn btn-secondary btn-sm disabled:opacity-60"
+                        : "btn btn-secondary btn-sm opacity-75 disabled:opacity-60"
+                    }
+                  >
+                    MCP
+                  </button>
+                </div>
+              </div>
+              {!xeroMcpEnabled && (
+                <p className="mt-2 text-xs theme-text-muted">
+                  MCP is disabled in environment (`XERO_MCP_ENABLED=false`).
+                </p>
+              )}
+            </div>
+
             {xeroModePending && (
               <div className="rounded-xl border theme-border theme-muted p-4 text-sm theme-text-muted">
                 Checking Xero mode...
@@ -317,6 +610,11 @@ export default function XeroIntegrationPage() {
                     Dev no-DB mode is active. Xero tokens are stored in local dev storage.
                   </div>
                 )}
+                {xeroMcpModeActive && (
+                  <div className="rounded-xl border theme-border theme-muted p-4 text-xs theme-text-muted">
+                    MCP mode active. Trial balance pulls run through the Xero MCP server.
+                  </div>
+                )}
 
                 {xeroLoading ? (
                   <div className="text-sm theme-text-muted">Checking Xero connection...</div>
@@ -329,16 +627,69 @@ export default function XeroIntegrationPage() {
                         </p>
                         <p className="mt-1 text-xs theme-text-muted">
                           {xeroStatus?.connected
-                            ? `Tenant: ${xeroStatus.connection?.tenantName || xeroStatus.connection?.tenantId}`
+                            ? xeroMcpModeActive
+                              ? "Connected via Xero MCP server."
+                              : `Tenant: ${xeroStatus.connection?.tenantName || xeroStatus.connection?.tenantId}`
                             : xeroStatus?.configured
                               ? "Xero credentials detected. Connect your tenant to import balances."
                               : "Set XERO_CLIENT_ID and XERO_CLIENT_SECRET to enable connection."}
                         </p>
+                        {xeroMcpModeActive && xeroStatus?.mcp?.reason && !xeroStatus?.connected && (
+                          <p className="mt-1 text-xs theme-text-muted">
+                            {xeroStatus.mcp.reason}
+                          </p>
+                        )}
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-col items-start gap-2 sm:items-end">
+                        <label className="flex items-center gap-2 text-xs theme-text-muted">
+                          <span>As of date</span>
+                          <input
+                            type="date"
+                            value={xeroAsOfDate}
+                            max={xeroMaxAsOfDate}
+                            onChange={(event) => setXeroAsOfDate(event.target.value)}
+                            disabled={xeroBusy}
+                            className="rounded-lg border theme-border theme-card px-2 py-1 text-xs theme-text"
+                          />
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSelectAsOfDatePreset("today")}
+                            disabled={xeroBusy}
+                            className="btn btn-secondary btn-sm disabled:opacity-70"
+                          >
+                            Today
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectAsOfDatePreset("month_end")}
+                            disabled={xeroBusy}
+                            className="btn btn-secondary btn-sm disabled:opacity-70"
+                          >
+                            Month-end
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectAsOfDatePreset("prior_month_end")}
+                            disabled={xeroBusy}
+                            className="btn btn-secondary btn-sm disabled:opacity-70"
+                          >
+                            Prior month-end
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectAsOfDatePreset("prior_year_end")}
+                            disabled={xeroBusy}
+                            className="btn btn-secondary btn-sm disabled:opacity-70"
+                          >
+                            Prior year-end
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
                         {!xeroStatus?.connected && xeroStatus?.configured && (
                           <a
-                            href="/api/integrations/xero/connect"
+                            href={`/api/integrations/xero/connect?mode=${encodeURIComponent(selectedMode)}`}
                             className="btn btn-primary btn-sm"
                           >
                             Connect Xero
@@ -347,23 +698,101 @@ export default function XeroIntegrationPage() {
                         {xeroStatus?.connected && (
                           <>
                             <button
+                              onClick={handleDiscoverXeroReports}
+                              disabled={xeroBusy}
+                              className="btn btn-secondary btn-sm disabled:opacity-70"
+                            >
+                              {xeroAction === "discover" ? "Discovering..." : "Discover Reports"}
+                            </button>
+                            <button
                               onClick={handlePullXeroTrialBalance}
                               disabled={xeroBusy}
                               className="btn btn-secondary btn-sm disabled:opacity-70"
                             >
-                              {xeroBusy ? "Pulling..." : "Pull Trial Balance"}
+                              {xeroAction === "pull"
+                                ? "Pulling..."
+                                : xeroMcpModeActive
+                                  ? "Pull Trial Balance (MCP)"
+                                  : "Pull Trial Balance"}
                             </button>
                             <button
                               onClick={handleDisconnectXero}
                               disabled={xeroBusy}
                               className="btn btn-danger btn-sm disabled:opacity-70"
                             >
-                              Disconnect
+                              {xeroAction === "disconnect"
+                                ? xeroMcpModeActive
+                                  ? "Logging out..."
+                                  : "Disconnecting..."
+                                : xeroMcpModeActive
+                                  ? "Log out"
+                                  : "Disconnect"}
                             </button>
                           </>
                         )}
+                        </div>
+                        {(xeroPullInProgress || xeroLastPullDurationMs !== null) && (
+                          <p className="text-xs theme-text-muted">
+                            {xeroPullInProgress
+                              ? `Pull elapsed (${selectedMode.toUpperCase()}): ${formatElapsedDuration(xeroPullElapsedMs)}`
+                              : `Last pull (${(xeroLastPullMode || selectedMode).toUpperCase()}): ${formatElapsedDuration(xeroLastPullDurationMs || 0)}`}
+                          </p>
+                        )}
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {xeroReportsDiscovery && (
+                  <div className="rounded-xl border theme-border theme-muted p-4">
+                    <p className="text-sm font-semibold theme-text">
+                      Discovered Reports ({xeroReportsDiscovery.count})
+                    </p>
+                    <p className="mt-1 text-xs theme-text-muted">
+                      Tenant: {xeroReportsDiscovery.tenant.name || xeroReportsDiscovery.tenant.id}
+                    </p>
+                    {xeroReportsDiscovery.diagnostics && (
+                      <p className="mt-1 text-xs theme-text-muted">
+                        List endpoint: {xeroReportsDiscovery.diagnostics.listCount}, probed endpoints:{" "}
+                        {xeroReportsDiscovery.diagnostics.probedCount}/
+                        {xeroReportsDiscovery.diagnostics.totalProbes}.
+                      </p>
+                    )}
+                    {xeroReportsDiscovery.reports.length === 0 ? (
+                      <p className="mt-2 text-xs theme-text-muted">
+                        No reports returned. This can happen when `/Reports` is empty and probed
+                        report endpoints are unavailable for the current connection.
+                      </p>
+                    ) : (
+                      <div className="mt-3 overflow-x-auto rounded-lg border theme-border">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="theme-muted">
+                              <th className="px-3 py-2 text-left theme-text">Report Name</th>
+                              <th className="px-3 py-2 text-left theme-text">Report ID</th>
+                              <th className="px-3 py-2 text-left theme-text">Type</th>
+                              <th className="px-3 py-2 text-left theme-text">Source</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {xeroReportsDiscovery.reports.map((report) => (
+                              <tr key={`${report.id}-${report.name}`} className="border-t theme-border">
+                                <td className="px-3 py-2 theme-text">{report.name}</td>
+                                <td className="px-3 py-2 font-mono text-xs theme-text-muted">
+                                  {report.id || "-"}
+                                </td>
+                                <td className="px-3 py-2 theme-text-muted">
+                                  {report.type || "-"}
+                                </td>
+                                <td className="px-3 py-2 theme-text-muted">
+                                  {report.source || "-"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 )}
 

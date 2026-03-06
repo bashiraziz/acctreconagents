@@ -14,6 +14,7 @@ export const runtime = "nodejs";
 const XERO_STATE_COOKIE = "xero_oauth_state";
 const XERO_DEV_SESSION_COOKIE = "xero_dev_session";
 const XERO_ORG_SCOPE_COOKIE = "xero_org_scope";
+const XERO_MODE_COOKIE = "xero_mode";
 const NON_ROUTABLE_DEV_HOSTS = new Set(["0.0.0.0", "::", "[::]"]);
 const provider = getIntegrationProvider("xero");
 
@@ -28,10 +29,18 @@ function getSafeRequestUrl(request: NextRequest): URL {
   return url;
 }
 
-function redirectToXeroPage(request: NextRequest, status: string, detail?: string) {
+function redirectToXeroPage(
+  request: NextRequest,
+  status: string,
+  detail?: string,
+  mode?: string | null
+) {
   const requestUrl = getSafeRequestUrl(request);
   const url = new URL("/integrations/xero", requestUrl.origin);
   url.searchParams.set("xero", status);
+  if (mode === "mcp" || mode === "oauth") {
+    url.searchParams.set("mode", mode);
+  }
   if (detail) {
     url.searchParams.set("detail", detail.slice(0, 160));
   }
@@ -45,16 +54,17 @@ export async function GET(request: NextRequest) {
   const oauthError = request.nextUrl.searchParams.get("error");
   const oauthErrorDesc = request.nextUrl.searchParams.get("error_description");
   const cookieState = request.cookies.get(XERO_STATE_COOKIE)?.value ?? "";
+  const preferredMode = request.cookies.get(XERO_MODE_COOKIE)?.value ?? null;
 
   if (oauthError) {
     return NextResponse.redirect(
-      redirectToXeroPage(request, "error", oauthErrorDesc || oauthError)
+      redirectToXeroPage(request, "error", oauthErrorDesc || oauthError, preferredMode)
     );
   }
 
   if (!code) {
     return NextResponse.redirect(
-      redirectToXeroPage(request, "error", "Missing authorization code")
+      redirectToXeroPage(request, "error", "Missing authorization code", preferredMode)
     );
   }
 
@@ -66,7 +76,7 @@ export async function GET(request: NextRequest) {
       : false;
   if (!cookieStateMatches && !devFallbackStateMatches) {
     return NextResponse.redirect(
-      redirectToXeroPage(request, "error", "Invalid OAuth state")
+      redirectToXeroPage(request, "error", "Invalid OAuth state", preferredMode)
     );
   }
 
@@ -81,7 +91,12 @@ export async function GET(request: NextRequest) {
 
   if (!session?.user && !devNoDbMode) {
     return NextResponse.redirect(
-      redirectToXeroPage(request, "error", "Sign in required before connecting Xero")
+      redirectToXeroPage(
+        request,
+        "error",
+        "Sign in required before connecting Xero",
+        preferredMode
+      )
     );
   }
 
@@ -101,7 +116,8 @@ export async function GET(request: NextRequest) {
       redirectToXeroPage(
         request,
         "error",
-        "Xero env vars are missing. Set XERO_CLIENT_ID and XERO_CLIENT_SECRET."
+        "Xero env vars are missing. Set XERO_CLIENT_ID and XERO_CLIENT_SECRET.",
+        preferredMode
       )
     );
   }
@@ -140,7 +156,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const success = NextResponse.redirect(redirectToXeroPage(request, "connected"));
+    const success = NextResponse.redirect(
+      redirectToXeroPage(request, "connected", undefined, preferredMode)
+    );
     success.cookies.set(XERO_STATE_COOKIE, "", {
       httpOnly: true,
       sameSite: "lax",
@@ -149,6 +167,13 @@ export async function GET(request: NextRequest) {
       maxAge: 0,
     });
     success.cookies.set(XERO_ORG_SCOPE_COOKIE, "", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 0,
+    });
+    success.cookies.set(XERO_MODE_COOKIE, "", {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -170,7 +195,8 @@ export async function GET(request: NextRequest) {
       redirectToXeroPage(
         request,
         "error",
-        error instanceof Error ? error.message : "Unknown Xero callback failure"
+        error instanceof Error ? error.message : "Unknown Xero callback failure",
+        preferredMode
       )
     );
     failed.cookies.set(XERO_STATE_COOKIE, "", {
@@ -181,6 +207,13 @@ export async function GET(request: NextRequest) {
       maxAge: 0,
     });
     failed.cookies.set(XERO_ORG_SCOPE_COOKIE, "", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 0,
+    });
+    failed.cookies.set(XERO_MODE_COOKIE, "", {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
