@@ -17,6 +17,7 @@
 - **[Developer README](#repository-structure)** (below) - For developers setting up and extending the system
 - **[Data Dictionary](specs/data-dictionary.md)** - Field definitions and formats
 - **[Reconciliation Logic](specs/reconciliation-logic.md)** - Algorithm documentation
+- **[Xero Lab Workflow](docs/XERO_LAB_WORKFLOW.md)** - Safe spike branch + worktree flow for Xero experiments
 
 ## Repository structure
 
@@ -54,6 +55,7 @@ package.json           # Root scripts (Spec-Kit check)
 * **Report Headers** - Organization, Reporting Period, Report Generated On
 * **Report Viewer** - Markdown rendered in the UI with copy/MD/TXT export
 * **Simple Mode** - Optional low-contrast UI for reduced visual noise
+* **Xero OAuth (Optional)** - Connect a Xero tenant and pull trial balance data directly
 * **Rate Limiting** - Built-in protection (30/hour, 50/2hours, 70/3hours in anonymous mode)
 * **Data Storage** - Browser localStorage for column mappings and workflow state
 * **Deployment** - Optimized for Vercel with environment-based configuration
@@ -142,6 +144,10 @@ This skill can be used by Claude Code to implement Better Auth authentication si
 | `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` | Workflow ID from Agent Builder (`wf_...`) used by the ChatKit widget. |
 | `ORCHESTRATOR_URL` | Next.js uses this to reach the orchestrator service (default `http://localhost:4100`). |
 | `MATERIALITY_THRESHOLD` | Variance threshold (in account currency) used by the reconciler. |
+| `XERO_CLIENT_ID` | Enables Xero OAuth connect flow in Settings. |
+| `XERO_CLIENT_SECRET` | Secret for Xero OAuth token exchange/refresh. |
+| `XERO_REDIRECT_URI` | Optional override for callback URI (default: `${BETTER_AUTH_URL}/api/integrations/xero/callback`). |
+| `XERO_DEV_NO_DB` | Dev-only no-database Xero mode. Set `true` to test Xero without sign-in/DB migrations; tokens are stored in-memory and reset on restart. |
 
 ## Development workflow
 1. **Run the orchestrator service**
@@ -159,8 +165,33 @@ This skill can be used by Claude Code to implement Better Auth authentication si
 3. Use the UI:
    * Upload files via the workspace; they save to `.uploads/` locally.
    * Configure column mappings; state persists in localStorage.
-   * Launch the agent run from the console (uses a sample payload today) and inspect the timeline + agent responses.
+  * Launch the agent run from the console (uses a sample payload today) and inspect the timeline + agent responses.
   * (Optional) configure ChatKit later by setting `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` once you are ready to surface the assistant.
+
+## Spike workflow (Xero lab)
+Use this when you want to test new Xero functionality without affecting your main working copy.
+
+1. Create isolated branch + worktree:
+   ```bash
+   npm run spike:xero:setup
+   ```
+2. Check current spike status:
+   ```bash
+   npm run spike:xero:status
+   ```
+3. Remove lab worktree and delete spike branch when done:
+   ```bash
+   npm run spike:xero:teardown
+   ```
+
+Defaults:
+* Branch: `spike/xero-lab`
+* Worktree folder: `../acctreconagents-xero-lab`
+
+Advanced:
+* Custom base branch: `node scripts/spike-worktree.mjs setup --base develop`
+* Keep branch but remove worktree only: `node scripts/spike-worktree.mjs teardown`
+* Force remove dirty worktree: `node scripts/spike-worktree.mjs teardown --force`
 
 ## Scripts
 * Root: `npm run spec:check` – ensures required tooling for Spec-Kit/agent workflows is available.
@@ -170,6 +201,8 @@ This skill can be used by Claude Code to implement Better Auth authentication si
 
 ## Database notes
 * The web app uses Vercel Postgres and includes a `user_organizations` table to store multiple organizations per user (with a single default).
+* Xero integration stores OAuth and tenant metadata in `xero_connections`.
+* For local testing without DB migration, set `XERO_DEV_NO_DB=true` and connect from Settings. This mode is non-persistent by design.
 * Run `npx tsx apps/web/scripts/init-db.ts` once against your target database to create tables. The script includes a safety check to avoid running against localhost.
 
 ## API schemas

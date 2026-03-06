@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 
@@ -12,6 +12,32 @@ type Organization = {
   defaultPrompt?: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+type XeroStatus = {
+  configured: boolean;
+  connected: boolean;
+  devNoDbMode: boolean;
+  requiresAuth: boolean;
+  connection: {
+    tenantId: string;
+    tenantName: string | null;
+    expiresAt: string;
+    updatedAt: string;
+    lastSyncedAt: string | null;
+  } | null;
+};
+
+type XeroTrialBalancePreview = {
+  period: string;
+  asOfDate: string;
+  count: number;
+  glBalances: Array<{
+    account_code: string;
+    amount: number;
+    period?: string;
+    currency?: string;
+  }>;
 };
 
 export default function SettingsPage() {
@@ -27,6 +53,14 @@ export default function SettingsPage() {
   const [defaultsId, setDefaultsId] = useState<string | null>(null);
   const [defaultMateriality, setDefaultMateriality] = useState<number | "">("");
   const [defaultPrompt, setDefaultPrompt] = useState("");
+  const [xeroStatus, setXeroStatus] = useState<XeroStatus | null>(null);
+  const [xeroLoading, setXeroLoading] = useState(false);
+  const [xeroBusy, setXeroBusy] = useState(false);
+  const [xeroError, setXeroError] = useState<string | null>(null);
+  const [xeroPreview, setXeroPreview] = useState<XeroTrialBalancePreview | null>(null);
+  const xeroDevModeActive = Boolean(xeroStatus?.devNoDbMode);
+  const xeroCanUseWithoutAuth = Boolean(session?.user) || xeroDevModeActive;
+  const xeroModePending = !session?.user && xeroStatus === null && xeroLoading;
 
   const defaultOrg = useMemo(
     () => organizations.find((org) => org.isDefault),
@@ -64,6 +98,53 @@ export default function SettingsPage() {
       setLoading(false);
     }
   };
+
+  const loadXeroStatus = useCallback(async () => {
+    setXeroLoading(true);
+    setXeroError(null);
+    try {
+      const response = await fetch("/api/integrations/xero/status");
+      const data = await response.json();
+      if (response.status === 401) {
+        setXeroStatus({
+          configured: false,
+          connected: false,
+          devNoDbMode: false,
+          requiresAuth: true,
+          connection: null,
+        });
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Failed to load Xero connection status");
+      }
+      setXeroStatus(data as XeroStatus);
+    } catch (err) {
+      setXeroError(err instanceof Error ? err.message : "Failed to load Xero status");
+    } finally {
+      setXeroLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isPending) return;
+    void loadXeroStatus();
+  }, [isPending, session?.user, loadXeroStatus]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("xero");
+    const detail = params.get("detail");
+    if (!status) return;
+    if (status === "connected") {
+      setXeroError(null);
+      void loadXeroStatus();
+      return;
+    }
+    if (status === "error") {
+      setXeroError(detail || "Xero connection failed");
+    }
+  }, [loadXeroStatus]);
 
   const handleCreate = async () => {
     const name = newName.trim();
@@ -212,6 +293,46 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : "Failed to delete organization");
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const handleDisconnectXero = async () => {
+    setXeroBusy(true);
+    setXeroError(null);
+    try {
+      const response = await fetch("/api/integrations/xero/connection", {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Failed to disconnect Xero");
+      }
+      setXeroPreview(null);
+      await loadXeroStatus();
+    } catch (err) {
+      setXeroError(err instanceof Error ? err.message : "Failed to disconnect Xero");
+    } finally {
+      setXeroBusy(false);
+    }
+  };
+
+  const handlePullXeroTrialBalance = async () => {
+    setXeroBusy(true);
+    setXeroError(null);
+    try {
+      const response = await fetch("/api/integrations/xero/data/trial-balance");
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message ?? "Failed to pull trial balance from Xero");
+      }
+      setXeroPreview(data as XeroTrialBalancePreview);
+      await loadXeroStatus();
+    } catch (err) {
+      setXeroError(
+        err instanceof Error ? err.message : "Failed to pull trial balance from Xero"
+      );
+    } finally {
+      setXeroBusy(false);
     }
   };
 
@@ -447,6 +568,148 @@ export default function SettingsPage() {
                     </div>
                   ))}
                 </div>
+              </>
+            )}
+          </div>
+        </section>
+
+        <section className="theme-card theme-border rounded-3xl border p-6">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h2 className="text-lg font-semibold theme-text">
+                Xero Integration
+              </h2>
+              <p className="text-sm theme-text-muted">
+                Connect your Xero tenant to pull trial balances directly into Rowshni.
+              </p>
+            </div>
+
+            {xeroModePending && (
+              <div className="rounded-xl border theme-border theme-muted p-4 text-sm theme-text-muted">
+                Checking Xero mode...
+              </div>
+            )}
+
+            {!xeroModePending && !xeroCanUseWithoutAuth && (
+              <div className="rounded-xl border theme-border theme-muted p-4 text-sm theme-text-muted">
+                Sign in to connect Xero. Dev no-DB mode is currently disabled.
+              </div>
+            )}
+
+            {!xeroModePending && xeroCanUseWithoutAuth && (
+              <>
+                {xeroError && (
+                  <div className="alert alert-danger text-sm">{xeroError}</div>
+                )}
+
+                {xeroStatus?.devNoDbMode && !session?.user && (
+                  <div className="rounded-xl border theme-border theme-muted p-4 text-xs theme-text-muted">
+                    Dev no-DB mode is active. Xero tokens are stored in memory for this browser session and reset on server restart.
+                  </div>
+                )}
+
+                {xeroLoading ? (
+                  <div className="text-sm theme-text-muted">Checking Xero connection...</div>
+                ) : (
+                  <div className="rounded-xl border theme-border theme-muted p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold theme-text">
+                          {xeroStatus?.connected ? "Connected" : "Not connected"}
+                        </p>
+                        <p className="mt-1 text-xs theme-text-muted">
+                          {xeroStatus?.connected
+                            ? `Tenant: ${xeroStatus.connection?.tenantName || xeroStatus.connection?.tenantId}`
+                            : xeroStatus?.configured
+                              ? "Xero credentials detected. Connect your tenant to import balances."
+                              : "Set XERO_CLIENT_ID and XERO_CLIENT_SECRET to enable connection."}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {!xeroStatus?.connected && xeroStatus?.configured && (
+                          <a
+                            href="/api/integrations/xero/connect"
+                            className="btn btn-primary btn-sm"
+                          >
+                            Connect Xero
+                          </a>
+                        )}
+                        {xeroStatus?.connected && (
+                          <>
+                            <button
+                              onClick={handlePullXeroTrialBalance}
+                              disabled={xeroBusy}
+                              className="btn btn-secondary btn-sm disabled:opacity-70"
+                            >
+                              {xeroBusy ? "Pulling..." : "Pull Trial Balance"}
+                            </button>
+                            <button
+                              onClick={handleDisconnectXero}
+                              disabled={xeroBusy}
+                              className="btn btn-danger btn-sm disabled:opacity-70"
+                            >
+                              Disconnect
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {xeroStatus?.connected && (
+                      <div className="mt-3 grid gap-2 text-xs theme-text-muted sm:grid-cols-2">
+                        <div>
+                          Token expires:{" "}
+                          {xeroStatus.connection?.expiresAt
+                            ? new Date(xeroStatus.connection.expiresAt).toLocaleString()
+                            : "Unknown"}
+                        </div>
+                        <div>
+                          Last sync:{" "}
+                          {xeroStatus.connection?.lastSyncedAt
+                            ? new Date(xeroStatus.connection.lastSyncedAt).toLocaleString()
+                            : "Never"}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {xeroPreview && (
+                  <div className="rounded-xl border theme-border theme-muted p-4">
+                    <p className="text-sm font-semibold theme-text">
+                      Trial Balance Preview ({xeroPreview.period})
+                    </p>
+                    <p className="mt-1 text-xs theme-text-muted">
+                      {xeroPreview.count} rows pulled as of {xeroPreview.asOfDate}
+                    </p>
+                    <div className="mt-3 overflow-x-auto rounded-lg border theme-border">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="theme-muted">
+                            <th className="px-3 py-2 text-left theme-text">Account</th>
+                            <th className="px-3 py-2 text-right theme-text">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {xeroPreview.glBalances.slice(0, 8).map((row, idx) => (
+                            <tr key={`${row.account_code}-${idx}`} className="border-t theme-border">
+                              <td className="px-3 py-2 theme-text">{row.account_code}</td>
+                              <td className="px-3 py-2 text-right theme-text">
+                                {Number(row.amount).toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-2 text-xs theme-text-muted">
+                      Next step: map these balances in the Upload step or extend this route to auto-fill upload state.
+                    </p>
+                  </div>
+                )}
               </>
             )}
           </div>

@@ -22,7 +22,10 @@
     "test:scenarios": "cd tests && npm test",
     "test:verbose": "cd tests && npm run test:verbose",
     "test:watch": "cd tests && npm run test:watch",
-    "spec:check": "npx @letuscode/spec-kit check"
+    "spec:check": "npx @letuscode/spec-kit check",
+    "spike:xero:setup": "node scripts/spike-worktree.mjs setup",
+    "spike:xero:status": "node scripts/spike-worktree.mjs status",
+    "spike:xero:teardown": "node scripts/spike-worktree.mjs teardown --delete-branch"
   },
   "dependencies": {
     "dotenv": "^17.2.3"

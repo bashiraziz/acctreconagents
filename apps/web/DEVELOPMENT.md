@@ -22,6 +22,11 @@ The app is designed to work perfectly **without a database** for development and
 - Complete app functionality
 - All features accessible
 
+✅ **Xero integration (dev no-DB mode)**
+- OAuth connect/disconnect and trial-balance pull can run without DB migration
+- Enable with `XERO_DEV_NO_DB=true` (dev only)
+- Tokens are in-memory and are cleared on app restart/redeploy
+
 ### What Requires Database
 
 ❌ **Authenticated features**
@@ -137,6 +142,13 @@ GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# Xero integration (optional)
+XERO_CLIENT_ID=your-xero-client-id
+XERO_CLIENT_SECRET=your-xero-client-secret
+XERO_REDIRECT_URI=http://localhost:3000/api/integrations/xero/callback
+# Dev only: Xero OAuth/testing without DB persistence or sign-in
+XERO_DEV_NO_DB=true
 
 # Rate Limiting
 MATERIALITY_THRESHOLD=50  # Default threshold in dollars

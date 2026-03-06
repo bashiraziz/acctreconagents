@@ -12,6 +12,21 @@ import type {
   FileType,
 } from "@/types/reconciliation";
 
+export type XeroConnectionRecord = {
+  id: string;
+  userId: string;
+  tenantId: string;
+  tenantName: string | null;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  scope: string | null;
+  tokenType: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastSyncedAt: string | null;
+};
+
 // ============================================
 // User Mappings CRUD
 // ============================================
@@ -499,6 +514,157 @@ export async function deleteUserOrganization(
   } catch (error) {
     console.error("Database error in deleteUserOrganization:", error);
     throw new Error(`Failed to delete organization: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+// ============================================
+// Xero Connections CRUD
+// ============================================
+
+export async function upsertXeroConnection(
+  userId: string,
+  connection: {
+    tenantId: string;
+    tenantName?: string | null;
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: Date;
+    scope?: string | null;
+    tokenType?: string | null;
+  },
+): Promise<XeroConnectionRecord> {
+  const id = `xero_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  try {
+    const result = await sql`
+      INSERT INTO xero_connections (
+        id,
+        user_id,
+        tenant_id,
+        tenant_name,
+        access_token,
+        refresh_token,
+        expires_at,
+        scope,
+        token_type,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        ${id},
+        ${userId},
+        ${connection.tenantId},
+        ${connection.tenantName ?? null},
+        ${connection.accessToken},
+        ${connection.refreshToken},
+        ${connection.expiresAt.toISOString()},
+        ${connection.scope ?? null},
+        ${connection.tokenType ?? null},
+        NOW(),
+        NOW()
+      )
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        tenant_id = EXCLUDED.tenant_id,
+        tenant_name = EXCLUDED.tenant_name,
+        access_token = EXCLUDED.access_token,
+        refresh_token = EXCLUDED.refresh_token,
+        expires_at = EXCLUDED.expires_at,
+        scope = EXCLUDED.scope,
+        token_type = EXCLUDED.token_type,
+        updated_at = NOW()
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to save Xero connection - no rows returned");
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      tenantId: row.tenant_id,
+      tenantName: row.tenant_name ?? null,
+      accessToken: row.access_token,
+      refreshToken: row.refresh_token,
+      expiresAt: row.expires_at,
+      scope: row.scope ?? null,
+      tokenType: row.token_type ?? null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      lastSyncedAt: row.last_synced_at ?? null,
+    };
+  } catch (error) {
+    console.error("Database error in upsertXeroConnection:", error);
+    throw new Error(
+      `Failed to save Xero connection: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function getXeroConnection(
+  userId: string,
+): Promise<XeroConnectionRecord | null> {
+  try {
+    const result = await sql`
+      SELECT * FROM xero_connections
+      WHERE user_id = ${userId}
+      LIMIT 1;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      userId: row.user_id,
+      tenantId: row.tenant_id,
+      tenantName: row.tenant_name ?? null,
+      accessToken: row.access_token,
+      refreshToken: row.refresh_token,
+      expiresAt: row.expires_at,
+      scope: row.scope ?? null,
+      tokenType: row.token_type ?? null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      lastSyncedAt: row.last_synced_at ?? null,
+    };
+  } catch (error) {
+    console.error("Database error in getXeroConnection:", error);
+    throw new Error(
+      `Failed to get Xero connection: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function markXeroConnectionSynced(userId: string): Promise<void> {
+  try {
+    await sql`
+      UPDATE xero_connections
+      SET last_synced_at = NOW(), updated_at = NOW()
+      WHERE user_id = ${userId};
+    `;
+  } catch (error) {
+    console.error("Database error in markXeroConnectionSynced:", error);
+    throw new Error(
+      `Failed to mark Xero sync time: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function deleteXeroConnection(userId: string): Promise<void> {
+  try {
+    await sql`
+      DELETE FROM xero_connections
+      WHERE user_id = ${userId};
+    `;
+  } catch (error) {
+    console.error("Database error in deleteXeroConnection:", error);
+    throw new Error(
+      `Failed to delete Xero connection: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 

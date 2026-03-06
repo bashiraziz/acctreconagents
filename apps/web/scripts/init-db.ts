@@ -220,6 +220,31 @@ async function initializeDatabase() {
     `;
     console.log("✓ user_organizations legacy names migrated");
 
+    // Create xero_connections table
+    await sql`
+      CREATE TABLE IF NOT EXISTS xero_connections (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL UNIQUE,
+        tenant_id VARCHAR(255) NOT NULL,
+        tenant_name VARCHAR(255),
+        access_token TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        scope TEXT,
+        token_type VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_synced_at TIMESTAMP
+      );
+    `;
+    console.log("âœ“ xero_connections table created");
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_xero_connections_user
+      ON xero_connections(user_id);
+    `;
+    console.log("âœ“ xero_connections index created");
+
     // Create reconciliation_history table
     await sql`
       CREATE TABLE IF NOT EXISTS reconciliation_history (
@@ -251,6 +276,7 @@ async function initializeDatabase() {
     console.log("  - verification (Better Auth verification tokens)");
     console.log("  - user_mappings (stores column mappings per user)");
     console.log("  - user_accounts (stores account preferences)");
+    console.log("  - xero_connections (stores OAuth tokens and tenant info)");
     console.log("  - reconciliation_history (stores run history)\n");
 
     process.exit(0);
