@@ -15,6 +15,9 @@
     "db:test": "npx tsx scripts/test-db-connection.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-iam": "^3.940.0",
+    "@aws-sdk/client-s3": "^3.940.0",
+    "@aws-sdk/client-sqs": "^3.940.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@openai/chatkit": "^1.1.0",
     "@openai/chatkit-react": "^1.3.0",

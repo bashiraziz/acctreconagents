@@ -46,6 +46,27 @@ export type IntegrationConnectionRecord = {
   lastSyncedAt: string | null;
 };
 
+export type IngestJobStatus = "pending" | "processing" | "done" | "failed";
+
+export type IngestJobRecord = {
+  id: string;
+  tenantId: string;
+  s3Key: string;
+  status: IngestJobStatus;
+  result: unknown | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type IngestErrorRecord = {
+  id: string;
+  tenantId: string;
+  fileName: string;
+  s3Key: string;
+  error: string;
+  createdAt: string;
+};
+
 // ============================================
 // User Mappings CRUD
 // ============================================
@@ -905,6 +926,120 @@ export async function deleteIntegrationConnection(
     console.error("Database error in deleteIntegrationConnection:", error);
     throw new Error(
       `Failed to delete integration connection: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+function mapIngestJobRow(row: Record<string, unknown>): IngestJobRecord {
+  return {
+    id: String(row.id ?? ""),
+    tenantId: String(row.tenant_id ?? ""),
+    s3Key: String(row.s3_key ?? ""),
+    status: String(row.status ?? "pending") as IngestJobStatus,
+    result: row.result ?? null,
+    createdAt: String(row.created_at ?? ""),
+    updatedAt: String(row.updated_at ?? ""),
+  };
+}
+
+export async function createIngestJob(
+  tenantId: string,
+  s3Key: string,
+  status: IngestJobStatus = "pending"
+): Promise<IngestJobRecord> {
+  try {
+    const result = await sql`
+      INSERT INTO ingest_jobs (tenant_id, s3_key, status, created_at, updated_at)
+      VALUES (${tenantId}, ${s3Key}, ${status}, NOW(), NOW())
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to create ingest job - no rows returned");
+    }
+
+    return mapIngestJobRow(result.rows[0] as Record<string, unknown>);
+  } catch (error) {
+    console.error("Database error in createIngestJob:", error);
+    throw new Error(
+      `Failed to create ingest job: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function updateIngestJobStatus(
+  jobId: string,
+  status: IngestJobStatus,
+  resultData?: unknown
+): Promise<void> {
+  try {
+    await sql`
+      UPDATE ingest_jobs
+      SET
+        status = ${status},
+        result = COALESCE(${resultData ? JSON.stringify(resultData) : null}::jsonb, result),
+        updated_at = NOW()
+      WHERE id = ${jobId};
+    `;
+  } catch (error) {
+    console.error("Database error in updateIngestJobStatus:", error);
+    throw new Error(
+      `Failed to update ingest job: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function writeIngestError(input: {
+  tenantId: string;
+  fileName: string;
+  s3Key: string;
+  error: string;
+}): Promise<IngestErrorRecord> {
+  try {
+    const result = await sql`
+      INSERT INTO ingest_errors (tenant_id, file_name, s3_key, error, created_at)
+      VALUES (${input.tenantId}, ${input.fileName}, ${input.s3Key}, ${input.error}, NOW())
+      RETURNING *;
+    `;
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error("Failed to create ingest error - no rows returned");
+    }
+
+    const row = result.rows[0] as Record<string, unknown>;
+    return {
+      id: String(row.id ?? ""),
+      tenantId: String(row.tenant_id ?? ""),
+      fileName: String(row.file_name ?? ""),
+      s3Key: String(row.s3_key ?? ""),
+      error: String(row.error ?? ""),
+      createdAt: String(row.created_at ?? ""),
+    };
+  } catch (error) {
+    console.error("Database error in writeIngestError:", error);
+    throw new Error(
+      `Failed to write ingest error: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+export async function upsertTenantDropZoneAccessKeyId(
+  tenantId: string,
+  accessKeyId: string
+): Promise<void> {
+  try {
+    await sql`
+      INSERT INTO tenants (id, drop_zone_access_key_id, created_at, updated_at)
+      VALUES (${tenantId}, ${accessKeyId}, NOW(), NOW())
+      ON CONFLICT (id)
+      DO UPDATE SET
+        drop_zone_access_key_id = EXCLUDED.drop_zone_access_key_id,
+        updated_at = NOW();
+    `;
+  } catch (error) {
+    console.error("Database error in upsertTenantDropZoneAccessKeyId:", error);
+    throw new Error(
+      `Failed to save tenant drop-zone key metadata: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }

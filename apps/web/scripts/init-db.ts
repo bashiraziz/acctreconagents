@@ -297,6 +297,54 @@ async function initializeDatabase() {
     `;
     console.log("✓ reconciliation_history index created");
 
+    await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto;`;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS ingest_errors (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id TEXT NOT NULL,
+        file_name TEXT NOT NULL,
+        s3_key TEXT NOT NULL,
+        error TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `;
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_ingest_errors_tenant_created_at
+      ON ingest_errors(tenant_id, created_at DESC);
+    `;
+    console.log("ingest_errors table created");
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS ingest_jobs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id TEXT NOT NULL,
+        s3_key TEXT NOT NULL,
+        status TEXT NOT NULL CHECK (status IN ('pending', 'processing', 'done', 'failed')),
+        result JSONB,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `;
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_ingest_jobs_tenant_created_at
+      ON ingest_jobs(tenant_id, created_at DESC);
+    `;
+    console.log("ingest_jobs table created");
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS tenants (
+        id TEXT PRIMARY KEY,
+        drop_zone_access_key_id TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `;
+    await sql`
+      ALTER TABLE tenants ADD COLUMN IF NOT EXISTS drop_zone_access_key_id TEXT;
+    `;
+    console.log("tenants table created/updated");
+
     console.log("\n✅ Database initialization complete!\n");
     console.log("Tables created:");
     console.log("  - user (Better Auth users)");
@@ -307,7 +355,10 @@ async function initializeDatabase() {
     console.log("  - user_accounts (stores account preferences)");
     console.log("  - integration_connections (org-scoped OAuth and provider metadata)");
     console.log("  - xero_connections (legacy user-scoped fallback)");
-    console.log("  - reconciliation_history (stores run history)\n");
+    console.log("  - reconciliation_history (stores run history)");
+    console.log("  - ingest_jobs (tracks drop-zone ingestion lifecycle)");
+    console.log("  - ingest_errors (drop-zone ingest errors)");
+    console.log("  - tenants (drop-zone key references)\n");
 
     process.exit(0);
   } catch (error) {
@@ -317,5 +368,6 @@ async function initializeDatabase() {
 }
 
 initializeDatabase();
+
 
 

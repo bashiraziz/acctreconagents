@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { withErrorHandler, ApiErrors } from "@/lib/api-error";
-
-const storageDir = path.join(process.cwd(), ".uploads");
+import { runIngestPipeline } from "@/lib/ingest-pipeline";
 
 // File upload constraints
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -19,15 +15,11 @@ const ALLOWED_MIME_TYPES = [
   '', // Empty MIME type (some browsers don't set it)
 ];
 
-// Check if Vercel Blob is configured
-const isBlobConfigured = !!process.env.BLOB_READ_WRITE_TOKEN;
-
 export const POST = withErrorHandler(async (request: Request) => {
-  console.log(`[Upload] Blob configured: ${isBlobConfigured}`);
-
   const data = await request.formData();
   const file = data.get("file");
   const kind = String(data.get("kind") ?? "supporting");
+  const tenantId = String(data.get("tenantId") ?? "anonymous");
 
   // Validate file exists
   if (!(file instanceof File)) {
@@ -46,6 +38,15 @@ export const POST = withErrorHandler(async (request: Request) => {
     );
   }
 
+  // Validate MIME type (only if set by browser)
+  if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
+    return ApiErrors.badRequest(
+      "Invalid file type",
+      `Only CSV/TSV/TXT files are allowed. Received: ${file.type}`,
+      ["Upload a CSV, TSV, or TXT file", "Ensure the file has the correct MIME type"]
+    );
+  }
+
   // Validate file extension (primary check)
   const fileExtension = file.name.split('.').pop()?.toLowerCase();
   if (!['csv', 'tsv', 'txt'].includes(fileExtension || '')) {
@@ -56,68 +57,26 @@ export const POST = withErrorHandler(async (request: Request) => {
     );
   }
 
-  // Validate MIME type (only if set by browser)
-  if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
-    return ApiErrors.badRequest(
-      "Invalid file type",
-      `Only CSV/TSV/TXT files are allowed. Received: ${file.type}`,
-      ["Upload a CSV, TSV, or TXT file", "Ensure the file has the correct MIME type"]
-    );
-  }
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await runIngestPipeline({
+    tenantId,
+    fileName: file.name,
+    buffer,
+    kind,
+    mimeType: file.type,
+    source: "ui",
+  });
 
-  // Sanitize filename and create unique name
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const fileName = `${Date.now()}-${safeName}`;
-
-  // Use Vercel Blob Storage if configured, otherwise fall back to local file system
-  if (isBlobConfigured) {
-    console.log(`[Upload] Using Vercel Blob storage for: ${fileName}`);
-    try {
-      // Convert file to buffer for reliable Blob upload
-      const buffer = Buffer.from(await file.arrayBuffer());
-      console.log(`[Upload] Buffer size: ${buffer.length} bytes`);
-
-      // Upload to Vercel Blob
-      const blob = await put(fileName, buffer, {
-        access: "public",
-        addRandomSuffix: false,
-      });
-
-      console.log(`[Upload] Success! Blob URL: ${blob.url}`);
-      return NextResponse.json({
-        ok: true,
-        fileName,
-        kind,
-        size: file.size,
-        url: blob.url,
-        storageType: "blob",
-      });
-    } catch (error) {
-      // Detailed Blob storage error
-      console.error(`[Upload] Blob storage error:`, error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`[Upload] Error message: ${errorMessage}`);
-
-      return ApiErrors.internalError(
-        `Blob storage error: ${errorMessage}`,
-        error instanceof Error ? error : new Error(String(error))
-      );
-    }
-  } else {
-    // Fall back to local file system (development)
-    await fs.mkdir(storageDir, { recursive: true });
-
-    const filePath = path.join(storageDir, fileName);
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
-
-    return NextResponse.json({
-      ok: true,
-      fileName,
-      kind,
-      size: file.size,
-      path: filePath,
-      storageType: "local",
-    });
-  }
+  return NextResponse.json({
+    ok: result.ok,
+    fileName: result.fileName,
+    kind: result.kind,
+    size: result.size,
+    url: result.url,
+    path: result.path,
+    storageType: result.storageType,
+    rowCount: result.rowCount,
+    columnCount: result.columnCount,
+    headers: result.headers,
+  });
 });
