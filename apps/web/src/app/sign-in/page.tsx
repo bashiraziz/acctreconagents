@@ -156,6 +156,9 @@ export default function SignInPage() {
           </form>
 
           <div className="mt-4 flex flex-col items-center gap-3 text-sm text-slate-400">
+            <Link href="/privacy" className="text-xs text-slate-500 hover:text-slate-300">
+              Privacy Policy
+            </Link>
             {mode === "sign-in" ? (
               <Link href="/reset-password" className="font-semibold text-sky-300 hover:text-sky-200">
                 Forgot your password?

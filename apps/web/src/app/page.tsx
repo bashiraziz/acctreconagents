@@ -142,6 +142,13 @@ export default function Home() {
               >
                 User Guide
               </Link>
+              <span className="text-sm theme-text-muted">|</span>
+              <Link
+                href="/privacy"
+                className="text-sm font-medium theme-text transition-opacity hover:opacity-80"
+              >
+                Privacy
+              </Link>
             </div>
           </div>
         </footer>
