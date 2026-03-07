@@ -13,7 +13,35 @@ if (!authSecret && process.env.NODE_ENV === "production") {
   throw new Error("BETTER_AUTH_SECRET is required in production.");
 }
 const resolvedSecret = authSecret || "dev-insecure-secret-please-set-env";
-const authUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+function resolveAuthUrl(): string {
+  const fallbackPort = process.env.PORT || "3000";
+  const envUrl = process.env.BETTER_AUTH_URL?.trim();
+  if (!envUrl) {
+    return `http://localhost:${fallbackPort}`;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    return envUrl;
+  }
+
+  try {
+    const parsed = new URL(envUrl);
+    const runningPort = process.env.PORT;
+    if (
+      runningPort &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") &&
+      parsed.port !== runningPort
+    ) {
+      parsed.port = runningPort;
+      return parsed.toString().replace(/\/$/, "");
+    }
+    return parsed.toString().replace(/\/$/, "");
+  } catch {
+    return envUrl;
+  }
+}
+
+const authUrl = resolveAuthUrl();
 const resendApiKey = process.env.RESEND_API_KEY;
 const resendFromEmail = process.env.RESEND_FROM_EMAIL || "support@rowshni.xyz";
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
@@ -74,13 +102,18 @@ export const auth = betterAuth({
       }
     },
   },
-  trustedOrigins: [
+  trustedOrigins: Array.from(new Set([
+    authUrl,
     // Development
     "http://localhost:3000",
     "http://localhost:3100",
+    "http://localhost:3200",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3100",
+    "http://127.0.0.1:3200",
     // Production domains
     "https://acctsreconagents.vercel.app",
     "https://www.rowshni.xyz",
     "https://rowshni.xyz", // Include non-www version
-  ],
+  ])),
 });

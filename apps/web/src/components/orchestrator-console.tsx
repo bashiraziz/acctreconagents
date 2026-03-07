@@ -27,6 +27,7 @@ export function OrchestratorConsole() {
     currentAgentStep,
     fieldErrors,
     materialityThreshold,
+    reportingPeriodDefault,
     reconciliationData,
     isRunning,
     organizations,
@@ -71,6 +72,7 @@ export function OrchestratorConsole() {
         onPromptChange={setPrompt}
         materialityThreshold={materialityThreshold}
         onMaterialityChange={setMaterialityThreshold}
+        reportingPeriodDefault={reportingPeriodDefault}
         organizations={organizations}
         selectedOrganizationId={selectedOrganizationId}
         onOrganizationChange={setSelectedOrganizationId}

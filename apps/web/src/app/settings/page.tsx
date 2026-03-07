@@ -32,6 +32,7 @@ export default function SettingsPage() {
     () => organizations.find((org) => org.isDefault),
     [organizations]
   );
+
   const displayOrgName = (name: string) => {
     const normalized = name.trim().toUpperCase();
     if (normalized === "MYCO") {
@@ -42,11 +43,6 @@ export default function SettingsPage() {
     }
     return name;
   };
-
-  useEffect(() => {
-    if (!session?.user) return;
-    void loadOrganizations();
-  }, [session?.user]);
 
   const loadOrganizations = async () => {
     setLoading(true);
@@ -64,6 +60,11 @@ export default function SettingsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!session?.user) return;
+    void loadOrganizations();
+  }, [session?.user]);
 
   const handleCreate = async () => {
     const name = newName.trim();
@@ -220,10 +221,7 @@ export default function SettingsPage() {
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
         <header className="theme-card theme-border rounded-3xl border p-6">
           <div className="flex flex-col gap-2">
-            <Link
-              href="/"
-              className="btn btn-secondary btn-sm w-fit"
-            >
+            <Link href="/" className="btn btn-secondary btn-sm w-fit">
               &larr; Back to console
             </Link>
             <h1 className="text-2xl font-bold theme-text sm:text-3xl">
@@ -254,10 +252,7 @@ export default function SettingsPage() {
               <div className="rounded-xl border theme-border theme-muted p-4 text-sm theme-text-muted">
                 Sign in to manage organization names. Anonymous runs will not show an organization header.
                 <div className="mt-3">
-                  <Link
-                    href="/sign-in"
-                    className="btn btn-secondary btn-sm"
-                  >
+                  <Link href="/sign-in" className="btn btn-secondary btn-sm">
                     Sign in
                   </Link>
                 </div>
@@ -313,35 +308,35 @@ export default function SettingsPage() {
                       className="rounded-2xl border theme-border theme-muted p-4"
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex-1">
-                        {editingId === org.id ? (
-                          <input
-                            value={editingName}
-                            onChange={(event) => setEditingName(event.target.value)}
-                            className="w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
-                          />
-                        ) : (
-                          <div className="text-base font-semibold theme-text">
-                            {displayOrgName(org.name)}
+                        <div className="flex-1">
+                          {editingId === org.id ? (
+                            <input
+                              value={editingName}
+                              onChange={(event) => setEditingName(event.target.value)}
+                              className="w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
+                            />
+                          ) : (
+                            <div className="text-base font-semibold theme-text">
+                              {displayOrgName(org.name)}
+                            </div>
+                          )}
+                          <div className="mt-1 text-xs theme-text-muted">
+                            {org.isDefault ? "Default organization" : "Not default"}
                           </div>
-                        )}
-                        <div className="mt-1 text-xs theme-text-muted">
-                          {org.isDefault ? "Default organization" : "Not default"}
+                          <div className="mt-3 text-xs theme-text-muted">
+                            <div>
+                              Default materiality:{" "}
+                              {typeof org.defaultMateriality === "number"
+                                ? `$${org.defaultMateriality.toFixed(2)}`
+                                : "Not set"}
+                            </div>
+                            <div className="mt-1">
+                              Default prompt: {org.defaultPrompt?.trim() ? "Set" : "Not set"}
+                            </div>
+                          </div>
                         </div>
-                        <div className="mt-3 text-xs theme-text-muted">
-                          <div>
-                            Default materiality:{" "}
-                            {typeof org.defaultMateriality === "number"
-                              ? `$${org.defaultMateriality.toFixed(2)}`
-                              : "Not set"}
-                          </div>
-                          <div className="mt-1">
-                            Default prompt: {org.defaultPrompt?.trim() ? "Set" : "Not set"}
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {editingId === org.id ? (
                             <>
                               <button

@@ -139,6 +139,9 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
   const stopRun = useAgentRunStore((state) => state.stopRun);
   const completeRun = useAgentRunStore((state) => state.completeRun);
   const materialityThreshold = useUserPreferencesStore((state) => state.materialityThreshold);
+  const reportingPeriodDefault = useUserPreferencesStore(
+    (state) => state.reportingPeriodDefault
+  );
   const setMaterialityThreshold = useUserPreferencesStore((state) => state.setMaterialityThreshold);
 
   // Clear results when reconciliation data changes
@@ -213,6 +216,11 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
     setMaterialityThreshold,
     setPrompt,
   ]);
+
+  useEffect(() => {
+    if (!reportingPeriodDefault || prompt.trim().length > 0) return;
+    setPrompt(`Reconcile account balances for period ${reportingPeriodDefault}.`);
+  }, [reportingPeriodDefault, prompt, setPrompt]);
 
   // Simulate agent progress during loading
   useEffect(() => {
@@ -413,6 +421,7 @@ export function useOrchestratorState(formRef: React.RefObject<OrchestratorFormHa
     currentAgentStep,
     fieldErrors,
     materialityThreshold,
+    reportingPeriodDefault,
     reconciliationData,
     isRunning,
     organizations,
