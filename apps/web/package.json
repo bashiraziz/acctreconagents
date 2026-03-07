@@ -11,6 +11,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "worker:s3-ingest": "npx tsx scripts/s3-ingest-worker.ts",
     "db:migrate": "npx tsx scripts/init-db.ts",
     "db:test": "npx tsx scripts/test-db-connection.ts"
   },

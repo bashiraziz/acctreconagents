@@ -14,6 +14,29 @@ type Organization = {
   updatedAt: string;
 };
 
+type DropZoneCredentials = {
+  ok: boolean;
+  tenantId: string;
+  bucketName: string;
+  region: string;
+  prefix: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+};
+
+function getApiErrorMessage(payload: unknown, fallback: string): string {
+  if (!payload || typeof payload !== "object") {
+    return fallback;
+  }
+  const body = payload as { message?: unknown; details?: unknown };
+  const message = typeof body.message === "string" ? body.message.trim() : "";
+  const details = typeof body.details === "string" ? body.details.trim() : "";
+  if (message && details) return `${message}: ${details}`;
+  if (message) return message;
+  if (details) return details;
+  return fallback;
+}
+
 export default function SettingsPage() {
   const { data: session, isPending } = useSession();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -27,6 +50,11 @@ export default function SettingsPage() {
   const [defaultsId, setDefaultsId] = useState<string | null>(null);
   const [defaultMateriality, setDefaultMateriality] = useState<number | "">("");
   const [defaultPrompt, setDefaultPrompt] = useState("");
+  const [dropZoneTenantId, setDropZoneTenantId] = useState("");
+  const [dropZoneBusy, setDropZoneBusy] = useState(false);
+  const [dropZoneError, setDropZoneError] = useState<string | null>(null);
+  const [dropZoneCredentials, setDropZoneCredentials] = useState<DropZoneCredentials | null>(null);
+  const [dropZoneCopyStatus, setDropZoneCopyStatus] = useState<string | null>(null);
 
   const defaultOrg = useMemo(
     () => organizations.find((org) => org.isDefault),
@@ -65,6 +93,13 @@ export default function SettingsPage() {
     if (!session?.user) return;
     void loadOrganizations();
   }, [session?.user]);
+
+  useEffect(() => {
+    if (dropZoneTenantId.trim()) return;
+    if (defaultOrg?.id) {
+      setDropZoneTenantId(defaultOrg.id);
+    }
+  }, [defaultOrg?.id, dropZoneTenantId]);
 
   const handleCreate = async () => {
     const name = newName.trim();
@@ -213,6 +248,56 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : "Failed to delete organization");
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const handleGenerateDropZoneCredentials = async () => {
+    const tenantId = dropZoneTenantId.trim();
+    if (!tenantId) return;
+
+    setDropZoneBusy(true);
+    setDropZoneError(null);
+    setDropZoneCopyStatus(null);
+    try {
+      const response = await fetch(
+        `/api/admin/tenants/${encodeURIComponent(tenantId)}/drop-zone`,
+        {
+          method: "POST",
+        }
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          getApiErrorMessage(data, "Failed to generate tenant drop-zone credentials")
+        );
+      }
+      setDropZoneCredentials(data as DropZoneCredentials);
+    } catch (err) {
+      setDropZoneCredentials(null);
+      setDropZoneError(
+        err instanceof Error ? err.message : "Failed to generate tenant drop-zone credentials"
+      );
+    } finally {
+      setDropZoneBusy(false);
+    }
+  };
+
+  const handleCopyDropZoneCredentials = async () => {
+    if (!dropZoneCredentials) return;
+    const output = [
+      `AWS_ACCESS_KEY_ID=${dropZoneCredentials.accessKeyId}`,
+      `AWS_SECRET_ACCESS_KEY=${dropZoneCredentials.secretAccessKey}`,
+      `AWS_REGION=${dropZoneCredentials.region}`,
+      `AWS_DROP_ZONE_BUCKET=${dropZoneCredentials.bucketName}`,
+      `AWS_DROP_ZONE_PREFIX=${dropZoneCredentials.prefix}`,
+      `S3_UPLOAD_PATH=s3://${dropZoneCredentials.bucketName}/${dropZoneCredentials.prefix}`,
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(output);
+      setDropZoneCopyStatus("Credentials copied to clipboard.");
+    } catch {
+      setDropZoneCopyStatus("Copy failed. Select and copy manually.");
     }
   };
 
@@ -442,6 +527,94 @@ export default function SettingsPage() {
                     </div>
                   ))}
                 </div>
+
+                <div className="rounded-2xl border theme-border theme-muted p-4">
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold theme-text">
+                        Tenant S3 Drop Zone
+                      </h3>
+                      <p className="mt-1 text-xs theme-text-muted">
+                        Admin action: create or rotate write-only S3 credentials for one tenant.
+                      </p>
+                    </div>
+
+                    {dropZoneError && (
+                      <div className="alert alert-danger text-sm">{dropZoneError}</div>
+                    )}
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                      <div className="flex-1">
+                        <label className="text-xs font-medium uppercase theme-text-muted">
+                          Tenant ID
+                        </label>
+                        <input
+                          value={dropZoneTenantId}
+                          onChange={(event) => setDropZoneTenantId(event.target.value)}
+                          className="mt-2 w-full rounded-xl border theme-border theme-card px-3 py-2 text-sm theme-text"
+                          placeholder="tenant-123"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleGenerateDropZoneCredentials}
+                        disabled={dropZoneBusy || !dropZoneTenantId.trim()}
+                        className="btn btn-secondary btn-md disabled:opacity-70"
+                      >
+                        {dropZoneBusy ? "Generating..." : "Generate Drop-Zone Key"}
+                      </button>
+                    </div>
+
+                    {dropZoneCredentials && (
+                      <div className="rounded-xl border theme-border theme-card p-3">
+                        <p className="text-xs font-semibold uppercase theme-text-muted">
+                          Generated Credentials (copy now)
+                        </p>
+                        <p className="mt-1 text-xs theme-text-muted">
+                          Secret key is shown only here. Store it securely for the tenant.
+                        </p>
+                        <div className="mt-3 space-y-2 text-xs">
+                          <div className="theme-text">
+                            <span className="font-semibold">Bucket:</span>{" "}
+                            {dropZoneCredentials.bucketName}
+                          </div>
+                          <div className="theme-text">
+                            <span className="font-semibold">Prefix:</span>{" "}
+                            {dropZoneCredentials.prefix}
+                          </div>
+                          <div className="theme-text">
+                            <span className="font-semibold">Upload path:</span>{" "}
+                            {`s3://${dropZoneCredentials.bucketName}/${dropZoneCredentials.prefix}`}
+                          </div>
+                        </div>
+                        <textarea
+                          readOnly
+                          className="mt-3 w-full rounded-lg border theme-border theme-card px-3 py-2 font-mono text-xs theme-text"
+                          rows={6}
+                          value={[
+                            `AWS_ACCESS_KEY_ID=${dropZoneCredentials.accessKeyId}`,
+                            `AWS_SECRET_ACCESS_KEY=${dropZoneCredentials.secretAccessKey}`,
+                            `AWS_REGION=${dropZoneCredentials.region}`,
+                            `AWS_DROP_ZONE_BUCKET=${dropZoneCredentials.bucketName}`,
+                            `AWS_DROP_ZONE_PREFIX=${dropZoneCredentials.prefix}`,
+                          ].join("\n")}
+                        />
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleCopyDropZoneCredentials}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Copy credentials
+                          </button>
+                          {dropZoneCopyStatus && (
+                            <span className="text-xs theme-text-muted">{dropZoneCopyStatus}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -450,4 +623,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
