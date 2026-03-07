@@ -51,7 +51,8 @@ function getDropZoneClient(): S3Client {
 }
 
 function copySource(bucket: string, key: string): string {
-  return `${bucket}/${key}`;
+  // CopySource must be URL-encoded (except path separators).
+  return `${bucket}/${encodeURIComponent(key).replace(/%2F/g, "/")}`;
 }
 
 function isNotFoundError(error: unknown): boolean {

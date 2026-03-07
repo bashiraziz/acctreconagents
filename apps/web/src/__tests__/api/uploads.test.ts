@@ -128,6 +128,9 @@ describe('/api/uploads', () => {
       expect(data.size).toBe(file.size)
       expect(data.kind).toBe('supporting')
       expect(data.storageType).toBe('local') // Falls back to local in test environment
+      expect(data.rowCount).toBe(1)
+      expect(data.columnCount).toBe(2)
+      expect(data.headers).toEqual(['account', 'amount'])
     })
 
     it('should accept valid TXT file', async () => {

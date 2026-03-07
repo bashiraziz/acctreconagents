@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   CreateAccessKeyCommand,
   CreateUserCommand,
+  DeleteAccessKeyCommand,
   GetUserCommand,
   IAMClient,
   ListAccessKeysCommand,
   PutUserPolicyCommand,
-  UpdateAccessKeyCommand,
 } from "@aws-sdk/client-iam";
 import { ApiErrors, withErrorHandler } from "@/lib/api-error";
 import { auth } from "@/lib/auth";
@@ -72,17 +72,15 @@ async function ensureIamUser(client: IAMClient, userName: string): Promise<void>
   await client.send(new CreateUserCommand({ UserName: userName }));
 }
 
-async function deactivateExistingAccessKeys(client: IAMClient, userName: string): Promise<void> {
+async function deleteExistingAccessKeys(client: IAMClient, userName: string): Promise<void> {
   const listed = await client.send(new ListAccessKeysCommand({ UserName: userName }));
   const keys = listed.AccessKeyMetadata ?? [];
   for (const key of keys) {
     if (!key.AccessKeyId) continue;
-    if (key.Status !== "Active") continue;
     await client.send(
-      new UpdateAccessKeyCommand({
+      new DeleteAccessKeyCommand({
         UserName: userName,
         AccessKeyId: key.AccessKeyId,
-        Status: "Inactive",
       })
     );
   }
@@ -138,7 +136,7 @@ export const POST = withErrorHandler(
         PolicyDocument: buildPolicyDocument(bucketName, tenantId),
       })
     );
-    await deactivateExistingAccessKeys(client, userName);
+    await deleteExistingAccessKeys(client, userName);
 
     const createdKey = await client.send(
       new CreateAccessKeyCommand({
@@ -165,4 +163,3 @@ export const POST = withErrorHandler(
     });
   }
 );
-

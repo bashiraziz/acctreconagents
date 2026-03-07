@@ -144,10 +144,12 @@ async function persistFile(
 }
 
 function shouldParseContent(kind: string, source: IngestSource): boolean {
+  void kind;
   if (source === "s3-drop") {
     return true;
   }
-  return kind === "structured";
+  // UI uploads should still return row/header metadata for parseable CSV/TSV/TXT files.
+  return source === "ui";
 }
 
 export async function runIngestPipeline(
@@ -158,9 +160,20 @@ export async function runIngestPipeline(
   const safeName = sanitizeFileName(path.basename(params.fileName));
   const storedFileName = `${Date.now()}-${safeName}`;
   const kind = params.kind ?? "supporting";
-  const summary = shouldParseContent(kind, params.source)
-    ? parseBuffer(params.buffer)
-    : { rowCount: 0, columnCount: 0, headers: [] };
+  const emptySummary = { rowCount: 0, columnCount: 0, headers: [] };
+  let summary: ParseSummary = emptySummary;
+  if (shouldParseContent(kind, params.source)) {
+    try {
+      summary = parseBuffer(params.buffer);
+    } catch (error) {
+      if (params.source === "s3-drop") {
+        throw error;
+      }
+      if (process.env.NODE_ENV !== "test") {
+        console.warn("UI upload parse skipped due to parse error:", error);
+      }
+    }
+  }
   const stored = await persistFile(storedFileName, params.buffer);
 
   // Forecast trigger is reserved for later integration with orchestrator.
