@@ -11,10 +11,12 @@ import {
 } from "@/lib/db/client";
 import { headS3Object, moveS3Object } from "@/lib/file-storage";
 import {
+  deriveIngestKindFromS3Drop,
   isSupportedDropFile,
   parseS3DropKey,
   toFailedKey,
   toProcessedKey,
+  type S3DropIngestKind,
   type S3DropObjectRef,
 } from "@/lib/s3-drop";
 
@@ -31,7 +33,8 @@ type IngestRequestPayload = {
   tenantId: string;
   s3Key: string;
   jobId: string;
-  kind: string;
+  kind: S3DropIngestKind;
+  objectSize: number;
 };
 
 type IngestResponsePayload = {
@@ -184,12 +187,14 @@ async function handleDropRef(ref: S3DropObjectRef): Promise<void> {
     if (objectInfo.size <= 0) {
       throw new Error("S3 object is empty (0 bytes)");
     }
+    const kind = deriveIngestKindFromS3Drop(ref);
 
     const ingestResponse = await invokeInternalIngest({
       tenantId: ref.tenantId,
       s3Key: ref.key,
       jobId,
-      kind: "gl_balance",
+      kind,
+      objectSize: objectInfo.size,
     });
 
     const processedKey = toProcessedKey(ref);
@@ -198,6 +203,7 @@ async function handleDropRef(ref: S3DropObjectRef): Promise<void> {
     await safeUpdateIngestJob(jobId, "done", {
       s3Key: ref.key,
       processedKey,
+      kind,
       ingest: ingestResponse.ingest ?? null,
     });
   } catch (error) {
@@ -295,4 +301,3 @@ export async function runS3IngestWorker(): Promise<void> {
     }
   }
 }
-

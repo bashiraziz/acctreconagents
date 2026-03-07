@@ -1,4 +1,5 @@
 import path from "node:path";
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { ApiErrors, withErrorHandler } from "@/lib/api-error";
 import { runIngestPipeline } from "@/lib/ingest-pipeline";
@@ -12,17 +13,35 @@ type IngestS3DropRequest = {
   s3Key?: string;
   jobId?: string;
   kind?: string;
+  objectSize?: number;
 };
 
 function getInternalSecretFromRequest(request: Request): string {
   return request.headers.get("x-ingest-internal-secret")?.trim() ?? "";
 }
 
+function secureCompareSecrets(providedSecret: string, configuredSecret: string): boolean {
+  const providedBuffer = Buffer.from(providedSecret);
+  const configuredBuffer = Buffer.from(configuredSecret);
+
+  if (providedBuffer.length !== configuredBuffer.length) {
+    const maxLen = Math.max(providedBuffer.length, configuredBuffer.length, 1);
+    const paddedProvided = Buffer.alloc(maxLen);
+    const paddedConfigured = Buffer.alloc(maxLen);
+    providedBuffer.copy(paddedProvided);
+    configuredBuffer.copy(paddedConfigured);
+    timingSafeEqual(paddedProvided, paddedConfigured);
+    return false;
+  }
+
+  return timingSafeEqual(providedBuffer, configuredBuffer);
+}
+
 export const POST = withErrorHandler(async (request: Request) => {
   const configuredSecret = process.env.INGEST_INTERNAL_SECRET?.trim() ?? "";
   const providedSecret = getInternalSecretFromRequest(request);
 
-  if (!configuredSecret || providedSecret !== configuredSecret) {
+  if (!configuredSecret || !secureCompareSecrets(providedSecret, configuredSecret)) {
     return ApiErrors.unauthorized(
       "Unauthorized internal ingest request",
       "INGEST_INTERNAL_SECRET is missing or invalid"
@@ -59,11 +78,15 @@ export const POST = withErrorHandler(async (request: Request) => {
     );
   }
 
-  const objectInfo = await headS3Object(payload.s3Key);
-  if (!objectInfo.exists) {
-    return ApiErrors.notFound("S3 object", `Object not found for key ${payload.s3Key}`);
+  let objectSize = Number(payload.objectSize ?? NaN);
+  if (!Number.isFinite(objectSize)) {
+    const objectInfo = await headS3Object(payload.s3Key);
+    if (!objectInfo.exists) {
+      return ApiErrors.notFound("S3 object", `Object not found for key ${payload.s3Key}`);
+    }
+    objectSize = objectInfo.size;
   }
-  if (objectInfo.size <= 0) {
+  if (objectSize <= 0) {
     return ApiErrors.badRequest("Invalid file", "S3 object is empty (0 bytes)");
   }
 
@@ -83,4 +106,3 @@ export const POST = withErrorHandler(async (request: Request) => {
     ingest: result,
   });
 });
-

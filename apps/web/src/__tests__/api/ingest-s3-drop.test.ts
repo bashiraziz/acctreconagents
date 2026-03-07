@@ -44,7 +44,6 @@ describe("/api/ingest/s3-drop", () => {
   });
 
   it("processes drop with valid secret through shared pipeline", async () => {
-    headS3Object.mockResolvedValueOnce({ exists: true, size: 12 });
     downloadFromS3.mockResolvedValueOnce(Buffer.from("a,b\n1,2"));
     runIngestPipeline.mockResolvedValueOnce({
       ok: true,
@@ -72,6 +71,7 @@ describe("/api/ingest/s3-drop", () => {
         tenantId: "tenant-1",
         s3Key: "tenants/tenant-1/inbox/gl.csv",
         jobId: "job-123",
+        objectSize: 12,
       }),
     });
 
@@ -80,6 +80,7 @@ describe("/api/ingest/s3-drop", () => {
 
     expect(response.status).toBe(200);
     expect(downloadFromS3).toHaveBeenCalledWith("tenants/tenant-1/inbox/gl.csv");
+    expect(headS3Object).not.toHaveBeenCalled();
     expect(runIngestPipeline).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "tenant-1",
