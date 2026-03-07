@@ -29,6 +29,22 @@ export type XeroTrialBalanceResponse = {
   }>;
 };
 
+export type XeroReportsListResponse = {
+  Reports?: Array<{
+    ReportID?: string;
+    ReportName?: string;
+    ReportType?: string;
+    ReportTitles?: string[];
+  }>;
+};
+
+export type XeroReportProbeResult = {
+  reportId: string;
+  available: boolean;
+  status: number;
+  reportName: string | null;
+};
+
 export type XeroNormalizedBalance = Balance & {
   debit?: number;
   credit?: number;
@@ -210,6 +226,71 @@ export async function fetchXeroTrialBalance(
   return payload as XeroTrialBalanceResponse;
 }
 
+export async function fetchXeroReportsList(
+  accessToken: string,
+  tenantId: string,
+): Promise<XeroReportsListResponse> {
+  const url = `${XERO_API_BASE}/api.xro/2.0/Reports`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Xero-tenant-id": tenantId,
+      Accept: "application/json",
+    },
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(`Xero reports list fetch failed (${response.status})`);
+  }
+  return payload as XeroReportsListResponse;
+}
+
+export async function probeXeroReportById(
+  accessToken: string,
+  tenantId: string,
+  reportId: string,
+  queryParams?: Record<string, string | undefined>,
+): Promise<XeroReportProbeResult> {
+  const params = new URLSearchParams();
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value) params.set(key, value);
+    }
+  }
+  const query = params.toString();
+  const url = `${XERO_API_BASE}/api.xro/2.0/Reports/${encodeURIComponent(reportId)}${query ? `?${query}` : ""}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Xero-tenant-id": tenantId,
+      Accept: "application/json",
+    },
+  });
+
+  let payload: unknown = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  const reportName =
+    (payload as { Reports?: Array<{ ReportName?: string; ReportTitles?: string[] }> } | null)
+      ?.Reports?.[0]?.ReportName?.trim() ||
+    (payload as { Reports?: Array<{ ReportTitles?: string[] }> } | null)
+      ?.Reports?.[0]?.ReportTitles?.[0]?.trim() ||
+    null;
+
+  return {
+    reportId,
+    available: response.ok,
+    status: response.status,
+    reportName,
+  };
+}
+
 function toNumber(value: string): number | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -221,22 +302,44 @@ function toNumber(value: string): number | null {
 
 function collectRows(node: unknown, output: FlattenedXeroRow[]) {
   if (!node || typeof node !== "object") return;
-  const maybe = node as {
-    RowType?: string;
-    Cells?: Array<{ Value?: string | number | null }>;
-    Rows?: unknown[];
-  };
-  if (Array.isArray(maybe.Cells)) {
-    const cells = maybe.Cells.map((cell) =>
-      cell?.Value === null || cell?.Value === undefined ? "" : String(cell.Value)
-    );
+  const maybe = node as Record<string, unknown>;
+  const rowTypeRaw =
+    typeof maybe.RowType === "string"
+      ? maybe.RowType
+      : typeof maybe.rowType === "string"
+        ? maybe.rowType
+        : "";
+  const cellsRaw = Array.isArray(maybe.Cells)
+    ? maybe.Cells
+    : Array.isArray(maybe.cells)
+      ? maybe.cells
+      : null;
+  if (Array.isArray(cellsRaw)) {
+    const cells = cellsRaw.map((cell) => {
+      if (!cell || typeof cell !== "object") {
+        return cell === null || cell === undefined ? "" : String(cell);
+      }
+      const maybeCell = cell as Record<string, unknown>;
+      const raw =
+        maybeCell.Value !== undefined
+          ? maybeCell.Value
+          : maybeCell.value !== undefined
+            ? maybeCell.value
+            : "";
+      return raw === null || raw === undefined ? "" : String(raw);
+    });
     output.push({
-      rowType: typeof maybe.RowType === "string" ? maybe.RowType.toLowerCase() : "",
+      rowType: rowTypeRaw.toLowerCase(),
       cells,
     });
   }
-  if (Array.isArray(maybe.Rows)) {
-    for (const child of maybe.Rows) {
+  const rowsRaw = Array.isArray(maybe.Rows)
+    ? maybe.Rows
+    : Array.isArray(maybe.rows)
+      ? maybe.rows
+      : null;
+  if (Array.isArray(rowsRaw)) {
+    for (const child of rowsRaw) {
       collectRows(child, output);
     }
   }
@@ -304,12 +407,17 @@ export function normalizeXeroTrialBalance(
   period: string,
 ): XeroNormalizedBalance[] {
   const report = payload?.Reports?.[0];
-  if (!report?.Rows) {
+  const reportRows = Array.isArray((report as { Rows?: unknown[] } | undefined)?.Rows)
+    ? (report as { Rows: unknown[] }).Rows
+    : Array.isArray((report as { rows?: unknown[] } | undefined)?.rows)
+      ? (report as { rows: unknown[] }).rows
+      : null;
+  if (!reportRows) {
     return [];
   }
 
   const rows: FlattenedXeroRow[] = [];
-  for (const row of report.Rows) {
+  for (const row of reportRows) {
     collectRows(row, rows);
   }
   const { debitIndex, creditIndex, netIndex } = detectColumnIndexes(rows);

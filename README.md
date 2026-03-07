@@ -148,6 +148,11 @@ This skill can be used by Claude Code to implement Better Auth authentication si
 | `XERO_CLIENT_SECRET` | Secret for Xero OAuth token exchange/refresh. |
 | `XERO_REDIRECT_URI` | Optional override for callback URI (default: `${BETTER_AUTH_URL}/api/integrations/xero/callback`). |
 | `XERO_DEV_NO_DB` | Dev-only no-database Xero mode. Set `true` to test Xero without sign-in/DB migrations; tokens are stored in-memory and reset on restart. |
+| `XERO_MCP_ENABLED` | Optional: set `true` to pull trial balance via Xero MCP server instead of OAuth routes. |
+| `XERO_MCP_COMMAND` | Optional MCP command (default `npx`). |
+| `XERO_MCP_ARGS` | Optional MCP args (default `-y,@xeroapi/xero-mcp-server@latest`). |
+| `XERO_MCP_CLIENT_ID`, `XERO_MCP_CLIENT_SECRET` | Optional MCP-scoped credentials (fallback to `XERO_CLIENT_ID`/`XERO_CLIENT_SECRET`). |
+| `XERO_MCP_CLIENT_BEARER_TOKEN` | Optional bearer token for MCP server auth mode. |
 
 ## Development workflow
 1. **Run the orchestrator service**
@@ -201,7 +206,7 @@ Advanced:
 
 ## Database notes
 * The web app uses Vercel Postgres and includes a `user_organizations` table to store multiple organizations per user (with a single default).
-* Xero integration stores OAuth and tenant metadata in `xero_connections`.
+* Integration connections are moving to `integration_connections` (org-scoped, provider-agnostic), with legacy fallback to `xero_connections`.
 * For local testing without DB migration, set `XERO_DEV_NO_DB=true` and connect from Settings. This mode is non-persistent by design.
   * Run `npx tsx apps/web/scripts/init-db.ts` once against your target database to create tables. The script includes a safety check to avoid running against localhost.
 

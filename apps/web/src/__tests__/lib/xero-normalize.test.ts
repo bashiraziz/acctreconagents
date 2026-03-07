@@ -129,4 +129,38 @@ describe("normalizeXeroTrialBalance", () => {
     expect(balances[0]?.amount).toBe(2340);
     expect(balances[0]?.balanceSide).toBe("debit");
   });
+
+  it("supports MCP-style camelCase row keys", () => {
+    const payload = {
+      Reports: [
+        {
+          Rows: [
+            {
+              rowType: "header",
+              cells: [
+                { value: "Account Code" },
+                { value: "Debit - Year to date" },
+                { value: "Credit - Year to date" },
+              ],
+            },
+            {
+              rowType: "row",
+              cells: [
+                { value: "120" },
+                { value: "9,172.63" },
+                { value: "0.00" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const balances = normalizeXeroTrialBalance(payload, "2026-03");
+    expect(balances).toHaveLength(1);
+    expect(balances[0]?.account_code).toBe("120");
+    expect(balances[0]?.amount).toBe(9172.63);
+    expect(balances[0]?.debit).toBe(9172.63);
+    expect(balances[0]?.credit).toBe(0);
+  });
 });
