@@ -70,12 +70,6 @@ export default function Home() {
                 User Guide
               </Link>
               <Link
-                href="/settings"
-                className="btn btn-secondary btn-sm"
-              >
-                Settings
-              </Link>
-              <Link
                 href="/integrations/xero"
                 className="btn btn-secondary btn-sm"
               >

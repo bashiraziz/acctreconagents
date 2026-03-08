@@ -277,6 +277,7 @@ export default function XeroIntegrationPage() {
           devNoDbMode: false,
           requiresAuth: true,
           mode: selectedMode,
+          mcp: (data as XeroStatus)?.mcp ?? undefined,
           connection: null,
         });
         return;

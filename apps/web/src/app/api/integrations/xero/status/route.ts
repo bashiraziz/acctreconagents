@@ -32,17 +32,51 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     console.warn("Auth session lookup failed:", error);
   }
   if (!session?.user && !devNoDbMode) {
-    return ApiErrors.unauthorized();
+    return NextResponse.json(
+      {
+        configured: false,
+        connected: false,
+        devNoDbMode: false,
+        requiresAuth: true,
+        mode: requestedMode,
+        mcp: {
+          enabled: mcpConfig.enabled,
+          configured: mcpConfig.hasDirectCredentials,
+          source: mcpConfig.hasDirectCredentials ? "direct" : "app_oauth_bridge",
+          reason: mcpConfig.reason ?? null,
+        },
+        connection: null,
+      },
+      { status: 401 }
+    );
   }
 
-  const scope = await resolveOrganizationScope({
-    request,
-    userId: session?.user?.id ?? null,
-    allowAnonymous: devNoDbMode,
-  });
-  const organizationId = scope.organizationId;
-
   const oauthConfig = provider.getConfig();
+  let organizationId: string;
+  try {
+    const scope = await resolveOrganizationScope({
+      request,
+      userId: session?.user?.id ?? null,
+      allowAnonymous: devNoDbMode,
+    });
+    organizationId = scope.organizationId;
+  } catch {
+    // DB/org resolution failed — return partial response with at least MCP config.
+    return NextResponse.json({
+      configured: oauthConfig.isConfigured,
+      connected: false,
+      devNoDbMode,
+      requiresAuth: !devNoDbMode,
+      mode: requestedMode,
+      mcp: {
+        enabled: mcpConfig.enabled,
+        configured: mcpConfig.hasDirectCredentials,
+        source: mcpConfig.hasDirectCredentials ? "direct" : "app_oauth_bridge",
+        reason: mcpConfig.reason ?? null,
+      },
+      connection: null,
+    });
+  }
   let connection:
     | {
         tenantId: string;
@@ -81,20 +115,24 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           }
         : null;
     } else if (session?.user) {
-      const dbConnection = await getIntegrationConnection(
-        session.user.id,
-        organizationId,
-        "xero"
-      );
-      connection = dbConnection
-        ? {
-            tenantId: dbConnection.externalTenantId,
-            tenantName: dbConnection.externalTenantName,
-            expiresAt: dbConnection.expiresAt,
-            updatedAt: dbConnection.updatedAt,
-            lastSyncedAt: dbConnection.lastSyncedAt,
-          }
-        : null;
+      try {
+        const dbConnection = await getIntegrationConnection(
+          session.user.id,
+          organizationId,
+          "xero"
+        );
+        connection = dbConnection
+          ? {
+              tenantId: dbConnection.externalTenantId,
+              tenantName: dbConnection.externalTenantName,
+              expiresAt: dbConnection.expiresAt,
+              updatedAt: dbConnection.updatedAt,
+              lastSyncedAt: dbConnection.lastSyncedAt,
+            }
+          : null;
+      } catch (err) {
+        console.warn("Failed to fetch integration connection:", err);
+      }
     }
   } else if (devNoDbMode) {
     const devSessionId = request.cookies.get(XERO_DEV_SESSION_COOKIE)?.value ?? "";
@@ -112,20 +150,24 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         }
       : null;
   } else if (session?.user) {
-    const dbConnection = await getIntegrationConnection(
-      session.user.id,
-      organizationId,
-      "xero"
-    );
-    connection = dbConnection
-      ? {
-          tenantId: dbConnection.externalTenantId,
-          tenantName: dbConnection.externalTenantName,
-          expiresAt: dbConnection.expiresAt,
-          updatedAt: dbConnection.updatedAt,
-          lastSyncedAt: dbConnection.lastSyncedAt,
-        }
-      : null;
+    try {
+      const dbConnection = await getIntegrationConnection(
+        session.user.id,
+        organizationId,
+        "xero"
+      );
+      connection = dbConnection
+        ? {
+            tenantId: dbConnection.externalTenantId,
+            tenantName: dbConnection.externalTenantName,
+            expiresAt: dbConnection.expiresAt,
+            updatedAt: dbConnection.updatedAt,
+            lastSyncedAt: dbConnection.lastSyncedAt,
+          }
+        : null;
+    } catch (err) {
+      console.warn("Failed to fetch integration connection:", err);
+    }
   } else {
     return ApiErrors.unauthorized();
   }
