@@ -158,9 +158,12 @@ export function normalizeXeroJournals(
     const date = parseXeroDate(journal.JournalDate);
     const period = date.slice(0, 7);
     const sourceType = journal.SourceType ?? "";
-    const reference = [journal.SourceType, journal.SourceID]
-      .filter((part): part is string => Boolean(part))
-      .join("-");
+    const journalReference = String(journal.Reference ?? "").trim();
+    const reference =
+      journalReference ||
+      [journal.SourceType, journal.SourceID]
+        .filter((part): part is string => Boolean(part))
+        .join("-");
 
     for (const line of journal.JournalLines ?? []) {
       const accountCode = String(line.AccountCode ?? "").trim();
@@ -177,7 +180,7 @@ export function normalizeXeroJournals(
         description:
           String(line.Description ?? "").trim() ||
           String(journal.Narration ?? "").trim() ||
-          sourceType,
+          journalReference,
         reference,
         net_amount: Number(line.NetAmount ?? 0),
         gross_amount: Number(line.GrossAmount ?? line.NetAmount ?? 0),

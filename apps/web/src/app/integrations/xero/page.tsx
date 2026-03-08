@@ -1192,6 +1192,7 @@ export default function XeroIntegrationPage() {
                               <tr className="theme-muted">
                                 <th className="px-3 py-2 text-left theme-text">Date</th>
                                 <th className="px-3 py-2 text-left theme-text">Account</th>
+                                <th className="px-3 py-2 text-left theme-text">Account Name</th>
                                 <th className="px-3 py-2 text-left theme-text">Description</th>
                                 <th className="px-3 py-2 text-left theme-text">Reference</th>
                                 <th className="px-3 py-2 text-right theme-text">Net Amount</th>
@@ -1212,6 +1213,9 @@ export default function XeroIntegrationPage() {
                                   </td>
                                   <td className="px-3 py-2 font-mono theme-text">
                                     {row.account_code}
+                                  </td>
+                                  <td className="max-w-[160px] truncate px-3 py-2 theme-text-muted">
+                                    {row.account_name || "-"}
                                   </td>
                                   <td className="max-w-[200px] truncate px-3 py-2 theme-text-muted">
                                     {row.description || "-"}
