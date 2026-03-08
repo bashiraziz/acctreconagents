@@ -41,6 +41,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         mode: requestedMode,
         mcp: {
           enabled: mcpConfig.enabled,
+          viable: mcpConfig.viable,
           configured: mcpConfig.hasDirectCredentials,
           source: mcpConfig.hasDirectCredentials ? "direct" : "app_oauth_bridge",
           reason: mcpConfig.reason ?? null,
@@ -70,6 +71,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       mode: requestedMode,
       mcp: {
         enabled: mcpConfig.enabled,
+        viable: mcpConfig.viable,
         configured: mcpConfig.hasDirectCredentials,
         source: mcpConfig.hasDirectCredentials ? "direct" : "app_oauth_bridge",
         reason: mcpConfig.reason ?? null,
@@ -187,6 +189,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     mode,
     mcp: {
       enabled: mcpConfig.enabled,
+      viable: mcpConfig.viable,
       configured: mcpConfig.hasDirectCredentials || mcpConfiguredFromBridge,
       source: mcpConfig.hasDirectCredentials ? "direct" : "app_oauth_bridge",
       reason: mcpConfig.reason ?? null,

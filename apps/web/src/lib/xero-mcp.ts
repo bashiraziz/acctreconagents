@@ -7,6 +7,7 @@ const DEFAULT_MCP_TIMEOUT_MS = 45_000;
 
 export type XeroMcpConfig = {
   enabled: boolean;
+  viable: boolean;
   configured: boolean;
   hasDirectCredentials: boolean;
   command: string;
@@ -94,9 +95,12 @@ export function getXeroMcpConfig(): XeroMcpConfig {
     Boolean(process.env.XERO_MCP_CLIENT_SECRET?.trim());
 
   const hasDirectCredentials = hasMcpBearer || hasMcpClientCreds;
+  // Vercel serverless cannot spawn stdio child processes — MCP is not viable there.
+  const viable = !process.env.VERCEL;
 
   return {
-    enabled,
+    enabled: enabled && viable,
+    viable,
     configured: hasDirectCredentials,
     hasDirectCredentials,
     command,

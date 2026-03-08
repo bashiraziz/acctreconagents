@@ -15,6 +15,7 @@ type XeroStatus = {
   mode?: "oauth" | "mcp";
   mcp?: {
     enabled: boolean;
+    viable: boolean;
     configured: boolean;
     reason?: string | null;
   };
@@ -217,6 +218,7 @@ export default function XeroIntegrationPage() {
   const xeroDevModeActive = Boolean(xeroStatus?.devNoDbMode);
   const xeroMcpModeActive = selectedMode === "mcp";
   const xeroMcpEnabled = Boolean(xeroStatus?.mcp?.enabled);
+  const xeroMcpViable = xeroStatus === null || Boolean(xeroStatus?.mcp?.viable ?? true);
   const xeroCanUseWithoutAuth = Boolean(session?.user) || xeroDevModeActive;
   const xeroModePending =
     !modeInitialized || (!session?.user && xeroStatus === null && xeroLoading);
@@ -337,12 +339,12 @@ export default function XeroIntegrationPage() {
   }, [loadXeroStatus, selectedMode]);
 
   useEffect(() => {
-    if (!xeroStatus || selectedMode !== "mcp" || xeroMcpEnabled) {
+    if (!xeroStatus || selectedMode !== "mcp" || (xeroMcpEnabled && xeroMcpViable)) {
       return;
     }
     setSelectedMode("oauth");
     window.localStorage.setItem("xeroIntegrationMode", "oauth");
-  }, [selectedMode, xeroMcpEnabled, xeroStatus]);
+  }, [selectedMode, xeroMcpEnabled, xeroMcpViable, xeroStatus]);
 
   useEffect(() => {
     if (xeroPullStartedAt === null) {
@@ -719,21 +721,23 @@ export default function XeroIntegrationPage() {
                   >
                     API
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleModeChange("mcp")}
-                    disabled={!xeroMcpEnabled}
-                    className={
-                      selectedMode === "mcp"
-                        ? "btn btn-secondary btn-sm disabled:opacity-60"
-                        : "btn btn-secondary btn-sm opacity-75 disabled:opacity-60"
-                    }
-                  >
-                    MCP
-                  </button>
+                  {xeroMcpViable && (
+                    <button
+                      type="button"
+                      onClick={() => handleModeChange("mcp")}
+                      disabled={!xeroMcpEnabled}
+                      className={
+                        selectedMode === "mcp"
+                          ? "btn btn-secondary btn-sm disabled:opacity-60"
+                          : "btn btn-secondary btn-sm opacity-75 disabled:opacity-60"
+                      }
+                    >
+                      MCP
+                    </button>
+                  )}
                 </div>
               </div>
-              {!xeroMcpEnabled && (
+              {xeroMcpViable && !xeroMcpEnabled && (
                 <p className="mt-2 text-xs theme-text-muted">
                   MCP is disabled in environment (`XERO_MCP_ENABLED=false`).
                 </p>
