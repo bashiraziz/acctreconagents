@@ -18,8 +18,8 @@ type SectionProps = {
 
 function Section({ title, children }: SectionProps) {
   return (
-    <section className="rounded-3xl border theme-border bg-slate-950/60 p-6 space-y-3">
-      <h2 className="text-base font-semibold uppercase tracking-[0.3em] text-slate-300">
+    <section className="rounded-3xl border theme-border theme-card p-6 space-y-3">
+      <h2 className="text-base font-semibold uppercase tracking-[0.3em] theme-text">
         {title}
       </h2>
       <div className="space-y-3 text-sm theme-text-muted leading-relaxed">
@@ -36,12 +36,12 @@ export default function PrivacyPage() {
 
         <header className="theme-card theme-border border-b p-6">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] theme-text-muted">
               Legal
             </p>
             <Link
               href="/"
-              className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 transition hover:text-slate-200"
+              className="text-xs font-semibold uppercase tracking-[0.3em] theme-text-muted transition hover:underline"
             >
               Back to home
             </Link>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
           <p>
             {APP_NAME} (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) operates the
             application available at{" "}
-            <span className="text-slate-300">{APP_URL}</span>. We provide AI-powered
+            <span className="theme-text font-medium">{APP_URL}</span>. We provide AI-powered
             accounting reconciliation services that help finance teams match general ledger
             balances against subledger records and external data sources.
           </p>
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
             Questions about this policy can be sent to{" "}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="text-slate-300 underline underline-offset-2 hover:text-white"
+              className="theme-text underline underline-offset-2 hover:opacity-75"
             >
               {CONTACT_EMAIL}
             </a>
@@ -76,28 +76,28 @@ export default function PrivacyPage() {
           <p>We collect the following categories of data:</p>
           <ul className="list-disc list-inside space-y-2 pl-2">
             <li>
-              <span className="text-slate-300">Account information</span> — your name,
+              <span className="theme-text font-medium">Account information</span> — your name,
               email address, and password (hashed) when you create an account.
             </li>
             <li>
-              <span className="text-slate-300">Xero accounting data</span> — trial balance
+              <span className="theme-text font-medium">Xero accounting data</span> — trial balance
               figures, account codes, account names, and your Xero organisation name,
               fetched on your request via the Xero API. We do not collect transaction-level
               detail, customer records, or bank feeds unless you explicitly request a report
               that includes them.
             </li>
             <li>
-              <span className="text-slate-300">Uploaded files</span> — CSV, TSV, or TXT
+              <span className="theme-text font-medium">Uploaded files</span> — CSV, TSV, or TXT
               files you upload for reconciliation (GL exports, subledger exports,
               transaction files).
             </li>
             <li>
-              <span className="text-slate-300">OAuth tokens</span> — access and refresh
+              <span className="theme-text font-medium">OAuth tokens</span> — access and refresh
               tokens issued by Xero when you connect your account. These are stored
               encrypted at rest and used solely to retrieve data on your behalf.
             </li>
             <li>
-              <span className="text-slate-300">Usage data</span> — basic request logs
+              <span className="theme-text font-medium">Usage data</span> — basic request logs
               (route, timestamp, status code) for operational monitoring. We do not sell or
               share this data.
             </li>
@@ -141,7 +141,7 @@ export default function PrivacyPage() {
             You can disconnect {APP_NAME} from your Xero account at any time from the
             Integrations page. Disconnecting immediately invalidates your stored tokens.
             You can also revoke access from within Xero at{" "}
-            <span className="text-slate-300">My Xero &rarr; Connected Apps</span>.
+            <span className="theme-text font-medium">My Xero &rarr; Connected Apps</span>.
           </p>
           <p>
             {APP_NAME} is built on the Xero API. Your use of the Xero integration is also
@@ -150,7 +150,7 @@ export default function PrivacyPage() {
               href="https://developer.xero.com/documentation/api/developer-agreements-and-policies/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-300 underline underline-offset-2 hover:text-white"
+              className="theme-text underline underline-offset-2 hover:opacity-75"
             >
               Xero&apos;s developer agreements and policies
             </a>
@@ -164,21 +164,21 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc list-inside space-y-2 pl-2">
             <li>
-              <span className="text-slate-300">Vercel</span> — application hosting and
+              <span className="theme-text font-medium">Vercel</span> — application hosting and
               serverless functions (United States).
             </li>
             <li>
-              <span className="text-slate-300">Vercel Postgres (Neon)</span> — database
+              <span className="theme-text font-medium">Vercel Postgres (Neon)</span> — database
               storing your account, mappings, Xero tokens, and reconciliation history.
               Data is encrypted at rest and in transit.
             </li>
             <li>
-              <span className="text-slate-300">Vercel Blob / AWS S3</span> — file storage
+              <span className="theme-text font-medium">Vercel Blob / AWS S3</span> — file storage
               for uploaded CSVs. Files are stored with access controls scoped to your
               account.
             </li>
             <li>
-              <span className="text-slate-300">Anthropic / OpenAI</span> — AI providers
+              <span className="theme-text font-medium">Anthropic / OpenAI</span> — AI providers
               used to analyse reconciliation results. Data sent to these providers is
               governed by their respective data processing agreements and is not used to
               train their models under our agreements.
@@ -194,60 +194,24 @@ export default function PrivacyPage() {
         <Section title="Data retention">
           <ul className="list-disc list-inside space-y-2 pl-2">
             <li>
-              <span className="text-slate-300">Xero OAuth tokens</span> — retained while
+              <span className="theme-text font-medium">Xero OAuth tokens</span> — retained while
               your Xero integration is active. Deleted immediately on disconnect.
             </li>
             <li>
-              <span className="text-slate-300">Uploaded files</span> — retained for 30
+              <span className="theme-text font-medium">Uploaded files</span> — retained for 30
               days after upload, then automatically deleted.
             </li>
             <li>
-              <span className="text-slate-300">Reconciliation history</span> — retained
+              <span className="theme-text font-medium">Reconciliation history</span> — retained
               for 12 months, then purged.
             </li>
             <li>
-              <span className="text-slate-300">Account data</span> — retained while your
+              <span className="theme-text font-medium">Account data</span> — retained while your
               account is active. Deleted within 30 days of a verified account deletion
               request.
             </li>
           </ul>
         </Section>
-
-        {/* <Section title="Your rights">
-          <p>You have the right to:</p>
-          <ul className="list-disc list-inside space-y-2 pl-2">
-            <li>
-              <span className="text-slate-300">Access</span> — request a copy of the
-              personal data we hold about you.
-            </li>
-            <li>
-              <span className="text-slate-300">Correction</span> — ask us to correct
-              inaccurate data.
-            </li>
-            <li>
-              <span className="text-slate-300">Deletion</span> — request deletion of your
-              account and all associated data.
-            </li>
-            <li>
-              <span className="text-slate-300">Portability</span> — request your data in
-              a machine-readable format.
-            </li>
-            <li>
-              <span className="text-slate-300">Objection</span> — object to processing in
-              certain circumstances.
-            </li>
-          </ul>
-          <p>
-            To exercise any of these rights, email{" "}
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="text-slate-300 underline underline-offset-2 hover:text-white"
-            >
-              {CONTACT_EMAIL}
-            </a>
-            . We will respond within 30 days.
-          </p>
-        </Section> */}
 
         <Section title="Cookies">
           <p>
@@ -272,7 +236,7 @@ export default function PrivacyPage() {
             For privacy-related questions or requests, contact us at{" "}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="text-slate-300 underline underline-offset-2 hover:text-white"
+              className="theme-text underline underline-offset-2 hover:opacity-75"
             >
               {CONTACT_EMAIL}
             </a>
@@ -280,7 +244,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <footer className="pb-4 text-center text-xs text-slate-600">
+        <footer className="pb-4 text-center text-xs theme-text-muted">
           &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
         </footer>
 
