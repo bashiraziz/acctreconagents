@@ -33,6 +33,7 @@ type XeroTrialBalancePreview = {
   count: number;
   glBalances: Array<{
     account_code: string;
+    account_name?: string;
     amount: number;
     debit?: number;
     credit?: number;
@@ -42,6 +43,27 @@ type XeroTrialBalancePreview = {
   }>;
 };
 
+type XeroTransactionPreview = {
+  fromDate: string;
+  toDate: string;
+  count: number;
+  pagesFetched: number;
+  transactions: Array<{
+    journal_id: string;
+    journal_number: number;
+    date: string;
+    period: string;
+    account_code: string;
+    account_name: string;
+    description: string;
+    reference: string;
+    net_amount: number;
+    gross_amount: number;
+    source_type: string;
+  }>;
+};
+
+
 type LocalBalanceRow = {
   account_code: string;
   period: string;
@@ -49,7 +71,13 @@ type LocalBalanceRow = {
   currency: string;
 };
 type XeroMode = "oauth" | "mcp";
-type XeroAction = "idle" | "pull" | "disconnect" | "discover";
+type XeroAction =
+  | "idle"
+  | "pull"
+  | "disconnect"
+  | "discover"
+  | "pull-txn"
+;
 type XeroReportsDiscovery = {
   mode: XeroMode;
   count: number;
@@ -80,6 +108,13 @@ function getTodayLocalIsoDate(): string {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function firstDayOfCurrentMonth(): string {
+  const now = new Date();
+  const year = String(now.getFullYear());
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}-01`;
 }
 
 function formatIsoDate(year: number, monthIndexZeroBased: number, day: number): string {
@@ -166,6 +201,11 @@ export default function XeroIntegrationPage() {
   const [xeroPreview, setXeroPreview] = useState<XeroTrialBalancePreview | null>(null);
   const [showAllXeroRows, setShowAllXeroRows] = useState(false);
   const [xeroSavedMessage, setXeroSavedMessage] = useState<string | null>(null);
+  const [txnFromDate, setTxnFromDate] = useState<string>(() => firstDayOfCurrentMonth());
+  const [txnToDate, setTxnToDate] = useState<string>(() => getTodayLocalIsoDate());
+  const [txnPreview, setTxnPreview] = useState<XeroTransactionPreview | null>(null);
+  const [showAllTxnRows, setShowAllTxnRows] = useState(false);
+  const [txnSavedMessage, setTxnSavedMessage] = useState<string | null>(null);
   const setUploadedFile = useFileUploadStore((state) => state.setFile);
   const setMaterialityThreshold = useUserPreferencesStore(
     (state) => state.setMaterialityThreshold
@@ -330,6 +370,9 @@ export default function XeroIntegrationPage() {
       setXeroPreview(null);
       setXeroReportsDiscovery(null);
       setShowAllXeroRows(false);
+      setTxnPreview(null);
+      setShowAllTxnRows(false);
+      setTxnSavedMessage(null);
       await loadXeroStatus();
     } catch (err) {
       setXeroError(err instanceof Error ? err.message : "Failed to disconnect Xero");
@@ -404,6 +447,42 @@ export default function XeroIntegrationPage() {
       setXeroAction("idle");
     }
   };
+
+  const handlePullXeroTransactions = async () => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(txnFromDate) || !/^\d{4}-\d{2}-\d{2}$/.test(txnToDate)) {
+      setXeroError("Invalid date range. Use YYYY-MM-DD.");
+      return;
+    }
+    if (txnFromDate > txnToDate) {
+      setXeroError("From date must be on or before To date.");
+      return;
+    }
+
+    setXeroAction("pull-txn");
+    setXeroError(null);
+    setTxnSavedMessage(null);
+
+    try {
+      const params = new URLSearchParams({ fromDate: txnFromDate, toDate: txnToDate });
+      const response = await fetch(`/api/integrations/xero/data/transactions?${params}`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, "Failed to pull transactions from Xero"));
+      }
+      const preview = data as XeroTransactionPreview;
+      setTxnPreview(preview);
+      setTxnFromDate(preview.fromDate);
+      setTxnToDate(preview.toDate);
+      setShowAllTxnRows(false);
+    } catch (err) {
+      setXeroError(
+        err instanceof Error ? err.message : "Failed to pull transactions from Xero"
+      );
+    } finally {
+      setXeroAction("idle");
+    }
+  };
+
 
   const buildLocalBalanceRows = (): LocalBalanceRow[] => {
     if (!xeroPreview) return [];
@@ -482,6 +561,76 @@ export default function XeroIntegrationPage() {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleSaveTxnLocally = () => {
+    if (!txnPreview) return;
+    const headers = [
+      "journal_id",
+      "journal_number",
+      "date",
+      "period",
+      "account_code",
+      "account_name",
+      "description",
+      "reference",
+      "net_amount",
+      "gross_amount",
+      "source_type",
+    ];
+    const now = Date.now();
+    const uploadedFile: UploadedFile = {
+      id: `xero-transactions-${now}`,
+      name: `xero-transactions-${txnPreview.fromDate}-to-${txnPreview.toDate}.csv`,
+      type: "transactions",
+      size: new Blob([JSON.stringify(txnPreview.transactions)]).size,
+      uploadedAt: now,
+      rowCount: txnPreview.count,
+      columnCount: headers.length,
+      headers,
+      rows: txnPreview.transactions,
+      accountingSystem: "xero",
+      metadata: {
+        period: `${txnPreview.fromDate}..${txnPreview.toDate}`,
+        reportDate: txnPreview.toDate,
+      },
+    };
+    setUploadedFile("transactions", uploadedFile);
+    setTxnSavedMessage(`Saved ${txnPreview.count} journal lines as transactions (local).`);
+  };
+
+  const handleDownloadTxnCsv = () => {
+    if (!txnPreview) return;
+    const header =
+      "journal_id,journal_number,date,period,account_code,account_name,description,reference,net_amount,gross_amount,source_type";
+    const lines = txnPreview.transactions.map((row) =>
+      [
+        row.journal_id,
+        row.journal_number,
+        row.date,
+        row.period,
+        row.account_code,
+        row.account_name,
+        row.description,
+        row.reference,
+        row.net_amount.toFixed(2),
+        row.gross_amount.toFixed(2),
+        row.source_type,
+      ]
+        .map((v) => `"${String(v ?? "").replaceAll('"', '""')}"`)
+        .join(",")
+    );
+    const csv = [header, ...lines].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `xero-transactions-${txnPreview.fromDate}-to-${txnPreview.toDate}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    window.URL.revokeObjectURL(url);
+  };
+
+
   const formatSignedAmount = (value: number) => {
     const abs = Math.abs(value);
     const formatted = abs.toLocaleString(undefined, {
@@ -504,6 +653,9 @@ export default function XeroIntegrationPage() {
     setXeroError(null);
     setXeroSavedMessage(null);
     setXeroPreview(null);
+    setTxnPreview(null);
+    setShowAllTxnRows(false);
+    setTxnSavedMessage(null);
     setXeroReportsDiscovery(null);
 
     const params = new URLSearchParams(window.location.search);
@@ -542,7 +694,7 @@ export default function XeroIntegrationPage() {
               Xero Integration
             </h1>
             <p className="text-sm theme-text-muted">
-              Connect your Xero tenant, pull trial balance, and save GL locally for reconciliation.
+              Connect your Xero tenant to pull trial balance and transactions for reconciliation. Upload your AR/AP aging reports manually in the Upload step.
             </p>
           </div>
         </header>
@@ -640,53 +792,7 @@ export default function XeroIntegrationPage() {
                           </p>
                         )}
                       </div>
-                      <div className="flex flex-col items-start gap-2 sm:items-end">
-                        <label className="flex items-center gap-2 text-xs theme-text-muted">
-                          <span>As of date</span>
-                          <input
-                            type="date"
-                            value={xeroAsOfDate}
-                            max={xeroMaxAsOfDate}
-                            onChange={(event) => setXeroAsOfDate(event.target.value)}
-                            disabled={xeroBusy}
-                            className="rounded-lg border theme-border theme-card px-2 py-1 text-xs theme-text"
-                          />
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAsOfDatePreset("today")}
-                            disabled={xeroBusy}
-                            className="btn btn-secondary btn-sm disabled:opacity-70"
-                          >
-                            Today
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAsOfDatePreset("month_end")}
-                            disabled={xeroBusy}
-                            className="btn btn-secondary btn-sm disabled:opacity-70"
-                          >
-                            Month-end
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAsOfDatePreset("prior_month_end")}
-                            disabled={xeroBusy}
-                            className="btn btn-secondary btn-sm disabled:opacity-70"
-                          >
-                            Prior month-end
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAsOfDatePreset("prior_year_end")}
-                            disabled={xeroBusy}
-                            className="btn btn-secondary btn-sm disabled:opacity-70"
-                          >
-                            Prior year-end
-                          </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         {!xeroStatus?.connected && xeroStatus?.configured && (
                           <a
                             href={`/api/integrations/xero/connect?mode=${encodeURIComponent(selectedMode)}`}
@@ -705,17 +811,6 @@ export default function XeroIntegrationPage() {
                               {xeroAction === "discover" ? "Discovering..." : "Discover Reports"}
                             </button>
                             <button
-                              onClick={handlePullXeroTrialBalance}
-                              disabled={xeroBusy}
-                              className="btn btn-secondary btn-sm disabled:opacity-70"
-                            >
-                              {xeroAction === "pull"
-                                ? "Pulling..."
-                                : xeroMcpModeActive
-                                  ? "Pull Trial Balance (MCP)"
-                                  : "Pull Trial Balance"}
-                            </button>
-                            <button
                               onClick={handleDisconnectXero}
                               disabled={xeroBusy}
                               className="btn btn-danger btn-sm disabled:opacity-70"
@@ -729,14 +824,6 @@ export default function XeroIntegrationPage() {
                                   : "Disconnect"}
                             </button>
                           </>
-                        )}
-                        </div>
-                        {(xeroPullInProgress || xeroLastPullDurationMs !== null) && (
-                          <p className="text-xs theme-text-muted">
-                            {xeroPullInProgress
-                              ? `Pull elapsed (${selectedMode.toUpperCase()}): ${formatElapsedDuration(xeroPullElapsedMs)}`
-                              : `Last pull (${(xeroLastPullMode || selectedMode).toUpperCase()}): ${formatElapsedDuration(xeroLastPullDurationMs || 0)}`}
-                          </p>
                         )}
                       </div>
                     </div>
@@ -796,139 +883,361 @@ export default function XeroIntegrationPage() {
                   </div>
                 )}
 
-                {xeroPreview && (
+                {xeroStatus?.connected && (
                   <div className="rounded-xl border theme-border theme-muted p-4">
-                    <p className="text-sm font-semibold theme-text">
-                      Trial Balance Preview ({xeroPreview.period})
-                    </p>
+                    <p className="text-sm font-semibold theme-text">Pull Trial Balance</p>
                     <p className="mt-1 text-xs theme-text-muted">
-                      {xeroPreview.count} rows pulled as of {xeroPreview.asOfDate}
+                      {xeroMcpModeActive
+                        ? "Pulls via Xero MCP server."
+                        : "Pulls as-of-date GL balances from Xero."}
                     </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        onClick={handleSaveXeroPreviewLocally}
-                        className="btn btn-secondary btn-sm"
-                      >
-                        Save as GL balance (local)
-                      </button>
-                      <button
-                        onClick={handleDownloadXeroCsv}
-                        className="btn btn-secondary btn-sm"
-                      >
-                        Download CSV
-                      </button>
-                      {xeroPreview.glBalances.length > 8 && (
+
+                    <div className="mt-3 flex flex-wrap items-end gap-3">
+                      <label className="flex flex-col gap-1 text-xs theme-text-muted">
+                        <span>As of date</span>
+                        <input
+                          type="date"
+                          value={xeroAsOfDate}
+                          max={xeroMaxAsOfDate}
+                          onChange={(event) => setXeroAsOfDate(event.target.value)}
+                          disabled={xeroBusy}
+                          className="rounded-lg border theme-border theme-card px-2 py-1 text-xs theme-text"
+                        />
+                      </label>
+                      <div className="flex flex-wrap gap-1">
                         <button
-                          onClick={() => setShowAllXeroRows((prev) => !prev)}
-                          className="btn btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => handleSelectAsOfDatePreset("today")}
+                          disabled={xeroBusy}
+                          className="btn btn-secondary btn-sm disabled:opacity-70"
                         >
-                          {showAllXeroRows
-                            ? "Show first 8"
-                            : `Show all ${xeroPreview.glBalances.length}`}
+                          Today
                         </button>
-                      )}
-                      <Link href="/" className="btn btn-secondary btn-sm">
-                        Go to Upload
-                      </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAsOfDatePreset("month_end")}
+                          disabled={xeroBusy}
+                          className="btn btn-secondary btn-sm disabled:opacity-70"
+                        >
+                          Month-end
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAsOfDatePreset("prior_month_end")}
+                          disabled={xeroBusy}
+                          className="btn btn-secondary btn-sm disabled:opacity-70"
+                        >
+                          Prior month-end
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAsOfDatePreset("prior_year_end")}
+                          disabled={xeroBusy}
+                          className="btn btn-secondary btn-sm disabled:opacity-70"
+                        >
+                          Prior year-end
+                        </button>
+                      </div>
+                      <button
+                        onClick={handlePullXeroTrialBalance}
+                        disabled={xeroBusy}
+                        className="btn btn-secondary btn-sm disabled:opacity-70"
+                      >
+                        {xeroAction === "pull"
+                          ? "Pulling..."
+                          : xeroMcpModeActive
+                            ? "Pull Trial Balance (MCP)"
+                            : "Pull Trial Balance"}
+                      </button>
                     </div>
-                    {xeroSavedMessage && (
-                      <div className="mt-3 rounded-lg border theme-border theme-card px-3 py-2 text-xs theme-text-muted">
-                        {xeroSavedMessage}
+
+                    {(xeroPullInProgress || xeroLastPullDurationMs !== null) && (
+                      <p className="mt-2 text-xs theme-text-muted">
+                        {xeroPullInProgress
+                          ? `Pulling (${selectedMode.toUpperCase()}): ${formatElapsedDuration(xeroPullElapsedMs)}`
+                          : `Last pull (${(xeroLastPullMode || selectedMode).toUpperCase()}): ${formatElapsedDuration(xeroLastPullDurationMs || 0)}`}
+                      </p>
+                    )}
+
+                    {xeroPreview && (
+                      <div className="mt-4 border-t theme-border pt-4">
+                        <p className="text-sm font-semibold theme-text">
+                          Preview — {xeroPreview.period}
+                        </p>
+                        <p className="mt-1 text-xs theme-text-muted">
+                          {xeroPreview.count} rows as of {xeroPreview.asOfDate}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={handleSaveXeroPreviewLocally}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Save as GL balance (local)
+                          </button>
+                          <button
+                            onClick={handleDownloadXeroCsv}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Download CSV
+                          </button>
+                          {xeroPreview.glBalances.length > 8 && (
+                            <button
+                              onClick={() => setShowAllXeroRows((prev) => !prev)}
+                              className="btn btn-secondary btn-sm"
+                            >
+                              {showAllXeroRows
+                                ? "Show first 8"
+                                : `Show all ${xeroPreview.glBalances.length}`}
+                            </button>
+                          )}
+                          <Link href="/" className="btn btn-secondary btn-sm">
+                            Go to Upload
+                          </Link>
+                        </div>
+                        {xeroSavedMessage && (
+                          <div className="mt-3 rounded-lg border theme-border theme-card px-3 py-2 text-xs theme-text-muted">
+                            {xeroSavedMessage}
+                          </div>
+                        )}
+                        <p className="mt-2 text-xs theme-text-muted">
+                          {showAllXeroRows
+                            ? `Showing all ${xeroPreview.glBalances.length} rows`
+                            : `Showing ${Math.min(8, xeroPreview.glBalances.length)} of ${xeroPreview.glBalances.length} rows`}
+                        </p>
+                        <p className="text-xs theme-text-muted">
+                          Suggested run defaults: period {xeroPreview.period}, materiality ${xeroRecommendedMateriality}.
+                        </p>
+                        <div
+                          className={`mt-2 rounded-lg border px-3 py-2 text-xs font-medium ${
+                            xeroTbBalanced
+                              ? "theme-border theme-card theme-text-muted"
+                              : "alert alert-danger"
+                          }`}
+                        >
+                          TB check: Debits {formatAmount(xeroTotals.debit)} − Credits{" "}
+                          {formatAmount(xeroTotals.credit)} ={" "}
+                          {formatSignedAmount(xeroTbDifference)}{" "}
+                          ({xeroTbBalanced ? "BALANCED" : "OUT OF BALANCE"})
+                        </div>
+                        <div className="mt-3 overflow-x-auto rounded-lg border theme-border">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="theme-muted">
+                                <th className="px-3 py-2 text-left theme-text">Code</th>
+                                <th className="px-3 py-2 text-left theme-text">Account Name</th>
+                                <th className="px-3 py-2 text-right theme-text">Debit YTD</th>
+                                <th className="px-3 py-2 text-right theme-text">Credit YTD</th>
+                                <th className="px-3 py-2 text-right theme-text">Balance</th>
+                                <th className="px-3 py-2 text-left theme-text">Side</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(showAllXeroRows
+                                ? xeroPreview.glBalances
+                                : xeroPreview.glBalances.slice(0, 8)
+                              ).map((row, idx) => (
+                                <tr key={`${row.account_code}-${idx}`} className="border-t theme-border">
+                                  <td className="px-3 py-2 font-mono theme-text">{row.account_code}</td>
+                                  <td className="px-3 py-2 theme-text">{row.account_name || "-"}</td>
+                                  <td className="px-3 py-2 text-right theme-text">
+                                    {(row.debit ?? (row.amount > 0 ? Math.abs(row.amount) : 0)) > 0
+                                      ? formatAmount(
+                                          Number(
+                                            row.debit ?? (row.amount > 0 ? Math.abs(row.amount) : 0)
+                                          )
+                                        )
+                                      : "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-right theme-text">
+                                    {(row.credit ?? (row.amount < 0 ? Math.abs(row.amount) : 0)) > 0
+                                      ? formatAmount(
+                                          Number(
+                                            row.credit ?? (row.amount < 0 ? Math.abs(row.amount) : 0)
+                                          )
+                                        )
+                                      : "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-right theme-text">
+                                    {formatSignedAmount(Number(row.amount))}
+                                  </td>
+                                  <td className="px-3 py-2 theme-text">
+                                    {row.balanceSide
+                                      ? row.balanceSide.toUpperCase()
+                                      : row.amount > 0
+                                        ? "DEBIT"
+                                        : row.amount < 0
+                                          ? "CREDIT"
+                                          : "ZERO"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot>
+                              <tr className="border-t-2 theme-border theme-muted font-semibold">
+                                <td className="px-3 py-2 theme-text">Total</td>
+                                <td className="px-3 py-2 theme-text-muted">{xeroPreview.count} rows</td>
+                                <td className="px-3 py-2 text-right theme-text">
+                                  {xeroTotals.debit > 0 ? formatAmount(xeroTotals.debit) : "-"}
+                                </td>
+                                <td className="px-3 py-2 text-right theme-text">
+                                  {xeroTotals.credit > 0 ? formatAmount(xeroTotals.credit) : "-"}
+                                </td>
+                                <td className="px-3 py-2 text-right theme-text">
+                                  {formatSignedAmount(xeroTotals.net)}
+                                </td>
+                                <td className="px-3 py-2 theme-text">
+                                  {xeroTotals.net > 0
+                                    ? "DEBIT"
+                                    : xeroTotals.net < 0
+                                      ? "CREDIT"
+                                      : "BALANCED"}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                        <p className="mt-2 text-xs theme-text-muted">
+                          Next step: upload your subledger separately, then map both in the Upload step.
+                        </p>
                       </div>
                     )}
-                    <p className="mt-2 text-xs theme-text-muted">
-                      {showAllXeroRows
-                        ? `Showing all ${xeroPreview.glBalances.length} rows`
-                        : `Showing ${Math.min(8, xeroPreview.glBalances.length)} of ${xeroPreview.glBalances.length} rows`}
-                    </p>
-                    <p className="text-xs theme-text-muted">
-                      Suggested run defaults from Xero: period {xeroPreview.period}, materiality ${xeroRecommendedMateriality}.
-                    </p>
-                    <p className="text-xs theme-text">
-                      TB check: Debits {formatAmount(xeroTotals.debit)} - Credits{" "}
-                      {formatAmount(xeroTotals.credit)} ={" "}
-                      {formatSignedAmount(xeroTbDifference)}{" "}
-                      ({xeroTbBalanced ? "BALANCED" : "OUT OF BALANCE"})
-                    </p>
-                    <div className="mt-3 overflow-x-auto rounded-lg border theme-border">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="theme-muted">
-                            <th className="px-3 py-2 text-left theme-text">Account</th>
-                            <th className="px-3 py-2 text-right theme-text">Debit YTD</th>
-                            <th className="px-3 py-2 text-right theme-text">Credit YTD</th>
-                            <th className="px-3 py-2 text-right theme-text">Balance</th>
-                            <th className="px-3 py-2 text-left theme-text">Side</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(showAllXeroRows
-                            ? xeroPreview.glBalances
-                            : xeroPreview.glBalances.slice(0, 8)
-                          ).map((row, idx) => (
-                            <tr key={`${row.account_code}-${idx}`} className="border-t theme-border">
-                              <td className="px-3 py-2 theme-text">{row.account_code}</td>
-                              <td className="px-3 py-2 text-right theme-text">
-                                {(row.debit ?? (row.amount > 0 ? Math.abs(row.amount) : 0)) > 0
-                                  ? formatAmount(
-                                      Number(
-                                        row.debit ?? (row.amount > 0 ? Math.abs(row.amount) : 0)
-                                      )
-                                    )
-                                  : "-"}
-                              </td>
-                              <td className="px-3 py-2 text-right theme-text">
-                                {(row.credit ?? (row.amount < 0 ? Math.abs(row.amount) : 0)) > 0
-                                  ? formatAmount(
-                                      Number(
-                                        row.credit ?? (row.amount < 0 ? Math.abs(row.amount) : 0)
-                                      )
-                                    )
-                                  : "-"}
-                              </td>
-                              <td className="px-3 py-2 text-right theme-text">
-                                {formatSignedAmount(Number(row.amount))}
-                              </td>
-                              <td className="px-3 py-2 theme-text">
-                                {row.balanceSide
-                                  ? row.balanceSide.toUpperCase()
-                                  : row.amount > 0
-                                    ? "DEBIT"
-                                    : row.amount < 0
-                                      ? "CREDIT"
-                                      : "ZERO"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                        <tfoot>
-                          <tr className="border-t-2 theme-border theme-muted font-semibold">
-                            <td className="px-3 py-2 theme-text">Total (all pulled rows)</td>
-                            <td className="px-3 py-2 text-right theme-text">
-                              {xeroTotals.debit > 0 ? formatAmount(xeroTotals.debit) : "-"}
-                            </td>
-                            <td className="px-3 py-2 text-right theme-text">
-                              {xeroTotals.credit > 0 ? formatAmount(xeroTotals.credit) : "-"}
-                            </td>
-                            <td className="px-3 py-2 text-right theme-text">
-                              {formatSignedAmount(xeroTotals.net)}
-                            </td>
-                            <td className="px-3 py-2 theme-text">
-                              {xeroTotals.net > 0
-                                ? "DEBIT"
-                                : xeroTotals.net < 0
-                                  ? "CREDIT"
-                                  : "BALANCED"}
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                    <p className="mt-2 text-xs theme-text-muted">
-                      Next step: upload your actual subledger file separately, then map both in the Upload step.
-                    </p>
                   </div>
                 )}
+
+                {xeroStatus?.connected && (
+                  <div className="rounded-xl border theme-border theme-muted p-4">
+                    <p className="text-sm font-semibold theme-text">Pull Transactions</p>
+                    <p className="mt-1 text-xs theme-text-muted">
+                      Fetches all journal line postings from Xero for a date range. OAuth mode
+                      only.
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap items-end gap-3">
+                      <label className="flex flex-col gap-1 text-xs theme-text-muted">
+                        <span>From</span>
+                        <input
+                          type="date"
+                          value={txnFromDate}
+                          max={getTodayLocalIsoDate()}
+                          onChange={(e) => setTxnFromDate(e.target.value)}
+                          disabled={xeroBusy}
+                          className="rounded-lg border theme-border theme-card px-2 py-1 text-xs theme-text"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1 text-xs theme-text-muted">
+                        <span>To</span>
+                        <input
+                          type="date"
+                          value={txnToDate}
+                          max={getTodayLocalIsoDate()}
+                          onChange={(e) => setTxnToDate(e.target.value)}
+                          disabled={xeroBusy}
+                          className="rounded-lg border theme-border theme-card px-2 py-1 text-xs theme-text"
+                        />
+                      </label>
+                      <button
+                        onClick={handlePullXeroTransactions}
+                        disabled={xeroBusy}
+                        className="btn btn-secondary btn-sm disabled:opacity-70"
+                      >
+                        {xeroAction === "pull-txn" ? "Pulling..." : "Pull Transactions"}
+                      </button>
+                    </div>
+
+                    {txnPreview && (
+                      <div className="mt-4">
+                        <p className="text-xs theme-text-muted">
+                          {txnPreview.count} journal lines - {txnPreview.fromDate} to{" "}
+                          {txnPreview.toDate} ({txnPreview.pagesFetched} page
+                          {txnPreview.pagesFetched !== 1 ? "s" : ""} fetched)
+                        </p>
+
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button
+                            onClick={handleSaveTxnLocally}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Save as transactions (local)
+                          </button>
+                          <button
+                            onClick={handleDownloadTxnCsv}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Download CSV
+                          </button>
+                          {txnPreview.transactions.length > 8 && (
+                            <button
+                              onClick={() => setShowAllTxnRows((prev) => !prev)}
+                              className="btn btn-secondary btn-sm"
+                            >
+                              {showAllTxnRows ? "Show first 8" : `Show all ${txnPreview.count}`}
+                            </button>
+                          )}
+                        </div>
+
+                        {txnSavedMessage && (
+                          <div className="mt-2 rounded-lg border theme-border theme-card px-3 py-2 text-xs theme-text-muted">
+                            {txnSavedMessage}
+                          </div>
+                        )}
+
+                        <div className="mt-3 overflow-x-auto rounded-lg border theme-border">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="theme-muted">
+                                <th className="px-3 py-2 text-left theme-text">Date</th>
+                                <th className="px-3 py-2 text-left theme-text">Account</th>
+                                <th className="px-3 py-2 text-left theme-text">Description</th>
+                                <th className="px-3 py-2 text-left theme-text">Reference</th>
+                                <th className="px-3 py-2 text-right theme-text">Net Amount</th>
+                                <th className="px-3 py-2 text-left theme-text">Type</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(showAllTxnRows
+                                ? txnPreview.transactions
+                                : txnPreview.transactions.slice(0, 8)
+                              ).map((row, idx) => (
+                                <tr
+                                  key={`${row.journal_id}-${row.account_code}-${idx}`}
+                                  className="border-t theme-border"
+                                >
+                                  <td className="whitespace-nowrap px-3 py-2 theme-text-muted">
+                                    {row.date}
+                                  </td>
+                                  <td className="px-3 py-2 font-mono theme-text">
+                                    {row.account_code}
+                                  </td>
+                                  <td className="max-w-[200px] truncate px-3 py-2 theme-text-muted">
+                                    {row.description || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 theme-text-muted">
+                                    {row.reference || "-"}
+                                  </td>
+                                  <td className="px-3 py-2 text-right theme-text">
+                                    {formatSignedAmount(row.net_amount)}
+                                  </td>
+                                  <td className="px-3 py-2 theme-text-muted">
+                                    {row.source_type || "-"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <p className="mt-2 text-xs theme-text-muted">
+                          Showing{" "}
+                          {showAllTxnRows
+                            ? txnPreview.count
+                            : Math.min(8, txnPreview.count)}{" "}
+                          of {txnPreview.count} rows.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </>
             )}
           </div>

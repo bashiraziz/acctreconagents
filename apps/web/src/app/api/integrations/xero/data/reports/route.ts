@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ApiErrors, withErrorHandler } from "@/lib/api-error";
-import {
-  getIntegrationConnection,
-  upsertIntegrationConnection,
-} from "@/lib/db/client";
 import { resolveOrganizationScope } from "@/lib/integrations/organization-scope";
 import { getIntegrationProvider } from "@/lib/integrations/provider-registry";
 import { fetchXeroReportsList, probeXeroReportById } from "@/lib/xero";
 import { getXeroMcpConfig } from "@/lib/xero-mcp";
+import { getValidDbXeroAccessToken } from "@/lib/xero-session";
 import {
   getDevXeroConnection,
   getMostRecentDevXeroConnection,
@@ -61,35 +58,6 @@ const COMMON_REPORT_PROBES: Array<{
 
 function resolveRequestedMode(rawMode: string | null): "oauth" | "mcp" {
   return rawMode?.toLowerCase() === "mcp" ? "mcp" : "oauth";
-}
-
-async function getValidAccessToken(userId: string, organizationId: string) {
-  const existing = await getIntegrationConnection(userId, organizationId, "xero");
-  if (!existing) {
-    throw new Error("Xero is not connected for this user.");
-  }
-
-  const expiresAtMs = new Date(existing.expiresAt).getTime();
-  const now = Date.now();
-  const stillValid = Number.isFinite(expiresAtMs) && expiresAtMs > now + 60_000;
-  if (stillValid) {
-    return existing;
-  }
-
-  const refreshed = await provider.oauth.refreshToken(existing.refreshToken);
-  const nextExpiresAt = new Date(
-    Date.now() + Math.max(refreshed.expires_in - 60, 60) * 1000
-  );
-
-  return upsertIntegrationConnection(userId, organizationId, "xero", {
-    externalTenantId: existing.externalTenantId,
-    externalTenantName: existing.externalTenantName,
-    accessToken: refreshed.access_token,
-    refreshToken: refreshed.refresh_token,
-    expiresAt: nextExpiresAt,
-    scope: refreshed.scope ?? existing.scope,
-    tokenType: refreshed.token_type ?? existing.tokenType,
-  });
 }
 
 function getValidAccessTokenFromDevStore(
@@ -195,7 +163,11 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     tenantId = connection.tenantId;
     tenantName = connection.tenantName;
   } else if (session?.user) {
-    const connection = await getValidAccessToken(session.user.id, organizationId);
+    const connection = await getValidDbXeroAccessToken({
+      userId: session.user.id,
+      organizationId,
+      provider,
+    });
     accessToken = connection.accessToken;
     tenantId = connection.externalTenantId;
     tenantName = connection.externalTenantName;

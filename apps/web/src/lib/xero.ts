@@ -46,6 +46,7 @@ export type XeroReportProbeResult = {
 };
 
 export type XeroNormalizedBalance = Balance & {
+  account_name?: string;
   debit?: number;
   credit?: number;
   balanceSide?: "debit" | "credit" | "zero";
@@ -436,6 +437,13 @@ export function normalizeXeroTrialBalance(
       continue;
     }
     const accountCode = codeMatch ? codeMatch[0] : accountCell.slice(0, 80);
+    const accountName = accountCell
+      .replace(new RegExp(`\\b${accountCode}\\b`), "")
+      .replace(/^\s*[-–—:]\s*/, "")
+      .replace(/\s*[-–—:]\s*$/, "")
+      .replace(/^\s*\(.*?\)\s*/, "")
+      .replace(/\s*\(.*?\)\s*$/, "")
+      .trim() || undefined;
 
     const parsedDebit =
       debitIndex !== null && debitIndex < cells.length ? toNumber(cells[debitIndex]) : null;
@@ -467,6 +475,7 @@ export function normalizeXeroTrialBalance(
 
     balances.push({
       account_code: accountCode,
+      account_name: accountName,
       period,
       amount,
       currency: "USD",
@@ -476,5 +485,10 @@ export function normalizeXeroTrialBalance(
     });
   }
 
-  return balances;
+  return balances.sort((a, b) => {
+    const aNum = Number(a.account_code);
+    const bNum = Number(b.account_code);
+    if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+    return a.account_code.localeCompare(b.account_code);
+  });
 }

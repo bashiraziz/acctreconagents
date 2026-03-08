@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ApiErrors, withErrorHandler } from "@/lib/api-error";
-import {
-  markIntegrationConnectionSynced,
-} from "@/lib/db/client";
+import { markIntegrationConnectionSynced } from "@/lib/db/client";
 import { resolveOrganizationScope } from "@/lib/integrations/organization-scope";
 import { getIntegrationProvider } from "@/lib/integrations/provider-registry";
+import { getValidDbXeroAccessToken } from "@/lib/xero-session";
 import {
   getDevXeroConnection,
   getMostRecentDevXeroConnection,
   markDevXeroConnectionSynced,
   upsertDevXeroConnection,
 } from "@/lib/xero-dev-store";
-import { getXeroMcpConfig, pullXeroTrialBalanceViaMcp } from "@/lib/xero-mcp";
-import { getValidDbXeroAccessToken } from "@/lib/xero-session";
-import type { XeroTrialBalanceResponse } from "@/lib/xero";
+import type { XeroAgedReportType } from "@/lib/xero-aged";
 
 export const runtime = "nodejs";
 const XERO_DEV_SESSION_COOKIE = "xero_dev_session";
@@ -34,6 +31,17 @@ function resolveRequestDate(value: string | null): string {
   return value;
 }
 
+function resolveRequestType(value: string | null): XeroAgedReportType {
+  if (!value) {
+    throw new Error("Missing required query parameter: type");
+  }
+  const normalized = value.toLowerCase();
+  if (normalized === "ar" || normalized === "ap") {
+    return normalized;
+  }
+  throw new Error('Invalid type. Use "ar" or "ap".');
+}
+
 function getValidAccessTokenFromDevStore(
   organizationId: string,
   devSessionId?: string
@@ -49,9 +57,17 @@ function getValidAccessTokenFromDevStore(
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const devNoDbMode = provider.isDevNoDbModeEnabled();
-  const mcpConfig = getXeroMcpConfig();
   const requestedMode = resolveRequestedMode(request.nextUrl.searchParams.get("mode"));
-  const useMcpMode = mcpConfig.enabled && requestedMode === "mcp";
+  const useMcpMode = requestedMode === "mcp";
+  if (useMcpMode) {
+    return NextResponse.json(
+      {
+        message: "Subledger reports are not available in MCP mode. Use mode=oauth.",
+      },
+      { status: 400 }
+    );
+  }
+
   let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
   try {
     session = await auth.api.getSession({
@@ -63,6 +79,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   if (!session?.user && !devNoDbMode) {
     return ApiErrors.unauthorized();
   }
+
   const scope = await resolveOrganizationScope({
     request,
     userId: session?.user?.id ?? null,
@@ -70,16 +87,11 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   });
   const organizationId = scope.organizationId;
 
-  const oauthConfig = provider.getConfig();
-  const config = useMcpMode
-    ? { isConfigured: mcpConfig.hasDirectCredentials || oauthConfig.isConfigured }
-    : oauthConfig;
+  const config = provider.getConfig();
   if (!config.isConfigured) {
     return ApiErrors.badRequest(
       "Xero integration is not configured",
-      useMcpMode
-        ? mcpConfig.reason || "Xero MCP configuration is missing."
-        : "Set XERO_CLIENT_ID and XERO_CLIENT_SECRET in the environment."
+      "Set XERO_CLIENT_ID and XERO_CLIENT_SECRET in the environment."
     );
   }
 
@@ -92,112 +104,27 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       error instanceof Error ? error.message : "Use YYYY-MM-DD format"
     );
   }
-  const period = requestedDate.slice(0, 7);
 
-  if (useMcpMode) {
-    let bearerTokenOverride = process.env.XERO_MCP_CLIENT_BEARER_TOKEN?.trim() || "";
-    let tenantForResponse: { id: string; name: string | null } = {
-      id: "mcp",
-      name: "Xero MCP",
-    };
-    if (!bearerTokenOverride && !mcpConfig.hasDirectCredentials) {
-      if (devNoDbMode) {
-        const devSessionId = request.cookies.get(XERO_DEV_SESSION_COOKIE)?.value ?? "";
-        const devConn = getValidAccessTokenFromDevStore(
-          organizationId,
-          devSessionId || undefined
-        );
-        const expiresAtMs = new Date(devConn.expiresAt).getTime();
-        const stillValid = Number.isFinite(expiresAtMs) && expiresAtMs > Date.now() + 60_000;
-        if (stillValid) {
-          bearerTokenOverride = devConn.accessToken;
-          tenantForResponse = {
-            id: devConn.tenantId,
-            name: devConn.tenantName,
-          };
-        } else {
-          const refreshed = await provider.oauth.refreshToken(devConn.refreshToken);
-          const updated = upsertDevXeroConnection(devConn.sessionId, organizationId, {
-            tenantId: devConn.tenantId,
-            tenantName: devConn.tenantName,
-            accessToken: refreshed.access_token,
-            refreshToken: refreshed.refresh_token,
-            expiresAt: new Date(Date.now() + Math.max(refreshed.expires_in - 60, 60) * 1000),
-            scope: refreshed.scope ?? devConn.scope,
-            tokenType: refreshed.token_type ?? devConn.tokenType,
-          });
-          bearerTokenOverride = updated.accessToken;
-          tenantForResponse = {
-            id: updated.tenantId,
-            name: updated.tenantName,
-          };
-        }
-      } else if (session?.user) {
-        const dbConn = await getValidDbXeroAccessToken({
-          userId: session.user.id,
-          organizationId,
-          provider,
-        });
-        bearerTokenOverride = dbConn.accessToken;
-        tenantForResponse = {
-          id: dbConn.externalTenantId,
-          name: dbConn.externalTenantName,
-        };
-      } else {
-        return ApiErrors.unauthorized();
-      }
-    }
-
-    let mcpReport: Awaited<ReturnType<typeof pullXeroTrialBalanceViaMcp>>;
-    try {
-      mcpReport = await pullXeroTrialBalanceViaMcp({
-        date: requestedDate,
-        paymentsOnly: mcpConfig.paymentsOnly,
-        timeoutMs: mcpConfig.timeoutMs,
-        bearerTokenOverride: bearerTokenOverride || undefined,
-      });
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : "Unknown MCP failure";
-      return ApiErrors.badRequest(
-        "Xero MCP pull failed",
-        `${detail} Check MCP credentials/scopes and retry.`
-      );
-    }
-    const payload: XeroTrialBalanceResponse = {
-      Reports: [
-        {
-          ReportDate: mcpReport.reportDate ?? requestedDate,
-          Rows: mcpReport.rows,
-        },
-      ],
-    };
-    const glBalances = provider.trialBalance.normalize(payload, period);
-    return NextResponse.json({
-      connected: true,
-      devNoDbMode: false,
-      mode: "mcp",
-      tenant: tenantForResponse,
-      organizationId,
-      period,
-      asOfDate: requestedDate,
-      glBalances,
-      count: glBalances.length,
-      mcp: {
-        reportName: mcpReport.reportName,
-      },
-    });
+  let reportType: XeroAgedReportType;
+  try {
+    reportType = resolveRequestType(request.nextUrl.searchParams.get("type"));
+  } catch (error) {
+    return ApiErrors.badRequest(
+      "Invalid type parameter",
+      error instanceof Error ? error.message : 'Use "ar" or "ap".'
+    );
   }
+  const period = requestedDate.slice(0, 7);
 
   let connection:
     | Awaited<ReturnType<typeof getValidDbXeroAccessToken>>
     | ReturnType<typeof getValidAccessTokenFromDevStore>;
   let source: "db" | "dev" = "db";
-  let devSessionId = "";
   let resolvedDevSessionId = "";
 
   if (devNoDbMode) {
     source = "dev";
-    devSessionId = request.cookies.get(XERO_DEV_SESSION_COOKIE)?.value ?? "";
+    const devSessionId = request.cookies.get(XERO_DEV_SESSION_COOKIE)?.value ?? "";
     const devConn = getValidAccessTokenFromDevStore(
       organizationId,
       devSessionId || undefined
@@ -240,12 +167,15 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           .externalTenantName
       : (connection as ReturnType<typeof getValidAccessTokenFromDevStore>).tenantName;
 
-  const rawReport = await provider.trialBalance.fetch(
+  const payload = await provider.subledger.fetch(
     connection.accessToken,
     tenantId,
+    reportType,
     requestedDate
   );
-  const glBalances = provider.trialBalance.normalize(rawReport, period);
+  const rows = provider.subledger.normalize(payload, reportType, requestedDate);
+  const totalOutstanding = rows.reduce((sum, row) => sum + Number(row.total || 0), 0);
+
   if (source === "db" && session?.user) {
     await markIntegrationConnectionSynced(session.user.id, organizationId, "xero");
   } else if (source === "dev" && resolvedDevSessionId) {
@@ -254,18 +184,20 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   const response = NextResponse.json({
     connected: true,
-    devNoDbMode: source === "dev",
     mode: "oauth",
     tenant: {
       id: tenantId,
       name: tenantName,
     },
     organizationId,
-    period,
+    type: reportType,
     asOfDate: requestedDate,
-    glBalances,
-    count: glBalances.length,
+    period,
+    rows,
+    count: rows.length,
+    totalOutstanding,
   });
+
   if (source === "dev" && resolvedDevSessionId) {
     response.cookies.set(XERO_DEV_SESSION_COOKIE, resolvedDevSessionId, {
       httpOnly: true,
