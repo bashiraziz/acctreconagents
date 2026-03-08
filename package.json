@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/bashiraziz/acctreconagents.git"
   },
-  "license": "ISC",
+  "license": "MIT",
   "author": "Bashir Aziz",
   "type": "commonjs",
   "main": "index.js",

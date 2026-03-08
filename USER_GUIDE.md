@@ -10,12 +10,13 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 
 1. [What This App Does](#what-this-app-does)
 2. [Getting Started](#getting-started)
-3. [Step-by-Step: Running a Reconciliation](#step-by-step-running-a-reconciliation)
-4. [Understanding Your Results](#understanding-your-results)
-5. [Rate Limits](#rate-limits)
-6. [Sample Data](#sample-data)
-7. [Troubleshooting](#troubleshooting)
-8. [FAQ](#faq)
+3. [Accounting System Integrations](#accounting-system-integrations)
+4. [Step-by-Step: Running a Reconciliation](#step-by-step-running-a-reconciliation)
+5. [Understanding Your Results](#understanding-your-results)
+6. [Rate Limits](#rate-limits)
+7. [Sample Data](#sample-data)
+8. [Troubleshooting](#troubleshooting)
+9. [FAQ](#faq)
 
 ---
 
@@ -79,9 +80,102 @@ This guide will help you perform GL-to-subledger reconciliations using AI-powere
 - GL reports, AP aging, trial balances from any system
 - See [PDF Conversion Guide](PDF_CONVERSION_GUIDE.md) for details
 
+**Excel files (.xlsx / .xls)** - exported from:
+- Xero AR/AP Aging reports (auto-detected format — metadata rows skipped automatically)
+- Any accounting system that offers Excel export
+
+> **PDF files are not supported.** If your system only offers PDF export, use the Excel or CSV export option instead. Most systems (including Xero) offer all three formats from the same report screen.
+
 **File size limit:** 20 MB per file
 
 **System-Specific Parsers:** Rowshni includes Claude skills that automatically detect and parse format-specific data from QuickBooks, Costpoint, and NetSuite exports, handling account code extraction, sign conventions, and dimensional aggregation.
+
+---
+
+## Accounting System Integrations
+
+Rowshni works with **any accounting system** via file upload (CSV, TSV, TXT, or Excel). Direct API integrations are optional connectors that let you pull data without manually exporting files.
+
+Navigate to **Integrations** from the main page to see available connectors.
+
+> **Open source note:** Direct integrations are community-contributed. Xero is the reference implementation. If you want to add an integration for your system, see the [Integration Guide](docs/INTEGRATION_GUIDE.md).
+
+---
+
+### Xero (Reference Integration)
+
+If you use Xero, you can pull your Trial Balance and journal transactions directly into Rowshni — no manual CSV export required.
+
+---
+
+### Connecting to Xero
+
+1. Click **"Connect Xero"** on the Xero integration page
+2. You will be redirected to Xero's login screen
+3. Select the organisation you want to connect
+4. Authorise Rowshni to read your accounting data
+5. You are redirected back — the page will show your connected tenant name and a green **Connected** status badge
+
+> **Sign-in required:** You must be signed in to Rowshni to connect Xero. The connection is stored against your account and persists across sessions.
+
+---
+
+### Pulling the Trial Balance
+
+1. Under **Trial Balance**, select the **reporting period** (e.g., `2026-02`)
+2. Click **"Pull Trial Balance"**
+3. Rowshni fetches your Xero TB via the Xero Reports API and displays a preview table
+4. Click **"Save as GL Balance (local)"** to load it directly into the Upload step — no file download needed
+
+The TB is saved as your **GL Balance** file and will appear in the upload zone with a ✔ Ready status.
+
+---
+
+### Pulling Transactions (Journal Lines)
+
+1. Under **Transactions**, set the **From** and **To** dates
+2. Click **"Pull Transactions"**
+3. Rowshni fetches journal lines from Xero and shows a preview table grouped by account
+4. Click **"Save as transactions (local)"** to load them into the Upload step
+
+Transactions are grouped by account code in the preview so you can quickly verify the data before saving.
+
+**What is pulled:**
+- Journal date, account code, account name
+- Description and reference (e.g., INV-0001, BILL-0042)
+- Net amount and source document type (ACCREC, ACCPAY, MANJOURNAL, etc.)
+
+---
+
+### Uploading AR/AP Aging Reports (Excel)
+
+Xero exports AR and AP Aging reports as Excel (.xlsx) files. Rowshni reads these directly — no conversion to CSV required.
+
+**How to export from Xero:**
+1. In Xero: **Accounting → Reports → Aged Receivables (or Aged Payables)**
+2. Set your reporting date
+3. Click **Export** (top right) → **Excel**
+4. Upload the downloaded `.xlsx` file to the **Subledger Balance** zone in Rowshni
+
+Rowshni automatically detects the Xero aging format, skips the metadata header rows, extracts the report date, and maps the columns — no manual setup needed.
+
+---
+
+### Running the Reconciliation
+
+Once your data is loaded from Xero:
+
+1. The **GL Balance** (from Trial Balance pull) and **Subledger Balance** (from aging Excel) appear in the Upload step with ✔ Ready badges
+2. Proceed to **Column Mapping** — Xero data is pre-mapped, so this is usually one click
+3. Run reconciliation as normal — use your account number in the prompt for focused analysis:
+   - *"Reconcile account 120 for period 2026-02"*
+   - *"Reconcile accounts receivable for February close"*
+
+---
+
+### Disconnecting Xero
+
+To disconnect, click **"Disconnect"** on the Xero integration page. This removes the stored token from your account. You can reconnect at any time.
 
 ---
 
@@ -558,12 +652,13 @@ Use your own free Google Gemini API key:
 **A:** Not yet - this is a manual, on-demand tool. Automated scheduling is on the roadmap.
 
 ### Q: What accounting systems are supported?
-**A:** Any system that exports CSV/TSV/TXT files. Rowshni includes specialized parsers for:
+**A:** Any system that exports CSV/TSV/TXT/Excel files. Rowshni includes specialized parsers for:
+- ✔ **Xero** - Direct API integration (Trial Balance + Transactions), plus auto-detection of Xero AR/AP Aging Excel exports. Reference implementation — see [Integration Guide](docs/INTEGRATION_GUIDE.md) to add your system
 - ✔ **QuickBooks** (Desktop & Online) - Automatic parsing of parenthetical account codes
 - ✔ **Costpoint / Deltek** - Handles Debit/Credit columns with proper sign conventions
 - ✔ **NetSuite / Oracle Financials** - Multi-currency and dimensional data support
 - ✔ **SAP** (reserved for future enhancements)
-- ✔ **Generic / Other**: Microsoft Dynamics, Sage Intacct, Xero, custom systems
+- ✔ **Generic / Other**: Microsoft Dynamics, Sage Intacct, and any system that exports delimited or Excel files
 
 **During upload**, select your accounting system from the dropdown, or use "Auto-detect" to let the app figure it out automatically. The app will apply system-specific parsing for better accuracy.
 
@@ -588,6 +683,20 @@ Use your own free Google Gemini API key:
 *Rowshni - Shedding light on your ledger*
 
 ---
+
+## Recent Updates (March 2026)
+
+**New Features:**
+- **Integrations page**: New Integrations hub listing available connectors (currently Xero) and planned integrations, with a contributor guide for adding new systems
+- **Xero connector (reference integration)**: Connect your Xero account and pull Trial Balance and journal transactions directly into Rowshni via the Xero API — no manual CSV export required
+- **Xero Excel uploads**: Upload Xero AR/AP Aging reports as `.xlsx` files — Rowshni auto-detects the Xero format, skips header metadata rows, and extracts the report date automatically
+- **Excel support across all uploads**: All upload zones now accept `.xlsx` and `.xls` files from any accounting system
+- **Account-scoped reconciliation**: When you specify an account in your prompt (e.g., "Reconcile account 120"), only that account's data is passed to all AI agents — preventing analysis noise from unrelated accounts
+- **Transactions grouped by account**: The transactions preview table now sorts and groups rows by account code with section headers for easier review
+- **PDF rejection with guidance**: Uploading a PDF now shows a helpful message with system-specific instructions on how to re-export as Excel or CSV
+- **Build update notice**: A subtle "updated X days ago" notice appears in the footer for 90 days after each deployment, so users know if reported issues have been addressed
+
+*Last updated: March 8, 2026*
 
 ## Recent Updates (February 2026)
 

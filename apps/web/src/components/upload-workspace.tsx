@@ -47,7 +47,7 @@ export function UploadWorkspace() {
           <p className="ui-kicker">Step 1</p>
           <h2 className="ui-title mt-1">Upload Files</h2>
           <p className="ui-copy mt-1">
-            Upload your GL balance, subledger balance, and transaction files. Supports CSV, TSV, TXT, and Excel (.xlsx) — including Xero aging report exports.
+            Upload your GL balance, subledger balance, and transaction files. Supports CSV, TSV, TXT, and Excel (.xlsx) from any accounting system.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">

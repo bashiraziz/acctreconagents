@@ -71,10 +71,10 @@ export default function Home() {
                 User Guide
               </Link>
               <Link
-                href="/integrations/xero"
+                href="/integrations"
                 className="btn btn-secondary btn-sm"
               >
-                Xero
+                Integrations
               </Link>
               <UserMenu />
               <SimpleModeToggle />

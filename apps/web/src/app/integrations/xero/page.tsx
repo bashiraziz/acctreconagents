@@ -151,6 +151,22 @@ function clampIsoDateToMax(dateIso: string, maxIso: string): string {
   return dateIso > maxIso ? maxIso : dateIso;
 }
 
+function formatLastSynced(isoString: string): string {
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return new Date(isoString).toLocaleDateString();
+}
+
+const LS_TB_SYNCED = "xero_tb_last_synced";
+const LS_TXN_SYNCED = "xero_txn_last_synced";
+
 function formatElapsedDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.round(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -207,6 +223,12 @@ export default function XeroIntegrationPage() {
   const [txnPreview, setTxnPreview] = useState<XeroTransactionPreview | null>(null);
   const [showAllTxnRows, setShowAllTxnRows] = useState(false);
   const [txnSavedMessage, setTxnSavedMessage] = useState<string | null>(null);
+  const [tbLastSynced, setTbLastSynced] = useState<string | null>(
+    () => (typeof window !== "undefined" ? localStorage.getItem(LS_TB_SYNCED) : null)
+  );
+  const [txnLastSynced, setTxnLastSynced] = useState<string | null>(
+    () => (typeof window !== "undefined" ? localStorage.getItem(LS_TXN_SYNCED) : null)
+  );
   const setUploadedFile = useFileUploadStore((state) => state.setFile);
   const setMaterialityThreshold = useUserPreferencesStore(
     (state) => state.setMaterialityThreshold
@@ -415,6 +437,9 @@ export default function XeroIntegrationPage() {
         setXeroAsOfDate(preview.asOfDate);
       }
       setShowAllXeroRows(false);
+      const tbSyncedAt = new Date().toISOString();
+      localStorage.setItem(LS_TB_SYNCED, tbSyncedAt);
+      setTbLastSynced(tbSyncedAt);
       await loadXeroStatus();
     } catch (err) {
       setXeroError(
@@ -477,6 +502,9 @@ export default function XeroIntegrationPage() {
       setTxnFromDate(preview.fromDate);
       setTxnToDate(preview.toDate);
       setShowAllTxnRows(false);
+      const txnSyncedAt = new Date().toISOString();
+      localStorage.setItem(LS_TXN_SYNCED, txnSyncedAt);
+      setTxnLastSynced(txnSyncedAt);
     } catch (err) {
       setXeroError(
         err instanceof Error ? err.message : "Failed to pull transactions from Xero"
@@ -690,15 +718,29 @@ export default function XeroIntegrationPage() {
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
         <header className="theme-card theme-border rounded-3xl border p-6">
           <div className="flex flex-col gap-2">
-            <Link href="/" className="btn btn-secondary btn-sm w-fit">
-              &larr; Back to console
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/integrations" className="btn btn-secondary btn-sm w-fit">
+                &larr; Integrations
+              </Link>
+            </div>
             <h1 className="text-2xl font-bold theme-text sm:text-3xl">
-              Xero Integration
+              Xero
             </h1>
             <p className="text-sm theme-text-muted">
-              Connect your Xero tenant to pull trial balance and transactions for reconciliation. Upload your AR/AP aging reports manually in the Upload step.
+              Connect your Xero tenant to pull trial balance and journal transactions for reconciliation. AR/AP aging reports can be exported from Xero as Excel and uploaded manually.
             </p>
+            <div className="mt-1 rounded-lg border theme-border theme-muted px-3 py-2 text-xs theme-text-muted">
+              <span className="font-semibold theme-text">Reference implementation</span> — Xero is the proof-of-concept integration for Rowshni.
+              Building an integration for another system?{" "}
+              <a
+                href="https://github.com/bashiraziz/acctreconagents/blob/main/docs/INTEGRATION_GUIDE.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:opacity-80"
+              >
+                See the Integration Guide
+              </a>.
+            </div>
           </div>
         </header>
 
@@ -890,7 +932,14 @@ export default function XeroIntegrationPage() {
 
                 {xeroStatus?.connected && (
                   <div className="rounded-xl border theme-border theme-muted p-4">
-                    <p className="text-sm font-semibold theme-text">Pull Trial Balance</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold theme-text">Pull Trial Balance</p>
+                      {tbLastSynced && (
+                        <span className="text-xs theme-text-muted" title={new Date(tbLastSynced).toLocaleString()}>
+                          · last synced {formatLastSynced(tbLastSynced)}
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-1 text-xs theme-text-muted">
                       {xeroMcpModeActive
                         ? "Pulls via Xero MCP server."
@@ -1111,7 +1160,14 @@ export default function XeroIntegrationPage() {
 
                 {xeroStatus?.connected && (
                   <div className="rounded-xl border theme-border theme-muted p-4">
-                    <p className="text-sm font-semibold theme-text">Pull Transactions</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold theme-text">Pull Transactions</p>
+                      {txnLastSynced && (
+                        <span className="text-xs theme-text-muted" title={new Date(txnLastSynced).toLocaleString()}>
+                          · last synced {formatLastSynced(txnLastSynced)}
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-1 text-xs theme-text-muted">
                       Fetches all journal line postings from Xero for a date range. OAuth mode
                       only.
