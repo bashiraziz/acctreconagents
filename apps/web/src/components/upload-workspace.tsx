@@ -11,7 +11,7 @@ import { FileUploadZone } from "./upload/FileUploadZone";
 import { useFileUpload, type UploadRecord } from "./upload/useFileUpload";
 
 const ACCEPTED_DELIMITED =
-  ".csv,.tsv,.txt,text/csv,text/plain,text/tab-separated-values";
+  ".csv,.tsv,.txt,.xlsx,.xls,text/csv,text/plain,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel";
 const ACCEPTED_SUPPORTING = ACCEPTED_DELIMITED;
 
 export function UploadWorkspace() {
@@ -47,7 +47,7 @@ export function UploadWorkspace() {
           <p className="ui-kicker">Step 1</p>
           <h2 className="ui-title mt-1">Upload Files</h2>
           <p className="ui-copy mt-1">
-            Upload your GL balance, subledger balance, and transaction files (CSV/TSV/TXT format).
+            Upload your GL balance, subledger balance, and transaction files. Supports CSV, TSV, TXT, and Excel (.xlsx) — including Xero aging report exports.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">

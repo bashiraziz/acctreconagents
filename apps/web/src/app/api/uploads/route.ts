@@ -13,6 +13,7 @@ const ALLOWED_MIME_TYPES = [
   'text/tab-separated-values',
   'text/plain',
   'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
   'application/tab-separated-values',
   'application/csv',
   'application/octet-stream', // Some browsers send this for CSV files
@@ -48,11 +49,26 @@ export const POST = withErrorHandler(async (request: Request) => {
 
   // Validate file extension (primary check)
   const fileExtension = file.name.split('.').pop()?.toLowerCase();
-  if (!['csv', 'tsv', 'txt'].includes(fileExtension || '')) {
+
+  // PDF-specific rejection with actionable guidance
+  if (fileExtension === 'pdf' || file.type === 'application/pdf') {
+    return ApiErrors.badRequest(
+      "PDF files are not supported",
+      "Please export your report as Excel (.xlsx) or CSV directly from your accounting system.",
+      [
+        "Xero: Reports → select report → Export (top right) → Excel or CSV",
+        "QuickBooks: Reports → select report → Export → Export to Excel",
+        "MYOB: Reports → select report → Send to → Microsoft Excel",
+        "Most systems offer Excel or CSV export alongside the PDF option",
+      ]
+    );
+  }
+
+  if (!['csv', 'tsv', 'txt', 'xlsx', 'xls'].includes(fileExtension || '')) {
     return ApiErrors.badRequest(
       "Invalid file extension",
-      "Only .csv, .tsv, and .txt files are allowed",
-      ["Rename your file to have a .csv, .tsv, or .txt extension"]
+      "Only .csv, .tsv, .txt, .xlsx, and .xls files are allowed",
+      ["Upload a CSV, TSV, TXT, or Excel file"]
     );
   }
 

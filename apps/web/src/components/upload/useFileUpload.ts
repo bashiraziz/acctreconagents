@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import { parseCSVFile } from "@/lib/parseFile";
+import { parseExcelFile } from "@/lib/parseExcel";
 import type { FileType, UploadedFile } from "@/types/reconciliation";
 
 export interface UploadRecord {
@@ -98,8 +99,11 @@ export function useFileUpload() {
 
     setUploads((records) => [pending, ...records]);
 
-    // Parse CSV file
-    const parseResult = await parseCSVFile(file, fileType);
+    // Parse file — route Excel files to the Excel parser
+    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+    const parseResult = isExcel
+      ? await parseExcelFile(file, fileType)
+      : await parseCSVFile(file, fileType);
 
     if (!parseResult.success) {
       setUploads((records) =>

@@ -253,7 +253,24 @@ fastify.post("/agent/report", async (request, reply) => {
 
 async function orchestrateRun(input: RunInput) {
   const runId = `run_${Date.now()}`;
-  const localToolOutput = runReconciliationLocally(input.payload, input.materialityThreshold, input.userPrompt);
+
+  // Build a filtered payload scoped to the requested accounts so agents only see relevant data
+  const accountsToScope = determineAccountsToReconcile(
+    input.userPrompt,
+    input.payload.glBalances,
+    input.payload.subledgerBalances
+  );
+  const scopeSet = new Set(accountsToScope);
+  const filteredPayload: PayloadInput = scopeSet.size > 0
+    ? {
+        ...input.payload,
+        glBalances: input.payload.glBalances.filter(b => scopeSet.has(b.account_code)),
+        subledgerBalances: input.payload.subledgerBalances.filter(b => scopeSet.has(b.account_code)),
+        transactions: input.payload.transactions?.filter(t => scopeSet.has(t.account_code)),
+      }
+    : input.payload;
+
+  const localToolOutput = runReconciliationLocally(filteredPayload, input.materialityThreshold, input.userPrompt);
 
   const timeline = [
     {
@@ -279,7 +296,7 @@ async function orchestrateRun(input: RunInput) {
     try {
       openAiResult = await runOpenAiTeam(
         input.userPrompt,
-        input.payload,
+        filteredPayload,
         localToolOutput,
       );
       timeline.push({
@@ -323,7 +340,7 @@ async function orchestrateRun(input: RunInput) {
   let claudeResponses: Awaited<ReturnType<typeof runClaudeSkills>> | null = null;
   if (shouldRunClaude) {
     try {
-      claudeResponses = await runClaudeSkills(input);
+      claudeResponses = await runClaudeSkills({ ...input, payload: filteredPayload });
       timeline.push({
         stage: "claude_skills",
         status: "completed",
@@ -371,7 +388,7 @@ async function orchestrateRun(input: RunInput) {
   }
 
   const geminiInsight = shouldRunGemini
-    ? await summarizeWithGemini(input, localToolOutput)
+    ? await summarizeWithGemini({ ...input, payload: filteredPayload }, localToolOutput)
     : null;
   timeline.push({
     stage: "gemini_commentary",
@@ -397,7 +414,7 @@ async function orchestrateRun(input: RunInput) {
 
       const geminiPipelineInput = {
         userPrompt: input.userPrompt,
-        payload: input.payload,
+        payload: filteredPayload,
         ...(typeof input.organizationName === "string"
           ? { organizationName: input.organizationName }
           : {}),
@@ -792,7 +809,11 @@ function runReconciliationLocally(payload: PayloadInput, customMaterialityThresh
     if (balance.period) detectedPeriods.add(balance.period);
   }
 
-  const normalizedTransactions = normalizeTransactions(payload.transactions);
+  // Filter transactions to only the accounts being reconciled
+  const filteredTransactions = accountSet.size > 0
+    ? payload.transactions?.filter(t => accountSet.has(t.account_code))
+    : payload.transactions;
+  const normalizedTransactions = normalizeTransactions(filteredTransactions);
   const transactionBuckets = new Map<string, NormalizedTransaction[]>();
   const activityByAccountPeriod = new Map<string, number>();
 

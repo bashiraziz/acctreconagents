@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npx vercel:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "mcp__ide__executeCode",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
