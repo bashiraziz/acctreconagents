@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useFileUploadStore } from "@/store/fileUploadStore";
 import { validateReconciliationPayload } from "@/lib/validate-reconciliation";
 
@@ -131,6 +131,7 @@ export function DataPreview() {
               title="Transactions"
               data={reconciliationData.transactions.slice(0, 50)}
               totalRows={reconciliationData.transactions.length}
+              groupByColumn="account_code"
             />
           )}
 
@@ -180,16 +181,30 @@ function PreviewTable({
   title,
   data,
   totalRows,
+  groupByColumn,
 }: {
   title: string;
   data: PreviewRow[];
   totalRows: number;
+  groupByColumn?: string;
 }) {
-  if (data.length === 0) {
-    return null;
-  }
+  if (data.length === 0) return null;
 
-  const columns = Object.keys(data[0]);
+  const allColumns = Object.keys(data[0]);
+
+  // When grouping, sort by that column and exclude it from data columns
+  const sorted = groupByColumn
+    ? [...data].sort((a, b) =>
+        String(a[groupByColumn] ?? "").localeCompare(
+          String(b[groupByColumn] ?? ""),
+          undefined,
+          { numeric: true }
+        )
+      )
+    : data;
+  const columns = groupByColumn
+    ? allColumns.filter((c) => c !== groupByColumn)
+    : allColumns;
 
   return (
     <div>
@@ -205,28 +220,55 @@ function PreviewTable({
           <thead>
             <tr className="border-b theme-border theme-muted">
               {columns.map((col) => (
-                <th
-                  key={col}
-                  className="px-4 py-2 text-left font-semibold theme-text"
-                >
+                <th key={col} className="px-4 py-2 text-left font-semibold theme-text">
                   {col}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {data.map((row, index) => (
-              <tr
-                key={index}
-                className="border-b theme-border last:border-0 hover:theme-muted"
-              >
-                {columns.map((col) => (
-                  <td key={col} className="px-4 py-2 theme-text">
-                    {formatCellValue(row[col])}
-                  </td>
+            {groupByColumn
+              ? (() => {
+                  let lastGroup: string | null = null;
+                  return sorted.map((row, index) => {
+                    const groupVal = String(row[groupByColumn] ?? "");
+                    const isNewGroup = groupVal !== lastGroup;
+                    lastGroup = groupVal;
+                    return (
+                      <React.Fragment key={index}>
+                        {isNewGroup && (
+                          <tr className="border-t-2 theme-border theme-muted">
+                            <td
+                              colSpan={columns.length}
+                              className="px-4 py-1.5 font-semibold theme-text font-mono text-xs"
+                            >
+                              {groupVal}
+                            </td>
+                          </tr>
+                        )}
+                        <tr className="border-b theme-border last:border-0 hover:theme-muted">
+                          {columns.map((col) => (
+                            <td key={col} className="px-4 py-2 theme-text">
+                              {formatCellValue(row[col])}
+                            </td>
+                          ))}
+                        </tr>
+                      </React.Fragment>
+                    );
+                  });
+                })()
+              : sorted.map((row, index) => (
+                  <tr
+                    key={index}
+                    className="border-b theme-border last:border-0 hover:theme-muted"
+                  >
+                    {columns.map((col) => (
+                      <td key={col} className="px-4 py-2 theme-text">
+                        {formatCellValue(row[col])}
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>

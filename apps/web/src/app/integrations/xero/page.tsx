@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { useFileUploadStore } from "@/store/fileUploadStore";
@@ -1191,8 +1191,6 @@ export default function XeroIntegrationPage() {
                             <thead>
                               <tr className="theme-muted">
                                 <th className="px-3 py-2 text-left theme-text">Date</th>
-                                <th className="px-3 py-2 text-left theme-text">Account</th>
-                                <th className="px-3 py-2 text-left theme-text">Account Name</th>
                                 <th className="px-3 py-2 text-left theme-text">Description</th>
                                 <th className="px-3 py-2 text-left theme-text">Reference</th>
                                 <th className="px-3 py-2 text-right theme-text">Net Amount</th>
@@ -1200,37 +1198,53 @@ export default function XeroIntegrationPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {(showAllTxnRows
-                                ? txnPreview.transactions
-                                : txnPreview.transactions.slice(0, 8)
-                              ).map((row, idx) => (
-                                <tr
-                                  key={`${row.journal_id}-${row.account_code}-${idx}`}
-                                  className="border-t theme-border"
-                                >
-                                  <td className="whitespace-nowrap px-3 py-2 theme-text-muted">
-                                    {row.date}
-                                  </td>
-                                  <td className="px-3 py-2 font-mono theme-text">
-                                    {row.account_code}
-                                  </td>
-                                  <td className="max-w-[160px] truncate px-3 py-2 theme-text-muted">
-                                    {row.account_name || "-"}
-                                  </td>
-                                  <td className="max-w-[200px] truncate px-3 py-2 theme-text-muted">
-                                    {row.description || "-"}
-                                  </td>
-                                  <td className="px-3 py-2 theme-text-muted">
-                                    {row.reference || "-"}
-                                  </td>
-                                  <td className="px-3 py-2 text-right theme-text">
-                                    {formatSignedAmount(row.net_amount)}
-                                  </td>
-                                  <td className="px-3 py-2 theme-text-muted">
-                                    {row.source_type || "-"}
-                                  </td>
-                                </tr>
-                              ))}
+                              {(() => {
+                                const visibleRows = showAllTxnRows
+                                  ? txnPreview.transactions
+                                  : txnPreview.transactions.slice(0, 8);
+                                const sorted = [...visibleRows].sort((a, b) =>
+                                  (a.account_code ?? "").localeCompare(b.account_code ?? "", undefined, { numeric: true })
+                                );
+                                let lastAccount: string | null = null;
+                                return sorted.map((row, idx) => {
+                                  const isNewAccount = row.account_code !== lastAccount;
+                                  lastAccount = row.account_code;
+                                  return (
+                                    <React.Fragment key={`${row.account_code}-${idx}`}>
+                                      {isNewAccount && (
+                                        <tr className="border-t-2 theme-border bg-opacity-50 theme-muted">
+                                          <td colSpan={5} className="px-3 py-1.5 font-semibold theme-text">
+                                            <span className="font-mono">{row.account_code}</span>
+                                            {row.account_name && (
+                                              <span className="ml-2 font-normal theme-text-muted">{row.account_name}</span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      )}
+                                      <tr
+                                        key={`${row.journal_id}-${row.account_code}-${idx}`}
+                                        className="border-t theme-border"
+                                      >
+                                        <td className="whitespace-nowrap px-3 py-2 theme-text-muted">
+                                          {row.date}
+                                        </td>
+                                        <td className="max-w-[200px] truncate px-3 py-2 theme-text-muted">
+                                          {row.description || "-"}
+                                        </td>
+                                        <td className="px-3 py-2 theme-text-muted">
+                                          {row.reference || "-"}
+                                        </td>
+                                        <td className="px-3 py-2 text-right theme-text">
+                                          {formatSignedAmount(row.net_amount)}
+                                        </td>
+                                        <td className="px-3 py-2 theme-text-muted">
+                                          {row.source_type || "-"}
+                                        </td>
+                                      </tr>
+                                    </React.Fragment>
+                                  );
+                                });
+                              })()}
                             </tbody>
                           </table>
                         </div>
