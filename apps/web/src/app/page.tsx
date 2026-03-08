@@ -12,6 +12,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SimpleModeToggle } from "@/components/simple-mode-toggle";
 import { NextActionPanel } from "@/components/next-action-panel";
 import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/spec";
+import { BuildUpdateNotice } from "@/components/build-update-notice";
 
 export default function Home() {
   return (
@@ -109,8 +110,9 @@ export default function Home() {
         {/* Footer */}
         <footer className="simple-mode-compact mt-8 border-t theme-border pt-6 pb-8">
           <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
-            <div className="text-sm theme-text-muted">
+            <div className="flex items-center gap-1.5 text-sm theme-text-muted">
               <span className="font-medium theme-text">Rowshni</span> - Shedding light on your ledger
+              <BuildUpdateNotice />
             </div>
             <div className="flex items-center gap-4">
               <Link
