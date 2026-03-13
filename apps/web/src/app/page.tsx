@@ -13,6 +13,7 @@ import { SimpleModeToggle } from "@/components/simple-mode-toggle";
 import { NextActionPanel } from "@/components/next-action-panel";
 import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/spec";
 import { BuildUpdateNotice } from "@/components/build-update-notice";
+import { GettingStarted } from "@/components/getting-started";
 
 export default function Home() {
   return (
@@ -85,6 +86,9 @@ export default function Home() {
 
         {/* Rate Limit Banner */}
         <AuthBanner />
+
+        {/* Getting started guide — dismissible, hidden after first use */}
+        <GettingStarted />
 
         {/* Workflow Progress Indicator */}
         <WorkflowProgress />

@@ -177,7 +177,7 @@ export function DataPreview() {
   );
 }
 
-// ─── Flat preview table (GL, Subledger) ──────────────────────────────────────
+// ─── Flat preview table (GL, Subledger) — with sortable columns ──────────────
 
 function PreviewTable({
   title,
@@ -188,8 +188,35 @@ function PreviewTable({
   data: PreviewRow[];
   totalRows: number;
 }) {
+  const [sortCol, setSortCol] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
   if (data.length === 0) return null;
   const columns = Object.keys(data[0]);
+
+  const handleSort = (col: string) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
+  };
+
+  const sorted = useMemo(() => {
+    if (!sortCol) return data;
+    return [...data].sort((a, b) => {
+      const av = a[sortCol];
+      const bv = b[sortCol];
+      if (typeof av === "number" && typeof bv === "number") {
+        return sortDir === "asc" ? av - bv : bv - av;
+      }
+      const as = String(av ?? "");
+      const bs = String(bv ?? "");
+      const cmp = as.localeCompare(bs, undefined, { numeric: true });
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [data, sortCol, sortDir]);
 
   return (
     <div>
@@ -205,14 +232,26 @@ function PreviewTable({
           <thead>
             <tr className="border-b theme-border theme-muted">
               {columns.map((col) => (
-                <th key={col} className="px-4 py-2 text-left font-semibold theme-text">
-                  {col}
+                <th
+                  key={col}
+                  className="px-4 py-2 text-left font-semibold theme-text cursor-pointer select-none hover:theme-card transition group"
+                  onClick={() => handleSort(col)}
+                  aria-sort={sortCol === col ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                >
+                  <span className="flex items-center gap-1">
+                    {col}
+                    <span className="text-xs theme-text-muted" aria-hidden="true">
+                      {sortCol === col
+                        ? sortDir === "asc" ? "▲" : "▼"
+                        : <span className="opacity-0 group-hover:opacity-40">▲</span>}
+                    </span>
+                  </span>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {data.map((row, index) => (
+            {sorted.map((row, index) => (
               <tr
                 key={index}
                 className="border-b theme-border last:border-0 hover:theme-muted"
