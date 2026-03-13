@@ -377,9 +377,14 @@ export default function SettingsPage() {
                                 Defaults
                               </button>
                               <button
-                                onClick={() => handleDelete(org.id)}
+                                onClick={() => {
+                                  if (confirm(`Delete "${displayOrgName(org.name)}"? This cannot be undone.`)) {
+                                    void handleDelete(org.id);
+                                  }
+                                }}
                                 disabled={busyId === org.id}
                                 className="btn btn-danger btn-sm disabled:opacity-70"
+                                aria-label={`Delete organization ${displayOrgName(org.name)}`}
                               >
                                 Delete
                               </button>
@@ -393,34 +398,40 @@ export default function SettingsPage() {
                             Defaults for this organization
                           </p>
                           <div className="mt-3 grid gap-3 md:grid-cols-2">
-                            <label className="text-xs font-medium uppercase theme-text-muted">
-                              Materiality Threshold
-                              <input
-                                type="number"
-                                min="0"
-                                step="1"
-                                value={defaultMateriality}
-                                onChange={(event) =>
-                                  setDefaultMateriality(
-                                    event.target.value === ""
-                                      ? ""
-                                      : Number(event.target.value)
-                                  )
-                                }
-                                className="mt-2 w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
-                                placeholder="50"
-                              />
-                            </label>
-                            <label className="text-xs font-medium uppercase theme-text-muted">
-                              Default prompt
-                              <textarea
-                                value={defaultPrompt}
-                                onChange={(event) => setDefaultPrompt(event.target.value)}
-                                className="mt-2 w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
-                                rows={3}
-                                placeholder="Reconcile accounts for month-end close"
-                              />
-                            </label>
+                            <div>
+                              <label className="text-xs font-medium uppercase theme-text-muted">
+                                Materiality Threshold ($)
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  value={defaultMateriality}
+                                  onChange={(event) =>
+                                    setDefaultMateriality(
+                                      event.target.value === ""
+                                        ? ""
+                                        : Number(event.target.value)
+                                    )
+                                  }
+                                  className="mt-2 w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
+                                  placeholder="50"
+                                />
+                              </label>
+                              <p className="mt-1 text-xs theme-text-muted">Variances above this amount are flagged for follow-up.</p>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium uppercase theme-text-muted">
+                                Default analysis prompt
+                                <textarea
+                                  value={defaultPrompt}
+                                  onChange={(event) => setDefaultPrompt(event.target.value)}
+                                  className="mt-2 w-full rounded-lg border theme-border theme-card px-3 py-2 text-sm theme-text"
+                                  rows={3}
+                                  placeholder="Reconcile accounts for month-end close"
+                                />
+                              </label>
+                              <p className="mt-1 text-xs theme-text-muted">Pre-fills the analysis prompt for every run under this organization.</p>
+                            </div>
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
                             <button

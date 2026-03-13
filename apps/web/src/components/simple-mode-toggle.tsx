@@ -85,14 +85,16 @@ export function SimpleModeToggle() {
       <button
         onClick={() => updateSimpleMode("off")}
         className={`btn btn-sm ${simpleMode === "off" ? "btn-primary" : "btn-secondary"}`}
-        title="Standard mode"
+        title="Standard mode: full detail"
+        aria-pressed={simpleMode === "off"}
       >
         Standard
       </button>
       <button
         onClick={() => updateSimpleMode("on")}
         className={`btn btn-sm ${simpleMode === "on" ? "btn-primary" : "btn-secondary"}`}
-        title="Simple mode"
+        title="Simple mode: reduced visual noise"
+        aria-pressed={simpleMode === "on"}
       >
         Simple
       </button>

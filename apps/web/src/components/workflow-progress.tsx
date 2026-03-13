@@ -58,12 +58,12 @@ export function WorkflowProgress() {
 
   const getStepStatus = (stepId: string): "complete" | "active" | "pending" | "incomplete" => {
     if (stepId === "upload") {
-      return hasRequiredFiles ? "complete" : "pending";
+      return hasRequiredFiles ? "complete" : "active";
     }
 
     if (stepId === "map") {
       if (hasPreparedData) return "complete";
-      if (hasRequiredFiles && hasAnyMapping) return "active";
+      if (hasRequiredFiles) return "active";
       return "pending";
     }
 
@@ -72,7 +72,9 @@ export function WorkflowProgress() {
     }
 
     if (stepId === "run") {
-      return isRunning ? "active" : hasPreparedData ? "pending" : "pending";
+      if (isRunning) return "active";
+      if (hasPreparedData) return "active";
+      return "pending";
     }
 
     return "incomplete";

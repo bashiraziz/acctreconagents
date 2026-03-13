@@ -23,9 +23,9 @@ export function AgentProgressIndicator({
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="agent-progress-card mt-4 rounded-2xl border p-4">
+    <div className="agent-progress-card mt-4 rounded-2xl border p-4" role="status" aria-live="polite" aria-label={`Running: ${steps[currentStep].name}, step ${currentStep + 1} of ${steps.length}`}>
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center" aria-hidden="true">
           <div className="agent-progress-spinner h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"></div>
         </div>
         <div className="flex-1">
@@ -41,7 +41,7 @@ export function AgentProgressIndicator({
         </div>
       </div>
       {/* Progress Bar */}
-      <div className="agent-progress-track mt-3 h-1.5 w-full overflow-hidden rounded-full">
+      <div className="agent-progress-track mt-3 h-1.5 w-full overflow-hidden rounded-full" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Reconciliation progress">
         <div
           className="agent-progress-fill h-full transition-all duration-500"
           style={{ width: `${progress}%` }}

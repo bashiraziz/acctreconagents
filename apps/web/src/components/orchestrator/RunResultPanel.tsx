@@ -70,11 +70,11 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
     code: ({ className, children }) => {
       const isInline = !className;
       return isInline ? (
-        <code className="rounded bg-slate-900/60 px-1 py-0.5 text-xs text-slate-100">
+        <code className="rounded theme-muted border theme-border px-1 py-0.5 text-xs font-mono theme-text">
           {children}
         </code>
       ) : (
-        <pre className="overflow-x-auto rounded-lg bg-slate-950/80 p-3 text-xs text-slate-100">
+        <pre className="overflow-x-auto rounded-lg theme-muted border theme-border p-3 text-xs theme-text font-mono">
           <code className={className}>{children}</code>
         </pre>
       );
@@ -336,7 +336,8 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       }
                     }}
                     className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
-                    title="Copy to Clipboard"
+                    title="Copy report to clipboard"
+                    aria-label="Copy report to clipboard"
                   >
                     Copy
                   </button>
@@ -357,6 +358,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                     }}
                     className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
                     title="Download as Markdown"
+                    aria-label="Download report as Markdown"
                   >
                     MD
                   </button>
@@ -376,7 +378,8 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       URL.revokeObjectURL(url);
                     }}
                     className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
-                    title="Download as Text"
+                    title="Download as plain text"
+                    aria-label="Download report as plain text"
                   >
                     TXT
                   </button>
@@ -386,6 +389,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       disabled={isRetryingReport}
                       className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
                       title="Retry report generation"
+                      aria-label="Retry report generation"
                     >
                       {isRetryingReport ? "Retrying..." : "Retry"}
                     </button>

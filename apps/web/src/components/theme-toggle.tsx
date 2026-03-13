@@ -87,6 +87,7 @@ export function ThemeToggle() {
         onClick={() => updateTheme("light")}
         className={`btn btn-sm ${theme === "light" ? "btn-primary" : "btn-secondary"}`}
         title="Light theme"
+        aria-pressed={theme === "light"}
       >
         Light
       </button>
@@ -94,6 +95,7 @@ export function ThemeToggle() {
         onClick={() => updateTheme("medium-dark")}
         className={`btn btn-sm ${theme === "medium-dark" ? "btn-primary" : "btn-secondary"}`}
         title="Medium dark theme"
+        aria-pressed={theme === "medium-dark"}
       >
         Medium
       </button>
@@ -101,6 +103,7 @@ export function ThemeToggle() {
         onClick={() => updateTheme("dark")}
         className={`btn btn-sm ${theme === "dark" ? "btn-primary" : "btn-secondary"}`}
         title="Dark theme"
+        aria-pressed={theme === "dark"}
       >
         Dark
       </button>
