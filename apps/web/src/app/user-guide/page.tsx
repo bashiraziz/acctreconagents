@@ -50,7 +50,7 @@ export default async function UserGuidePage() {
                 href="/"
                 className="btn btn-secondary btn-sm w-fit"
               >
-                &lt;- Back to app
+                ← Back to app
               </Link>
               <h1 className="mt-2 text-2xl font-bold theme-text sm:text-3xl">
                 User Guide

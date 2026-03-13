@@ -59,7 +59,7 @@ export function DataPreview() {
         <button
           type="button"
           onClick={() => setIsVisible((prev) => !prev)}
-          className="ui-neutral-btn rounded-lg border px-3 py-1 text-xs font-semibold transition"
+          className="btn btn-secondary btn-sm"
         >
           {isVisible ? "Hide preview" : "Show preview"}
         </button>

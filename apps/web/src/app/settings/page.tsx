@@ -222,7 +222,7 @@ export default function SettingsPage() {
         <header className="theme-card theme-border rounded-3xl border p-6">
           <div className="flex flex-col gap-2">
             <Link href="/" className="btn btn-secondary btn-sm w-fit">
-              &larr; Back to console
+              ← Back to app
             </Link>
             <h1 className="text-2xl font-bold theme-text sm:text-3xl">
               Settings

@@ -30,7 +30,7 @@ export default function IntegrationsPage() {
         {/* Header */}
         <header className="mb-8">
           <Link href="/" className="btn btn-secondary btn-sm">
-            &lt;- Back to app
+            ← Back to app
           </Link>
           <h1 className="mt-4 text-2xl font-bold theme-text sm:text-3xl">
             Accounting System Integrations

@@ -335,7 +335,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                         console.error("Failed to copy:", err);
                       }
                     }}
-                    className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
+                    className="btn btn-secondary btn-sm"
                     title="Copy report to clipboard"
                     aria-label="Copy report to clipboard"
                   >
@@ -356,7 +356,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       document.body.removeChild(a);
                       URL.revokeObjectURL(url);
                     }}
-                    className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
+                    className="btn btn-secondary btn-sm"
                     title="Download as Markdown"
                     aria-label="Download report as Markdown"
                   >
@@ -377,7 +377,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                       document.body.removeChild(a);
                       URL.revokeObjectURL(url);
                     }}
-                    className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition"
+                    className="btn btn-secondary btn-sm"
                     title="Download as plain text"
                     aria-label="Download report as plain text"
                   >
@@ -387,7 +387,7 @@ export function RunResultPanel({ result, onRetryReport, isRetryingReport }: RunR
                     <button
                       onClick={onRetryReport}
                       disabled={isRetryingReport}
-                      className="ui-neutral-btn rounded-lg border px-2 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                      className="btn btn-secondary btn-sm disabled:cursor-not-allowed disabled:opacity-50"
                       title="Retry report generation"
                       aria-label="Retry report generation"
                     >

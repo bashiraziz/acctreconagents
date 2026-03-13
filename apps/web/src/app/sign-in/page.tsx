@@ -67,14 +67,14 @@ export default function SignInPage() {
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10">
         <header className="theme-card theme-border border-b p-6">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] theme-text-muted">
               Account Access
             </p>
             <Link
               href="/"
-              className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 transition hover:text-slate-200"
+              className="btn btn-secondary btn-sm"
             >
-              Back to home
+              ← Back to app
             </Link>
           </div>
           <h1 className="mt-2 text-3xl font-semibold theme-text">
@@ -85,11 +85,11 @@ export default function SignInPage() {
           </p>
         </header>
 
-        <section className="rounded-3xl border theme-border bg-slate-950/60 p-6">
+        <section className="rounded-3xl border theme-border theme-card p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "sign-up" && (
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] theme-text-muted">
                   Name
                 </span>
                 <input
@@ -99,13 +99,13 @@ export default function SignInPage() {
                   onChange={(event) =>
                     setForm((prev) => ({ ...prev, name: event.target.value }))
                   }
-                  className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                  className="mt-2 w-full rounded-xl border theme-border theme-muted px-3 py-2 text-sm theme-text focus:outline-none"
                   placeholder="Your name"
                 />
               </label>
             )}
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] theme-text-muted">
                 Email
               </span>
               <input
@@ -115,12 +115,12 @@ export default function SignInPage() {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, email: event.target.value }))
                 }
-                className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                className="mt-2 w-full rounded-xl border theme-border theme-muted px-3 py-2 text-sm theme-text focus:outline-none"
                 placeholder="you@company.com"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] theme-text-muted">
                 Password
               </span>
               <input
@@ -131,13 +131,13 @@ export default function SignInPage() {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, password: event.target.value }))
                 }
-                className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                className="mt-2 w-full rounded-xl border theme-border theme-muted px-3 py-2 text-sm theme-text focus:outline-none"
                 placeholder="********"
               />
             </label>
 
             {error && (
-              <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-100">
+              <div className="alert alert-danger text-sm">
                 {error}
               </div>
             )}
@@ -145,7 +145,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+              className="btn btn-primary btn-md w-full disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSubmitting
                 ? "Please wait..."
@@ -155,12 +155,12 @@ export default function SignInPage() {
             </button>
           </form>
 
-          <div className="mt-4 flex flex-col items-center gap-3 text-sm text-slate-400">
-            <Link href="/privacy" className="text-xs text-slate-500 hover:text-slate-300">
+          <div className="mt-4 flex flex-col items-center gap-3 text-sm theme-text-muted">
+            <Link href="/privacy" className="text-xs theme-text-muted hover:underline">
               Privacy Policy
             </Link>
             {mode === "sign-in" ? (
-              <Link href="/reset-password" className="font-semibold text-sky-300 hover:text-sky-200">
+              <Link href="/reset-password" className="font-semibold theme-text hover:underline">
                 Forgot your password?
               </Link>
             ) : null}
@@ -168,7 +168,7 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={() => setMode("sign-up")}
-                className="font-semibold text-sky-300 hover:text-sky-200"
+                className="font-semibold theme-text hover:underline"
               >
                 Don&apos;t have an account? Sign up
               </button>
@@ -176,7 +176,7 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={() => setMode("sign-in")}
-                className="font-semibold text-sky-300 hover:text-sky-200"
+                className="font-semibold theme-text hover:underline"
               >
                 Already have an account? Sign in
               </button>

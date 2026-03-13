@@ -720,7 +720,7 @@ export default function XeroIntegrationPage() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Link href="/integrations" className="btn btn-secondary btn-sm w-fit">
-                &larr; Integrations
+                ← Integrations
               </Link>
             </div>
             <h1 className="text-2xl font-bold theme-text sm:text-3xl">

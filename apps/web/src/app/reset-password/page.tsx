@@ -21,12 +21,12 @@ function ResetPasswordContent() {
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"info" | "success" | "error">("info");
 
-  const messageClass =
+  const messageAlertClass =
     messageTone === "error"
-      ? "border-rose-500/40 bg-rose-500/10 text-rose-100"
+      ? "alert alert-danger"
       : messageTone === "success"
-        ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-100"
-        : "border-slate-700 bg-slate-900/60 text-slate-100";
+        ? "alert alert-success"
+        : "alert alert-info";
 
   const handleRequestReset = async (event: FormEvent) => {
     event.preventDefault();
@@ -95,7 +95,7 @@ function ResetPasswordContent() {
     <div className="min-h-screen theme-bg">
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10">
         <header className="theme-card theme-border border-b p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] theme-text-muted">
             Account Access
           </p>
           <h1 className="mt-2 text-3xl font-semibold theme-text">
@@ -108,9 +108,9 @@ function ResetPasswordContent() {
           </p>
         </header>
 
-        <section className="rounded-3xl border theme-border bg-slate-950/60 p-6">
+        <section className="rounded-3xl border theme-border theme-card p-6">
           {errorParam ? (
-            <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-100">
+            <div className="alert alert-danger text-sm">
               Reset link is invalid or expired. Please request a new link.
             </div>
           ) : null}
@@ -118,7 +118,7 @@ function ResetPasswordContent() {
           {isResetMode ? (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] theme-text-muted">
                   New password
                 </span>
                 <input
@@ -127,12 +127,12 @@ function ResetPasswordContent() {
                   minLength={8}
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                  className="mt-2 w-full rounded-xl border theme-border theme-muted px-3 py-2 text-sm theme-text focus:outline-none"
                   placeholder="********"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] theme-text-muted">
                   Confirm password
                 </span>
                 <input
@@ -141,13 +141,13 @@ function ResetPasswordContent() {
                   minLength={8}
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                  className="mt-2 w-full rounded-xl border theme-border theme-muted px-3 py-2 text-sm theme-text focus:outline-none"
                   placeholder="********"
                 />
               </label>
 
               {message && (
-                <div className={`rounded-xl border p-3 text-sm ${messageClass}`}>
+                <div className={`${messageAlertClass} text-sm`}>
                   {message}
                 </div>
               )}
@@ -155,7 +155,7 @@ function ResetPasswordContent() {
               <button
                 type="submit"
                 disabled={status === "submitting"}
-                className="w-full rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+                className="btn btn-primary btn-md w-full disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {status === "submitting" ? "Updating..." : "Update password"}
               </button>
@@ -163,7 +163,7 @@ function ResetPasswordContent() {
           ) : (
             <form onSubmit={handleRequestReset} className="space-y-4">
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] theme-text-muted">
                   Email
                 </span>
                 <input
@@ -171,13 +171,13 @@ function ResetPasswordContent() {
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+                  className="mt-2 w-full rounded-xl border theme-border theme-muted px-3 py-2 text-sm theme-text focus:outline-none"
                   placeholder="you@company.com"
                 />
               </label>
 
               {message && (
-                <div className={`rounded-xl border p-3 text-sm ${messageClass}`}>
+                <div className={`${messageAlertClass} text-sm`}>
                   {message}
                 </div>
               )}
@@ -185,16 +185,16 @@ function ResetPasswordContent() {
               <button
                 type="submit"
                 disabled={status === "submitting"}
-                className="w-full rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+                className="btn btn-primary btn-md w-full disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {status === "submitting" ? "Sending..." : "Send reset link"}
               </button>
             </form>
           )}
 
-          <div className="mt-4 text-center text-sm text-slate-400">
-            <Link href="/sign-in" className="font-semibold text-sky-300 hover:text-sky-200">
-              Back to sign in
+          <div className="mt-4 text-center text-sm theme-text-muted">
+            <Link href="/sign-in" className="font-semibold theme-text hover:underline">
+              ← Back to sign in
             </Link>
           </div>
         </section>
