@@ -686,7 +686,7 @@ export default function XeroIntegrationPage() {
     setXeroSavedMessage(null);
     setXeroPreview(null);
     setTxnPreview(null);
-    setShowAllTxnRows(false);
+    setTxnExpanded(new Set());
     setTxnSavedMessage(null);
     setXeroReportsDiscovery(null);
 
