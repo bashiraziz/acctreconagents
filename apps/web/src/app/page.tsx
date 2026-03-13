@@ -37,21 +37,40 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero copy */}
-        <div className="mx-auto max-w-3xl px-6 pb-36 pt-24 text-center sm:pt-36">
+        <div className="mx-auto max-w-4xl px-6 pb-32 pt-20 text-center sm:pt-28">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.22em]"
+            style={{ color: "#f59e0b" }}
+          >
+            Agentic AI · GL-to-subledger reconciliation
+          </p>
+
           <h1
-            className="text-6xl font-bold tracking-tight sm:text-7xl lg:text-8xl"
+            className="mt-5 text-6xl font-bold tracking-tight sm:text-7xl lg:text-8xl"
             style={{ color: "#f8fafc", lineHeight: 1.05 }}
           >
             Rowshni
           </h1>
 
           <p
-            className="mt-6 text-2xl font-medium sm:text-3xl"
+            className="mt-5 text-2xl font-medium sm:text-3xl"
             style={{ color: "#cbd5e1" }}
           >
             Shedding{" "}
             <span style={{ color: "#f59e0b" }}>light</span>
             {" "}on your ledger
+          </p>
+
+          <p
+            className="mx-auto mt-6 max-w-2xl text-base leading-relaxed sm:text-lg"
+            style={{ color: "#94a3b8" }}
+          >
+            Four AI agents work in sequence —{" "}
+            <span style={{ color: "#f8fafc" }}>Validate</span>,{" "}
+            <span style={{ color: "#f8fafc" }}>Analyse</span>,{" "}
+            <span style={{ color: "#f8fafc" }}>Investigate</span>,{" "}
+            <span style={{ color: "#f8fafc" }}>Report</span>{" "}
+            — to illuminate your GL-to-subledger variances in minutes.
           </p>
 
           <div className="mt-10 flex justify-center">
