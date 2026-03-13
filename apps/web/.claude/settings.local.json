@@ -9,7 +9,8 @@
       "Bash(python:*)",
       "Bash(npm install:*)",
       "Bash(git:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }
