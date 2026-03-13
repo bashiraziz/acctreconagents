@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Data preview component
  * Shows first few rows of transformed data
  */
@@ -124,12 +124,12 @@ export function DataPreview() {
             />
           )}
 
-        {/* Transactions */}
+        {/* Transactions — accordion grouped by account */}
         {reconciliationData.transactions &&
           reconciliationData.transactions.length > 0 && (
-            <PreviewTable
+            <TransactionAccordion
               title="Transactions"
-              data={reconciliationData.transactions.slice(0, 50)}
+              data={reconciliationData.transactions}
               totalRows={reconciliationData.transactions.length}
               groupByColumn="account_code"
             />
@@ -169,7 +169,7 @@ export function DataPreview() {
         <div className="mt-4 rounded-xl border theme-border theme-muted p-4 text-sm theme-text">
           <p className="font-semibold">Preview hidden</p>
           <p className="mt-1 theme-text-muted">
-            Click “Show preview” to review the transformed records.
+            Click "Show preview" to review the transformed records.
           </p>
         </div>
       )}
@@ -177,34 +177,19 @@ export function DataPreview() {
   );
 }
 
+// ─── Flat preview table (GL, Subledger) ──────────────────────────────────────
+
 function PreviewTable({
   title,
   data,
   totalRows,
-  groupByColumn,
 }: {
   title: string;
   data: PreviewRow[];
   totalRows: number;
-  groupByColumn?: string;
 }) {
   if (data.length === 0) return null;
-
-  const allColumns = Object.keys(data[0]);
-
-  // When grouping, sort by that column and exclude it from data columns
-  const sorted = groupByColumn
-    ? [...data].sort((a, b) =>
-        String(a[groupByColumn] ?? "").localeCompare(
-          String(b[groupByColumn] ?? ""),
-          undefined,
-          { numeric: true }
-        )
-      )
-    : data;
-  const columns = groupByColumn
-    ? allColumns.filter((c) => c !== groupByColumn)
-    : allColumns;
+  const columns = Object.keys(data[0]);
 
   return (
     <div>
@@ -227,50 +212,157 @@ function PreviewTable({
             </tr>
           </thead>
           <tbody>
-            {groupByColumn
-              ? (() => {
-                  let lastGroup: string | null = null;
-                  return sorted.map((row, index) => {
-                    const groupVal = String(row[groupByColumn] ?? "");
-                    const isNewGroup = groupVal !== lastGroup;
-                    lastGroup = groupVal;
-                    return (
-                      <React.Fragment key={index}>
-                        {isNewGroup && (
-                          <tr className="border-t-2 theme-border theme-muted">
-                            <td
-                              colSpan={columns.length}
-                              className="px-4 py-1.5 font-semibold theme-text font-mono text-xs"
-                            >
-                              {groupVal}
-                            </td>
-                          </tr>
-                        )}
-                        <tr className="border-b theme-border last:border-0 hover:theme-muted">
+            {data.map((row, index) => (
+              <tr
+                key={index}
+                className="border-b theme-border last:border-0 hover:theme-muted"
+              >
+                {columns.map((col) => (
+                  <td key={col} className="px-4 py-2 theme-text">
+                    {formatCellValue(row[col])}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─── Accordion table for Transactions ────────────────────────────────────────
+
+function TransactionAccordion({
+  title,
+  data,
+  totalRows,
+  groupByColumn,
+}: {
+  title: string;
+  data: PreviewRow[];
+  totalRows: number;
+  groupByColumn: string;
+}) {
+  const groups = useMemo(() => {
+    const map = new Map<string, PreviewRow[]>();
+    for (const row of data) {
+      const key = String(row[groupByColumn] ?? "");
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(row);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) =>
+      a.localeCompare(b, undefined, { numeric: true })
+    );
+  }, [data, groupByColumn]);
+
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const allExpanded = expanded.size === groups.length;
+
+  const toggleAll = () => {
+    setExpanded(allExpanded ? new Set() : new Set(groups.map(([k]) => k)));
+  };
+
+  const toggle = (key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
+
+  const columns = data.length > 0
+    ? Object.keys(data[0]).filter((c) => c !== groupByColumn)
+    : [];
+
+  return (
+    <div>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-sm font-semibold theme-text">{title}</h4>
+        <div className="flex items-center gap-3">
+          <span className="text-xs theme-text-muted">
+            {groups.length} account{groups.length !== 1 ? "s" : ""} · {totalRows} row{totalRows !== 1 ? "s" : ""}
+          </span>
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="btn btn-secondary btn-sm"
+          >
+            {allExpanded ? "Collapse all" : "Expand all"}
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border theme-border overflow-hidden">
+        {groups.map(([accountKey, rows], groupIdx) => {
+          const isOpen = expanded.has(accountKey);
+          const accountName = rows[0]?.account_name as string | undefined;
+          const total = rows.reduce((sum, r) => {
+            const amt = r.amount;
+            return sum + (typeof amt === "number" ? amt : 0);
+          }, 0);
+          const hasAmount = rows.some((r) => typeof r.amount === "number");
+
+          return (
+            <div key={accountKey} className={groupIdx > 0 ? "border-t theme-border" : ""}>
+              {/* Account header — click to toggle */}
+              <button
+                type="button"
+                onClick={() => toggle(accountKey)}
+                className="w-full flex items-center justify-between px-4 py-3 theme-muted hover:theme-card text-left transition"
+                aria-expanded={isOpen}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-sm font-semibold theme-text">{accountKey}</span>
+                  {accountName && (
+                    <span className="text-sm theme-text-muted">{accountName}</span>
+                  )}
+                  <span className="badge badge-neutral text-xs">
+                    {rows.length} row{rows.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                  {hasAmount && (
+                    <span className="text-sm font-semibold theme-text tabular-nums">
+                      {formatCellValue(total)}
+                    </span>
+                  )}
+                  <span className="text-xs theme-text-muted" aria-hidden="true">
+                    {isOpen ? "▲" : "▼"}
+                  </span>
+                </div>
+              </button>
+
+              {/* Expanded rows */}
+              {isOpen && (
+                <div className="overflow-x-auto border-t theme-border">
+                  <table className="w-full min-w-max text-sm">
+                    <thead>
+                      <tr className="border-b theme-border theme-muted">
+                        {columns.map((col) => (
+                          <th key={col} className="px-4 py-2 text-left text-xs font-semibold theme-text">
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((row, i) => (
+                        <tr key={i} className="border-b theme-border last:border-0 hover:theme-muted">
                           {columns.map((col) => (
                             <td key={col} className="px-4 py-2 theme-text">
                               {formatCellValue(row[col])}
                             </td>
                           ))}
                         </tr>
-                      </React.Fragment>
-                    );
-                  });
-                })()
-              : sorted.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="border-b theme-border last:border-0 hover:theme-muted"
-                  >
-                    {columns.map((col) => (
-                      <td key={col} className="px-4 py-2 theme-text">
-                        {formatCellValue(row[col])}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-          </tbody>
-        </table>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -282,7 +374,6 @@ function formatCellValue(value: unknown): string {
   }
 
   if (typeof value === "number") {
-    // Format numbers with commas and 2 decimal places
     return value.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -295,5 +386,3 @@ function formatCellValue(value: unknown): string {
 
   return String(value);
 }
-
-

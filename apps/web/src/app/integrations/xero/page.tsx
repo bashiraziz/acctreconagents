@@ -222,7 +222,7 @@ export default function XeroIntegrationPage() {
   const [txnFromDate, setTxnFromDate] = useState<string>(() => firstDayOfCurrentMonth());
   const [txnToDate, setTxnToDate] = useState<string>(() => getTodayLocalIsoDate());
   const [txnPreview, setTxnPreview] = useState<XeroTransactionPreview | null>(null);
-  const [showAllTxnRows, setShowAllTxnRows] = useState(false);
+  const [txnExpanded, setTxnExpanded] = useState<Set<string>>(new Set());
   const [txnSavedMessage, setTxnSavedMessage] = useState<string | null>(null);
   const [tbLastSynced, setTbLastSynced] = useState<string | null>(
     () => (typeof window !== "undefined" ? localStorage.getItem(LS_TB_SYNCED) : null)
@@ -397,7 +397,7 @@ export default function XeroIntegrationPage() {
       setXeroReportsDiscovery(null);
       setShowAllXeroRows(false);
       setTxnPreview(null);
-      setShowAllTxnRows(false);
+      setTxnExpanded(new Set());
       setTxnSavedMessage(null);
       await loadXeroStatus();
     } catch (err) {
@@ -502,7 +502,7 @@ export default function XeroIntegrationPage() {
       setTxnPreview(preview);
       setTxnFromDate(preview.fromDate);
       setTxnToDate(preview.toDate);
-      setShowAllTxnRows(false);
+      setTxnExpanded(new Set());
       const txnSyncedAt = new Date().toISOString();
       localStorage.setItem(LS_TXN_SYNCED, txnSyncedAt);
       setTxnLastSynced(txnSyncedAt);
@@ -1207,32 +1207,18 @@ export default function XeroIntegrationPage() {
                     {txnPreview && (
                       <div className="mt-4">
                         <p className="text-xs theme-text-muted">
-                          {txnPreview.count} journal lines - {txnPreview.fromDate} to{" "}
+                          {txnPreview.count} journal lines · {txnPreview.fromDate} to{" "}
                           {txnPreview.toDate} ({txnPreview.pagesFetched} page
                           {txnPreview.pagesFetched !== 1 ? "s" : ""} fetched)
                         </p>
 
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <button
-                            onClick={handleSaveTxnLocally}
-                            className="btn btn-secondary btn-sm"
-                          >
+                          <button onClick={handleSaveTxnLocally} className="btn btn-secondary btn-sm">
                             Save as transactions (local)
                           </button>
-                          <button
-                            onClick={handleDownloadTxnCsv}
-                            className="btn btn-secondary btn-sm"
-                          >
+                          <button onClick={handleDownloadTxnCsv} className="btn btn-secondary btn-sm">
                             Download CSV
                           </button>
-                          {txnPreview.transactions.length > 8 && (
-                            <button
-                              onClick={() => setShowAllTxnRows((prev) => !prev)}
-                              className="btn btn-secondary btn-sm"
-                            >
-                              {showAllTxnRows ? "Show first 8" : `Show all ${txnPreview.count}`}
-                            </button>
-                          )}
                         </div>
 
                         {txnSavedMessage && (
@@ -1241,76 +1227,101 @@ export default function XeroIntegrationPage() {
                           </div>
                         )}
 
-                        <div className="mt-3 overflow-x-auto rounded-lg border theme-border">
-                          <table className="w-full text-xs">
-                            <thead>
-                              <tr className="theme-muted">
-                                <th className="px-3 py-2 text-left theme-text">Date</th>
-                                <th className="px-3 py-2 text-left theme-text">Description</th>
-                                <th className="px-3 py-2 text-left theme-text">Reference</th>
-                                <th className="px-3 py-2 text-right theme-text">Net Amount</th>
-                                <th className="px-3 py-2 text-left theme-text">Type</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(() => {
-                                const visibleRows = showAllTxnRows
-                                  ? txnPreview.transactions
-                                  : txnPreview.transactions.slice(0, 8);
-                                const sorted = [...visibleRows].sort((a, b) =>
-                                  (a.account_code ?? "").localeCompare(b.account_code ?? "", undefined, { numeric: true })
-                                );
-                                let lastAccount: string | null = null;
-                                return sorted.map((row, idx) => {
-                                  const isNewAccount = row.account_code !== lastAccount;
-                                  lastAccount = row.account_code;
-                                  return (
-                                    <React.Fragment key={`${row.account_code}-${idx}`}>
-                                      {isNewAccount && (
-                                        <tr className="border-t-2 theme-border bg-opacity-50 theme-muted">
-                                          <td colSpan={5} className="px-3 py-1.5 font-semibold theme-text">
-                                            <span className="font-mono">{row.account_code}</span>
-                                            {row.account_name && (
-                                              <span className="ml-2 font-normal theme-text-muted">{row.account_name}</span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                      )}
-                                      <tr
-                                        key={`${row.journal_id}-${row.account_code}-${idx}`}
-                                        className="border-t theme-border"
-                                      >
-                                        <td className="whitespace-nowrap px-3 py-2 theme-text-muted">
-                                          {row.date}
-                                        </td>
-                                        <td className="max-w-[200px] truncate px-3 py-2 theme-text-muted">
-                                          {row.description || "-"}
-                                        </td>
-                                        <td className="px-3 py-2 theme-text-muted">
-                                          {row.reference || "-"}
-                                        </td>
-                                        <td className="px-3 py-2 text-right theme-text">
-                                          {formatSignedAmount(row.net_amount)}
-                                        </td>
-                                        <td className="px-3 py-2 theme-text-muted">
-                                          {row.source_type || "-"}
-                                        </td>
-                                      </tr>
-                                    </React.Fragment>
-                                  );
-                                });
-                              })()}
-                            </tbody>
-                          </table>
-                        </div>
+                        {/* Transactions accordion — grouped by account */}
+                        {(() => {
+                          const groups = Array.from(
+                            txnPreview.transactions.reduce((map, row) => {
+                              const key = row.account_code ?? "";
+                              if (!map.has(key)) map.set(key, []);
+                              map.get(key)!.push(row);
+                              return map;
+                            }, new Map<string, typeof txnPreview.transactions>())
+                          ).sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
 
-                        <p className="mt-2 text-xs theme-text-muted">
-                          Showing{" "}
-                          {showAllTxnRows
-                            ? txnPreview.count
-                            : Math.min(8, txnPreview.count)}{" "}
-                          of {txnPreview.count} rows.
-                        </p>
+                          const allOpen = txnExpanded.size === groups.length;
+
+                          return (
+                            <div className="mt-3">
+                              <div className="mb-2 flex items-center justify-between">
+                                <span className="text-xs theme-text-muted">
+                                  {groups.length} account{groups.length !== 1 ? "s" : ""}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setTxnExpanded(allOpen ? new Set() : new Set(groups.map(([k]) => k)))}
+                                  className="btn btn-secondary btn-sm"
+                                >
+                                  {allOpen ? "Collapse all" : "Expand all"}
+                                </button>
+                              </div>
+                              <div className="rounded-lg border theme-border overflow-hidden">
+                                {groups.map(([accountKey, rows], groupIdx) => {
+                                  const isOpen = txnExpanded.has(accountKey);
+                                  const accountName = rows[0]?.account_name;
+                                  const netTotal = rows.reduce((s, r) => s + (r.net_amount ?? 0), 0);
+                                  return (
+                                    <div key={accountKey} className={groupIdx > 0 ? "border-t theme-border" : ""}>
+                                      <button
+                                        type="button"
+                                        onClick={() => setTxnExpanded((prev) => {
+                                          const next = new Set(prev);
+                                          next.has(accountKey) ? next.delete(accountKey) : next.add(accountKey);
+                                          return next;
+                                        })}
+                                        className="w-full flex items-center justify-between px-3 py-2.5 theme-muted hover:theme-card text-left transition"
+                                        aria-expanded={isOpen}
+                                      >
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <span className="font-mono text-xs font-semibold theme-text">{accountKey}</span>
+                                          {accountName && (
+                                            <span className="text-xs theme-text-muted">{accountName}</span>
+                                          )}
+                                          <span className="badge badge-neutral text-xs">
+                                            {rows.length} row{rows.length !== 1 ? "s" : ""}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                                          <span className="text-xs font-semibold theme-text tabular-nums">
+                                            {formatSignedAmount(netTotal)}
+                                          </span>
+                                          <span className="text-xs theme-text-muted" aria-hidden="true">
+                                            {isOpen ? "▲" : "▼"}
+                                          </span>
+                                        </div>
+                                      </button>
+                                      {isOpen && (
+                                        <div className="overflow-x-auto border-t theme-border">
+                                          <table className="w-full text-xs">
+                                            <thead>
+                                              <tr className="theme-muted border-b theme-border">
+                                                <th className="px-3 py-2 text-left theme-text">Date</th>
+                                                <th className="px-3 py-2 text-left theme-text">Description</th>
+                                                <th className="px-3 py-2 text-left theme-text">Reference</th>
+                                                <th className="px-3 py-2 text-right theme-text">Net Amount</th>
+                                                <th className="px-3 py-2 text-left theme-text">Type</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {rows.map((row, idx) => (
+                                                <tr key={`${row.journal_id}-${idx}`} className="border-b theme-border last:border-0 hover:theme-muted">
+                                                  <td className="whitespace-nowrap px-3 py-2 theme-text-muted">{row.date}</td>
+                                                  <td className="max-w-[200px] truncate px-3 py-2 theme-text-muted" title={row.description || undefined}>{row.description || "-"}</td>
+                                                  <td className="px-3 py-2 theme-text-muted">{row.reference || "-"}</td>
+                                                  <td className="px-3 py-2 text-right theme-text">{formatSignedAmount(row.net_amount)}</td>
+                                                  <td className="px-3 py-2 theme-text-muted">{row.source_type || "-"}</td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
