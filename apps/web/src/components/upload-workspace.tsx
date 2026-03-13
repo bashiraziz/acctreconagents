@@ -5,6 +5,7 @@
  * Refactored into smaller, focused components for better maintainability
  */
 
+import { useState } from "react";
 import { useFileUploadStore } from "@/store/fileUploadStore";
 import { FileTypeUploadZone } from "./upload/FileTypeUploadZone";
 import { FileUploadZone } from "./upload/FileUploadZone";
@@ -40,21 +41,38 @@ export function UploadWorkspace() {
   const subledgerUploadRecord = uploads.find((r) => r.fileType === "subledger_balance");
   const transactionsUploadRecord = uploads.find((r) => r.fileType === "transactions");
 
+  const hasRequiredFiles = Boolean(uploadedFiles.glBalance && uploadedFiles.subledgerBalance);
+  const [collapsed, setCollapsed] = useState(() =>
+    Boolean(uploadedFiles.glBalance && uploadedFiles.subledgerBalance)
+  );
+
   return (
     <section id="upload-files" className="ui-panel scroll-mt-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="ui-kicker">Step 1</p>
-          <h2 className="ui-title mt-1">Upload Files</h2>
-          <p className="ui-copy mt-1">
-            Upload your GL balance, subledger balance, and transaction files. Supports CSV, TSV, TXT, and Excel (.xlsx) from any accounting system.
-          </p>
+          <div className="flex items-center gap-3 mt-1">
+            <h2 className="ui-title">Upload Files</h2>
+            {hasRequiredFiles && (
+              <span className="badge badge-success">Done</span>
+            )}
+          </div>
+          {!collapsed && (
+            <p className="ui-copy mt-1">
+              Upload your GL balance, subledger balance, and transaction files. Supports CSV, TSV, TXT, and Excel (.xlsx) from any accounting system.
+            </p>
+          )}
+          {collapsed && hasRequiredFiles && (
+            <p className="mt-1 text-xs theme-text-muted truncate">
+              {uploadedFiles.glBalance?.name ?? "GL uploaded"}
+              {" · "}
+              {uploadedFiles.subledgerBalance?.name ?? "Subledger uploaded"}
+              {uploadedFiles.transactions && ` · ${uploadedFiles.transactions.name}`}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <div className="rounded border theme-border theme-muted px-3 py-1 text-xs theme-text-muted">
-            Max 20MB
-          </div>
-          {(uploadedFiles.glBalance || uploadedFiles.subledgerBalance || uploadedFiles.transactions || uploads.length > 0) && (
+          {(uploadedFiles.glBalance || uploadedFiles.subledgerBalance || uploadedFiles.transactions || uploads.length > 0) && !collapsed && (
             <button
               onClick={() => {
                 if (confirm("Clear all uploaded files? This will reset your workflow.")) {
@@ -67,11 +85,20 @@ export function UploadWorkspace() {
               Clear All
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            className="btn btn-secondary btn-sm"
+            aria-expanded={!collapsed}
+            aria-controls="upload-files-body"
+          >
+            {collapsed ? "Expand" : "Collapse"}
+          </button>
         </div>
       </header>
 
       {/* Three Separate Upload Zones */}
-      <div className="mt-6 space-y-3">
+      <div id="upload-files-body" className={`mt-6 space-y-3 ${collapsed ? "hidden" : ""}`}>
         {/* GL Balance Upload */}
         <FileTypeUploadZone
           fileType="gl_balance"
@@ -141,7 +168,7 @@ export function UploadWorkspace() {
       </div>
 
       {/* Upload History */}
-      {(structuredUploads.length > 0 || supportingUploads.length > 0) && (
+      {!collapsed && (structuredUploads.length > 0 || supportingUploads.length > 0) && (
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <UploadList label="Structured files" uploads={structuredUploads} />
           <UploadList label="Supporting files" uploads={supportingUploads} />

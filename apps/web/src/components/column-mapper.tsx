@@ -23,7 +23,10 @@ export function ColumnMapper() {
   const columnMappings = useColumnMappingStore((state) => state.mappings);
   const setColumnMapping = useColumnMappingStore((state) => state.setMapping);
   const setReconciliationData = useFileUploadStore((state) => state.setReconciliationData);
+  const reconciliationData = useFileUploadStore((state) => state.reconciliationData);
   const { data: session } = useSession();
+
+  const [collapsed, setCollapsed] = useState(() => Boolean(reconciliationData));
 
   // Auto-suggest mappings when files are uploaded
   const handleAutoSuggest = (fileType: FileType) => {
@@ -175,18 +178,36 @@ export function ColumnMapper() {
   return (
     <section id="map-columns" className="ui-panel scroll-mt-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="ui-kicker">
-            Column Mapping
-          </p>
-          <h2 className="ui-title mt-1">
-            Map your columns
-          </h2>
-          <p className="ui-copy mt-1">
-            Map source columns to canonical fields. You can auto-suggest and then adjust only the mismatches.
-          </p>
+        <div className="min-w-0 flex-1">
+          <p className="ui-kicker">Step 2</p>
+          <div className="flex items-center gap-3 mt-1">
+            <h2 className="ui-title">Map Columns</h2>
+            {reconciliationData && <span className="badge badge-success">Done</span>}
+          </div>
+          {!collapsed && (
+            <p className="ui-copy mt-1">
+              Map source columns to canonical fields. You can auto-suggest and then adjust only the mismatches.
+            </p>
+          )}
+          {collapsed && reconciliationData && (
+            <p className="mt-1 text-xs theme-text-muted">
+              GL ({glCompletion}%) · Subledger ({subledgerCompletion}%) · Mappings applied
+            </p>
+          )}
         </div>
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          className="btn btn-secondary btn-sm flex-shrink-0"
+          aria-expanded={!collapsed}
+          aria-controls="map-columns-body"
+        >
+          {collapsed ? "Expand" : "Collapse"}
+        </button>
       </header>
+
+      {!collapsed && (
+      <div id="map-columns-body">
 
       {/* Tabs */}
       <div className="mt-6 flex flex-wrap gap-2 border-b theme-border pb-2">
@@ -313,6 +334,9 @@ export function ColumnMapper() {
           </button>
         </div>
       </div>
+
+      </div>
+      )}
     </section>
   );
 }

@@ -14,6 +14,7 @@ import { NextActionPanel } from "@/components/next-action-panel";
 import { canonicalBalanceFields, specMetadata, transactionFields } from "@/lib/spec";
 import { BuildUpdateNotice } from "@/components/build-update-notice";
 import { GettingStarted } from "@/components/getting-started";
+import { StickyRunBar } from "@/components/sticky-run-bar";
 
 export default function Home() {
   return (
@@ -110,6 +111,8 @@ export default function Home() {
             <AboutPanel />
           </div>
         </div>
+
+        <StickyRunBar />
 
         {/* Footer */}
         <footer className="simple-mode-compact mt-8 border-t theme-border pt-6 pb-8">

@@ -112,9 +112,11 @@ export function NextActionPanel() {
           <h3 className="mt-1 text-lg font-semibold theme-text">{nextAction.title}</h3>
           <p className="mt-1 text-sm theme-text-muted">{nextAction.detail}</p>
         </div>
-        <a href={nextAction.href} className="btn btn-primary btn-md btn-pill">
-          {nextAction.cta}
-        </a>
+        {!hasPreparedData && (
+          <a href={nextAction.href} className="btn btn-primary btn-md btn-pill">
+            {nextAction.cta}
+          </a>
+        )}
       </div>
 
       <div className="simple-mode-compact mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
