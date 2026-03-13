@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { BackButton } from "@/components/back-button";
 import { requestPasswordReset, resetPassword } from "@/lib/auth-client";
 
 function ResetPasswordContent() {
@@ -193,9 +194,7 @@ function ResetPasswordContent() {
           )}
 
           <div className="mt-4 text-center text-sm theme-text-muted">
-            <Link href="/sign-in" className="font-semibold theme-text hover:underline">
-              ← Back to sign in
-            </Link>
+            <BackButton href="/sign-in" label="Back to sign in" />
           </div>
         </section>
       </main>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
+import { BackButton } from "@/components/back-button";
 
 type Organization = {
   id: string;
@@ -221,9 +221,7 @@ export default function SettingsPage() {
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
         <header className="theme-card theme-border rounded-3xl border p-6">
           <div className="flex flex-col gap-2">
-            <Link href="/" className="btn btn-secondary btn-sm w-fit">
-              ← Back to app
-            </Link>
+            <BackButton href="/" label="Back to app" />
             <h1 className="text-2xl font-bold theme-text sm:text-3xl">
               Settings
             </h1>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 
 const integrations = [
   {
@@ -29,9 +30,7 @@ export default function IntegrationsPage() {
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-10">
         {/* Header */}
         <header className="mb-8">
-          <Link href="/" className="btn btn-secondary btn-sm">
-            ← Back to app
-          </Link>
+          <BackButton href="/" label="Back to app" />
           <h1 className="mt-4 text-2xl font-bold theme-text sm:text-3xl">
             Accounting System Integrations
           </h1>

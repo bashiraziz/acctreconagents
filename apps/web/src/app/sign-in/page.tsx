@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BackButton } from "@/components/back-button";
 import { signIn, signUp, useSession } from "@/lib/auth-client";
 
 export default function SignInPage() {
@@ -70,12 +71,7 @@ export default function SignInPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.4em] theme-text-muted">
               Account Access
             </p>
-            <Link
-              href="/"
-              className="btn btn-secondary btn-sm"
-            >
-              ← Back to app
-            </Link>
+            <BackButton href="/" label="Back to app" />
           </div>
           <h1 className="mt-2 text-3xl font-semibold theme-text">
             {mode === "sign-in" ? "Welcome back" : "Create your account"}

@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -46,12 +47,7 @@ export default async function UserGuidePage() {
         <header className="theme-card theme-border rounded-3xl border p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <Link
-                href="/"
-                className="btn btn-secondary btn-sm w-fit"
-              >
-                ← Back to app
-              </Link>
+              <BackButton href="/" label="Back to app" />
               <h1 className="mt-2 text-2xl font-bold theme-text sm:text-3xl">
                 User Guide
               </h1>

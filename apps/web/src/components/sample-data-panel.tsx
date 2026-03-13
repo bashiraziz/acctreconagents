@@ -55,7 +55,21 @@ export function SampleDataPanel() {
         </button>
       </header>
       {!open ? null : loading ? (
-        <p className="mt-4 text-sm theme-text-muted">Loading sample files...</p>
+        <div className="mt-4 grid gap-4 animate-pulse lg:grid-cols-2" aria-label="Loading sample files">
+          {[0, 1].map((i) => (
+            <div key={i} className="rounded-2xl border theme-border theme-muted p-4">
+              <div className="h-4 w-36 rounded theme-card" />
+              <div className="mt-3 space-y-3">
+                {[0, 1, 2].map((j) => (
+                  <div key={j} className="flex items-center gap-3">
+                    <div className="h-3 flex-1 rounded theme-card" />
+                    <div className="h-7 w-20 rounded theme-card flex-shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : error ? (
         <p className="alert alert-danger mt-4 text-sm">{error}</p>
       ) : (

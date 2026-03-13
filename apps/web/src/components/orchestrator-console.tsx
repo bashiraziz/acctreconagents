@@ -87,23 +87,34 @@ export function OrchestratorConsole() {
       />
 
       {!reconciliationData && (
-        <div className="mt-4 rounded-xl border theme-border theme-muted p-4 text-sm theme-text">
-          <p className="font-semibold">No data ready</p>
-          <p className="mt-1 theme-text-muted">
-            Upload files and apply mappings before running agents.
+        <div className="mt-4 rounded-xl border theme-border theme-muted p-6 text-center">
+          <p className="text-sm font-semibold theme-text">Nothing to reconcile yet</p>
+          <p className="mt-2 text-sm theme-text-muted">
+            Complete steps 1–3 first: upload GL and subledger files, map the columns, and apply the mappings.
           </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <a href="#upload-files" className="btn btn-secondary btn-sm">1. Upload files</a>
+            <a href="#map-columns" className="btn btn-secondary btn-sm">2. Map columns</a>
+            <a href="#preview-data" className="btn btn-secondary btn-sm">3. Preview data</a>
+          </div>
         </div>
       )}
 
       {reconciliationData && !result && !error && (
         <div className="reconcile-ready-card mt-4 rounded-xl border p-4 text-sm">
-          <p className="reconcile-ready-title font-semibold">Data ready to reconcile</p>
-          <p className="reconcile-ready-body mt-1">
-            {reconciliationData.glBalances.length} GL balances, {" "}
-            {reconciliationData.subledgerBalances.length} subledger balances
-            {reconciliationData.transactions &&
-              `, ${reconciliationData.transactions.length} transactions`}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="reconcile-ready-title font-semibold">Data ready to reconcile</p>
+              <p className="reconcile-ready-body mt-1 text-xs">
+                {reconciliationData.glBalances.length} GL balance{reconciliationData.glBalances.length !== 1 ? "s" : ""},{" "}
+                {reconciliationData.subledgerBalances.length} subledger balance{reconciliationData.subledgerBalances.length !== 1 ? "s" : ""}
+                {reconciliationData.transactions && reconciliationData.transactions.length > 0
+                  ? `, ${reconciliationData.transactions.length} transaction${reconciliationData.transactions.length !== 1 ? "s" : ""}`
+                  : ""}
+              </p>
+            </div>
+            <span className="badge badge-success">Ready</span>
+          </div>
         </div>
       )}
 

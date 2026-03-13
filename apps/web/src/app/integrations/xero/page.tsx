@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 import { useSession } from "@/lib/auth-client";
 import { useFileUploadStore } from "@/store/fileUploadStore";
 import { useUserPreferencesStore } from "@/store/userPreferencesStore";
@@ -719,9 +720,7 @@ export default function XeroIntegrationPage() {
         <header className="theme-card theme-border rounded-3xl border p-6">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Link href="/integrations" className="btn btn-secondary btn-sm w-fit">
-                ← Integrations
-              </Link>
+              <BackButton href="/integrations" label="Integrations" />
             </div>
             <h1 className="text-2xl font-bold theme-text sm:text-3xl">
               Xero
