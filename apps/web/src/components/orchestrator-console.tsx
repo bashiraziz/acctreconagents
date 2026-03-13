@@ -48,13 +48,13 @@ export function OrchestratorConsole() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="ui-kicker">
-            AI Reconciliation
+            Step 4
           </p>
           <h2 className="ui-title mt-1">
-            Multi-agent console
+            Illuminate
           </h2>
           <p className="ui-copy mt-1">
-            Run validation, analysis, investigation, and report generation using schema v{specMetadata.version}.
+            AI agents validate, analyse variances, investigate, and generate your reconciliation report.
           </p>
         </div>
         <div className="rounded-full border theme-border theme-muted px-3 py-1 text-xs theme-text-muted">

@@ -19,7 +19,7 @@ import { StickyRunBar } from "@/components/sticky-run-bar";
 export default function Home() {
   return (
     <div className="min-h-screen theme-bg">
-      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
+      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 pb-20 sm:px-6 sm:py-8 lg:px-10">
         {/* Header with User Menu */}
         <header className="theme-card theme-border rounded-3xl border p-5 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -31,7 +31,7 @@ export default function Home() {
                 Shedding light on your ledger
               </p>
               <p className="simple-mode-compact mt-2 max-w-3xl text-sm leading-relaxed theme-text-muted">
-                AI-powered reconciliation for month-end close. Upload files, map fields, review transformed data, and run agents.
+                AI-powered reconciliation for month-end close. Upload files, map fields, review transformed data, and Illuminate.
               </p>
               <div className="simple-mode-compact mt-3 flex flex-wrap gap-2 text-xs">
                 <span className="badge badge-neutral">
@@ -44,7 +44,7 @@ export default function Home() {
                   3. Preview
                 </span>
                 <span className="badge badge-neutral">
-                  4. Reconcile
+                  4. Illuminate
                 </span>
               </div>
             </div>
@@ -182,9 +182,9 @@ function AboutPanel() {
           Platform Snapshot
         </p>
         <ul className="mt-2 space-y-1 text-sm theme-text-muted">
-          <li>4-stage AI pipeline: Validation, Analysis, Investigation, and Report generation</li>
+          <li>4-stage Illuminate pipeline: Validation, Analysis, Investigation, and Report</li>
           <li>Frontend: Next.js web app | Backend: Fastify orchestrator</li>
-          <li>Runtime: Gemini by default, with optional OpenAI and Claude integration</li>
+          <li>Gemini, OpenAI, and Claude supported</li>
         </ul>
       </div>
 
@@ -205,7 +205,7 @@ function AboutPanel() {
             <li>Next.js 16 web application</li>
             <li>Fastify orchestrator service (OpenAI, Claude, Gemini modes)</li>
             <li>Spec-Kit contracts for data validation</li>
-            <li>Gemini 2.0 Flash (default free-tier 4-agent pipeline)</li>
+            <li>Gemini 2.0 Flash (default free-tier Illuminate pipeline)</li>
             <li>Optional Claude skills for mapping and investigation</li>
           </ul>
 

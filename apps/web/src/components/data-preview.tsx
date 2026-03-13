@@ -72,7 +72,7 @@ export function DataPreview() {
             <div>
               <p className="text-sm font-semibold theme-text">Validation preview</p>
               <p className="mt-1 text-xs theme-text-muted">
-                Quick checks for missing required fields and invalid numbers before you run agents.
+                Quick checks for missing required fields and invalid numbers before you Illuminate.
               </p>
             </div>
             <span

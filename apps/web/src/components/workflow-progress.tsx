@@ -37,9 +37,9 @@ const steps: Step[] = [
   },
   {
     id: "run",
-    label: "Run Agents",
+    label: "Illuminate",
     step: "4",
-    description: "Execute reconciliation with AI agents",
+    description: "AI agents validate, analyse, and generate your reconciliation report",
   },
 ];
 

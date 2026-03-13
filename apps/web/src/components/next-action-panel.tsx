@@ -73,7 +73,7 @@ export function NextActionPanel() {
       title: "Run AI reconciliation",
       detail: "Data is prepared. Launch agents to generate analysis and report output.",
       href: "#run-agents",
-      cta: "Run Agents",
+      cta: "Illuminate",
     };
   }, [hasAnyMapping, hasPreparedData, hasRequiredFiles, isRunning]);
 
