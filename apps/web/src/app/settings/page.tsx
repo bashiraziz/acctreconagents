@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { BackButton } from "@/components/back-button";
 
