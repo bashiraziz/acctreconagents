@@ -37,23 +37,16 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero copy */}
-        <div className="mx-auto max-w-4xl px-6 pb-32 pt-20 text-center sm:pt-28">
-          <p
-            className="text-xs font-semibold uppercase tracking-[0.22em]"
-            style={{ color: "#f59e0b" }}
-          >
-            Agentic AI · GL-to-subledger reconciliation
-          </p>
-
+        <div className="mx-auto max-w-3xl px-6 pb-36 pt-24 text-center sm:pt-36">
           <h1
-            className="mt-5 text-6xl font-bold tracking-tight sm:text-7xl lg:text-8xl"
+            className="text-6xl font-bold tracking-tight sm:text-7xl lg:text-8xl"
             style={{ color: "#f8fafc", lineHeight: 1.05 }}
           >
             Rowshni
           </h1>
 
           <p
-            className="mt-5 text-2xl font-medium sm:text-3xl"
+            className="mt-6 text-2xl font-medium sm:text-3xl"
             style={{ color: "#cbd5e1" }}
           >
             Shedding{" "}
@@ -61,19 +54,7 @@ export default function LandingPage() {
             {" "}on your ledger
           </p>
 
-          <p
-            className="mx-auto mt-6 max-w-2xl text-base leading-relaxed sm:text-lg"
-            style={{ color: "#94a3b8" }}
-          >
-            Four AI agents work in sequence —{" "}
-            <span style={{ color: "#f8fafc" }}>Validate</span>,{" "}
-            <span style={{ color: "#f8fafc" }}>Analyse</span>,{" "}
-            <span style={{ color: "#f8fafc" }}>Investigate</span>,{" "}
-            <span style={{ color: "#f8fafc" }}>Report</span>{" "}
-            — to illuminate your GL-to-subledger variances in minutes.
-          </p>
-
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <div className="mt-10 flex justify-center">
             <Link
               href="/app"
               style={{
@@ -87,29 +68,9 @@ export default function LandingPage() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.4rem",
-                transition: "background 0.2s ease",
               }}
             >
               Start reconciling →
-            </Link>
-            <Link
-              href="https://github.com/bashiraziz/acctreconagents"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                border: "1px solid #334155",
-                background: "transparent",
-                color: "#cbd5e1",
-                fontSize: "1rem",
-                padding: "0.8rem 2rem",
-                borderRadius: "9999px",
-                fontWeight: 600,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-              }}
-            >
-              View on GitHub
             </Link>
           </div>
         </div>
